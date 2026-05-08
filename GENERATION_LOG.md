@@ -13,3 +13,7 @@ One line per Claude Code turn. Append-only.
 | 2026-05-08 | 5.1 | Part I complete (01,02,04,05,06,07,08) | 7 chapters written, all render clean, figures + exercises |
 | 2026-05-08 | 5.2 | Part II complete (09,10,11,12,13,14) | 6 chapters: R environment, GameTheory, CoopGame, gtree, nashpy, custom solvers |
 | 2026-05-08 | 5.3 | Part III complete (15,16,18,19,20,21,22) | 7 chapters: MC, ABM, spatial PD, replicator, ESS, networks, performance |
+| 2026-05-08 | 5.4 | Part IV complete (23,24,26,27,28,29,30) | 7 chapters: ML foundations, RL, MARL, self-play, CFR, GANs, LLM agents |
+| 2026-05-08 | 5.5 | Part V complete (31,32,33,34,35,36) | 6 chapters: auctions, mechanism design, matching, bargaining, conflict, case studies |
+| 2026-05-08 | 5.6 | Part VI complete (37,38,39,40,41) | 5 chapters: ethics, fairness, alignment, cooperative AI, future |
+| 2026-05-08 | 5.7 | Appendices complete (A,B,C,D,E) | R refresher, linear algebra, probability, solutions, glossary |
