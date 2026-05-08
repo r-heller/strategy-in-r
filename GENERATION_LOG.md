@@ -8,3 +8,4 @@ One line per Claude Code turn. Append-only.
 | 2026-05-08 | 2 | Chapter template + frontmatter | All 41 stubs + 5 appendices updated with body skeleton, CHAPTER_TEMPLATE.qmd added |
 | 2026-05-08 | 3 | CI gates | Enhanced citation-check (DOI+arXiv+PMID), figure-check (skip stubs), render-html, render-pdf, deploy-pages |
 | 2026-05-08 | 4.1 | Chapter 03: Nash Equilibrium | Full chapter: BR plot, PD/BoS/coordination examples, 3 exercises |
+| 2026-05-08 | 4.2 | Chapter 17: Axelrod Tournament | Full chapter: 8 strategies, ranking + heatmap figs, match trace, 3 exercises |

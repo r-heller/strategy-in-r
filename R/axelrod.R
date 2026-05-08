@@ -2,7 +2,7 @@
 # Strategy in R
 
 play_round <- function(action1, action2, R = 3, S = 0, T = 5, P = 1) {
-  payoffs <- matrix(c(R, S, T, P, T, R, P, S), nrow = 2, byrow = TRUE,
+  payoffs <- matrix(c(R, S, T, P), nrow = 2, byrow = TRUE,
                     dimnames = list(c("C", "D"), c("C", "D")))
   c(payoffs[action1, action2], payoffs[action2, action1])
 }
