@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Raban Heller">
+<meta name="keywords" content="LLM, language model, agents, strategic reasoning, level-k, cognitive hierarchy">
+<meta name="description" content="A Quarto book on game theory, simulation, AI/ML, and ethics — implemented end-to-end in R.">
+
+<title>32&nbsp; LLM Agents and Strategic Reasoning – Strategy in R</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../part-5-applications/31-auctions.html" rel="next">
+<link href="../part-4-ai-ml/29-gans-as-minmax.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-2fef5ea3f8957b3e4ecc936fc74692ca.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-364982630eef5352dd1537128a8ed5cb.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-b9e11ad5a37ead2aabff839d95ae3857.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-364982630eef5352dd1537128a8ed5cb.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar floating quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../part-4-ai-ml/23-ml-foundations-for-gt.html">Part IV — AI and Machine Learning</a></li><li class="breadcrumb-item"><a href="../part-4-ai-ml/30-llm-agents-and-strategy.html"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">LLM Agents and Strategic Reasoning</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Strategy in R</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/r-heller/strategy-in-r/" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preface</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../00-introduction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Introduction: Why Strategy in R?</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Foundations of Game Theory</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/01-what-is-a-game.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">What is a Game?</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/02-normal-form.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Normal-Form Games</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/03-nash-equilibrium.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Nash Equilibrium</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/04-mixed-strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Mixed Strategies and the Indifference Principle</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/05-extensive-form.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Extensive-Form Games</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/06-bayesian-games.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Bayesian Games</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/07-repeated-games.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Repeated Games</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-1-foundations/08-cooperative-gt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Cooperative Game Theory</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — The R Toolkit</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-2-r-toolkit/09-r-environment.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The R Environment for Strategic Computation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-2-r-toolkit/10-gametheory-package.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">The GameTheory Package</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-2-r-toolkit/11-coopgame-package.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">The CoopGame Package</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-2-r-toolkit/12-gtree-package.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">The gtree Package</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-2-r-toolkit/13-nashpy-via-reticulate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">nashpy via reticulate</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-2-r-toolkit/14-custom-solvers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Building Custom Solvers in R</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Simulation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/15-monte-carlo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Monte Carlo Methods for Games</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/16-agent-based-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Agent-Based Models for Strategic Interaction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/17-axelrod-tournament.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Replicating Axelrod’s Tournament</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/18-spatial-pd.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">The Spatial Prisoner’s Dilemma</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/19-replicator-dynamics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Replicator Dynamics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/20-evolutionary-stable-strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Evolutionarily Stable Strategies</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/21-network-games.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">23</span>&nbsp; <span class="chapter-title">Games on Networks</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-3-simulation/22-performance-rcpp.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">24</span>&nbsp; <span class="chapter-title">Performance Optimization</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — AI and Machine Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/23-ml-foundations-for-gt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">25</span>&nbsp; <span class="chapter-title">Machine Learning Foundations for Game Theory</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/24-reinforcement-learning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">26</span>&nbsp; <span class="chapter-title">Reinforcement Learning Foundations</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/25-q-learning-in-games.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">27</span>&nbsp; <span class="chapter-title">Q-Learning in 2-Player Games</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/26-multi-agent-rl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">28</span>&nbsp; <span class="chapter-title">Multi-Agent Reinforcement Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/27-self-play-alphazero.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">29</span>&nbsp; <span class="chapter-title">Self-Play and AlphaZero</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/28-cfr-poker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">30</span>&nbsp; <span class="chapter-title">Counterfactual Regret Minimization and Poker</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/29-gans-as-minmax.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">GANs as Minimax Games</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-4-ai-ml/30-llm-agents-and-strategy.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">LLM Agents and Strategic Reasoning</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Applications</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-5-applications/31-auctions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">33</span>&nbsp; <span class="chapter-title">Auction Theory</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-5-applications/32-mechanism-design.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">34</span>&nbsp; <span class="chapter-title">Mechanism Design</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-5-applications/33-matching-markets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">35</span>&nbsp; <span class="chapter-title">Matching Markets</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-5-applications/34-bargaining.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">36</span>&nbsp; <span class="chapter-title">Bargaining Theory</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-5-applications/35-conflict-cooperation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">37</span>&nbsp; <span class="chapter-title">Conflict and Cooperation Models</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-5-applications/36-empirical-case-studies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">38</span>&nbsp; <span class="chapter-title">Empirical Case Studies</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Ethics and the Future</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-6-ethics/37-ethics-frameworks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">39</span>&nbsp; <span class="chapter-title">Ethical Frameworks for Strategic AI</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-6-ethics/38-fairness-in-ml.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">40</span>&nbsp; <span class="chapter-title">Fairness in Machine Learning</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-6-ethics/39-ai-alignment-as-game.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">41</span>&nbsp; <span class="chapter-title">AI Alignment as a Game</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-6-ethics/40-cooperative-ai.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">42</span>&nbsp; <span class="chapter-title">Cooperative AI</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../part-6-ethics/41-future-of-strategy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">43</span>&nbsp; <span class="chapter-title">The Future of Strategy</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/A-r-refresher.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">R Refresher</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/B-linear-algebra.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Linear Algebra Essentials</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/C-probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Probability Essentials</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/D-solutions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Exercise Solutions</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../appendices/E-glossary.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">E</span>&nbsp; <span class="chapter-title">Glossary</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sec-llm-agents" id="toc-sec-llm-agents" class="nav-link active" data-scroll-target="#sec-llm-agents"><span class="header-section-number">33</span> LLM Agents and Strategy</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives">Learning objectives</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation"><span class="header-section-number">33.1</span> Motivation</a></li>
+  <li><a href="#theory" id="toc-theory" class="nav-link" data-scroll-target="#theory"><span class="header-section-number">33.2</span> Theory</a>
+  <ul class="collapse">
+  <li><a href="#llms-as-game-playing-agents" id="toc-llms-as-game-playing-agents" class="nav-link" data-scroll-target="#llms-as-game-playing-agents"><span class="header-section-number">33.2.1</span> LLMs as game-playing agents</a></li>
+  <li><a href="#level-k-reasoning" id="toc-level-k-reasoning" class="nav-link" data-scroll-target="#level-k-reasoning"><span class="header-section-number">33.2.2</span> Level-k reasoning</a></li>
+  <li><a href="#cognitive-hierarchy" id="toc-cognitive-hierarchy" class="nav-link" data-scroll-target="#cognitive-hierarchy"><span class="header-section-number">33.2.3</span> Cognitive hierarchy</a></li>
+  <li><a href="#the-p-beauty-contest" id="toc-the-p-beauty-contest" class="nav-link" data-scroll-target="#the-p-beauty-contest"><span class="header-section-number">33.2.4</span> The p-beauty contest</a></li>
+  <li><a href="#bounded-rationality-and-llms" id="toc-bounded-rationality-and-llms" class="nav-link" data-scroll-target="#bounded-rationality-and-llms"><span class="header-section-number">33.2.5</span> Bounded rationality and LLMs</a></li>
+  </ul></li>
+  <li><a href="#sec-llm-impl" id="toc-sec-llm-impl" class="nav-link" data-scroll-target="#sec-llm-impl"><span class="header-section-number">33.3</span> Implementation in R</a>
+  <ul class="collapse">
+  <li><a href="#level-k-beauty-contest-simulation" id="toc-level-k-beauty-contest-simulation" class="nav-link" data-scroll-target="#level-k-beauty-contest-simulation"><span class="header-section-number">33.3.1</span> Level-k beauty contest simulation</a></li>
+  <li><a href="#run-the-simulation" id="toc-run-the-simulation" class="nav-link" data-scroll-target="#run-the-simulation"><span class="header-section-number">33.3.2</span> Run the simulation</a></li>
+  <li><a href="#figure-1-level-k-action-distributions" id="toc-figure-1-level-k-action-distributions" class="nav-link" data-scroll-target="#figure-1-level-k-action-distributions"><span class="header-section-number">33.3.3</span> Figure 1: Level-k action distributions</a></li>
+  <li><a href="#figure-2-strategy-performance-comparison" id="toc-figure-2-strategy-performance-comparison" class="nav-link" data-scroll-target="#figure-2-strategy-performance-comparison"><span class="header-section-number">33.3.4</span> Figure 2: Strategy performance comparison</a></li>
+  </ul></li>
+  <li><a href="#worked-example" id="toc-worked-example" class="nav-link" data-scroll-target="#worked-example"><span class="header-section-number">33.4</span> Worked example</a></li>
+  <li><a href="#extensions" id="toc-extensions" class="nav-link" data-scroll-target="#extensions"><span class="header-section-number">33.5</span> Extensions</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-4-ai-ml/30-llm-agents-and-strategy.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-4-ai-ml/30-llm-agents-and-strategy.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../part-4-ai-ml/23-ml-foundations-for-gt.html">Part IV — AI and Machine Learning</a></li><li class="breadcrumb-item"><a href="../part-4-ai-ml/30-llm-agents-and-strategy.html"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">LLM Agents and Strategic Reasoning</span></a></li></ol></nav>
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title"><span class="chapter-number">32</span>&nbsp; <span class="chapter-title">LLM Agents and Strategic Reasoning</span></h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Raban Heller </p>
+          </div>
+  </div>
+    
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">May 9, 2026</p>
+    </div>
+  </div>
+    
+  </div>
+  
+<div>
+  <div class="abstract">
+    <div class="block-title">Abstract</div>
+    Large language models as game-playing agents: level-k reasoning, cognitive hierarchy theory, bounded rationality, and simulated beauty contest experiments in R.
+  </div>
+</div>
+
+<div>
+  <div class="keywords">
+    <div class="block-title">Keywords</div>
+    <p>LLM, language model, agents, strategic reasoning, level-k, cognitive hierarchy</p>
+  </div>
+</div>
+
+</header>
+
+
+<section id="sec-llm-agents" class="level1" data-number="33">
+<h1 data-number="33"><span class="header-section-number">33</span> LLM Agents and Strategy</h1>
+<section id="learning-objectives" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="learning-objectives">Learning objectives</h2>
+<ul>
+<li>Describe how LLMs can serve as game-playing agents and the challenges of evaluating their strategic sophistication.</li>
+<li>Explain level-k reasoning and cognitive hierarchy theory as models of bounded rationality.</li>
+<li>Simulate a p-beauty contest with level-0 through level-3 players in R.</li>
+<li>Compare the strategic performance of different reasoning levels against Nash equilibrium predictions.</li>
+</ul>
+</section>
+<section id="motivation" class="level2" data-number="33.1">
+<h2 data-number="33.1" class="anchored" data-anchor-id="motivation"><span class="header-section-number">33.1</span> Motivation</h2>
+<p>Large language models (LLMs) have shown surprising abilities in strategic settings. When prompted to play matrix games or auction settings, LLMs exhibit behavior that resembles — but does not perfectly match — game-theoretic rationality. Do they compute Nash equilibria? Do they reason about opponents? Or do they pattern-match from training data?</p>
+<p>These questions connect directly to a long tradition in behavioral game theory: humans also deviate from Nash equilibrium in systematic ways. The <strong>level-k</strong> model <span class="citation" data-cites="stahl1995">(<a href="#ref-stahl1995" role="doc-biblioref">Stahl &amp; Wilson, 1995</a>)</span> and <strong>cognitive hierarchy</strong> theory <span class="citation" data-cites="camerer2004">(<a href="#ref-camerer2004" role="doc-biblioref">Camerer et al., 2004</a>)</span> were developed to explain human strategic behavior. These same frameworks provide a lens for understanding LLM agents.</p>
+<p>This chapter is more conceptual than implementation-heavy, since we cannot call LLM APIs from our R setup. Instead, we build the theoretical framework and simulate the models that researchers use to evaluate strategic sophistication in both humans and AI agents.</p>
+</section>
+<section id="theory" class="level2" data-number="33.2">
+<h2 data-number="33.2" class="anchored" data-anchor-id="theory"><span class="header-section-number">33.2</span> Theory</h2>
+<section id="llms-as-game-playing-agents" class="level3" data-number="33.2.1">
+<h3 data-number="33.2.1" class="anchored" data-anchor-id="llms-as-game-playing-agents"><span class="header-section-number">33.2.1</span> LLMs as game-playing agents</h3>
+<p>An LLM can play a game when given a natural-language description of the rules, payoffs, and its role. The “strategy” emerges from the model’s text generation process rather than from explicit optimization. Several empirical findings have emerged:</p>
+<ul>
+<li><strong>Matrix games</strong>: LLMs often cooperate in Prisoner’s Dilemma variants at rates similar to human subjects, but their behavior is sensitive to framing effects (how the game is described).</li>
+<li><strong>Coordination games</strong>: LLMs can coordinate on focal points, suggesting they leverage the same cultural knowledge that helps humans coordinate.</li>
+<li><strong>Auctions and bargaining</strong>: LLMs show varying degrees of strategic sophistication, sometimes overbidding or underbidding relative to equilibrium predictions.</li>
+</ul>
+</section>
+<section id="level-k-reasoning" class="level3" data-number="33.2.2">
+<h3 data-number="33.2.2" class="anchored" data-anchor-id="level-k-reasoning"><span class="header-section-number">33.2.2</span> Level-k reasoning</h3>
+<p>The <strong>level-k</strong> model posits that players differ in their depth of strategic reasoning:</p>
+<ul>
+<li><strong>Level-0</strong> (<span class="math inline">\(L_0\)</span>): Plays uniformly at random (or according to some non-strategic rule).</li>
+<li><strong>Level-1</strong> (<span class="math inline">\(L_1\)</span>): Best-responds to a level-0 opponent.</li>
+<li><strong>Level-2</strong> (<span class="math inline">\(L_2\)</span>): Best-responds to a level-1 opponent.</li>
+<li><strong>Level-k</strong> (<span class="math inline">\(L_k\)</span>): Best-responds to a level-<span class="math inline">\((k-1)\)</span> opponent.</li>
+</ul>
+<p>Each level assumes the opponent is exactly one level below. This anchored reasoning chain was proposed by <span class="citation" data-cites="stahl1995">Stahl &amp; Wilson (<a href="#ref-stahl1995" role="doc-biblioref">1995</a>)</span> and contrasts with Nash equilibrium, which requires players to reason about opponents of the <em>same</em> sophistication level.</p>
+</section>
+<section id="cognitive-hierarchy" class="level3" data-number="33.2.3">
+<h3 data-number="33.2.3" class="anchored" data-anchor-id="cognitive-hierarchy"><span class="header-section-number">33.2.3</span> Cognitive hierarchy</h3>
+<p>The <strong>cognitive hierarchy</strong> model <span class="citation" data-cites="camerer2004">(<a href="#ref-camerer2004" role="doc-biblioref">Camerer et al., 2004</a>)</span> generalizes level-k reasoning. Instead of assuming the opponent is exactly one level below, a level-<span class="math inline">\(k\)</span> player believes opponents are distributed across levels <span class="math inline">\(0, 1, \ldots, k-1\)</span> according to a Poisson distribution with parameter <span class="math inline">\(\tau\)</span>:</p>
+<p><span id="eq-cognitive-hierarchy"><span class="math display">\[
+f(k) = \frac{e^{-\tau} \tau^k}{k!}
+\tag{33.1}\]</span></span></p>
+<p>A level-<span class="math inline">\(k\)</span> player then best-responds to the <em>mixture</em> of lower-level strategies, weighted by their perceived frequencies. The parameter <span class="math inline">\(\tau\)</span> captures the average depth of reasoning in the population.</p>
+</section>
+<section id="the-p-beauty-contest" class="level3" data-number="33.2.4">
+<h3 data-number="33.2.4" class="anchored" data-anchor-id="the-p-beauty-contest"><span class="header-section-number">33.2.4</span> The p-beauty contest</h3>
+<p>The <strong>p-beauty contest</strong> (or “guessing game”) introduced by <span class="citation" data-cites="nagel1995">Nagel (<a href="#ref-nagel1995" role="doc-biblioref">1995</a>)</span> is the canonical testbed for level-k reasoning. The rules:</p>
+<ol type="1">
+<li><span class="math inline">\(N\)</span> players simultaneously choose a number from 0 to 100.</li>
+<li>The winner is the player whose number is closest to <span class="math inline">\(p\)</span> times the average of all chosen numbers (typically <span class="math inline">\(p = 2/3\)</span>).</li>
+</ol>
+<p>The Nash equilibrium is for all players to choose 0 (by iterated elimination of dominated strategies). But in experiments, humans cluster around level-1 (<span class="math inline">\(\approx 33\)</span>) and level-2 (<span class="math inline">\(\approx 22\)</span>) responses.</p>
+</section>
+<section id="bounded-rationality-and-llms" class="level3" data-number="33.2.5">
+<h3 data-number="33.2.5" class="anchored" data-anchor-id="bounded-rationality-and-llms"><span class="header-section-number">33.2.5</span> Bounded rationality and LLMs</h3>
+<p>LLMs exhibit a form of <strong>bounded rationality</strong>: they reason strategically but imperfectly, much like human subjects. Key parallels include:</p>
+<ul>
+<li><strong>Finite depth of reasoning</strong>: LLMs rarely compute Nash equilibria from first principles; they appear to perform a few steps of iterated reasoning.</li>
+<li><strong>Framing effects</strong>: The same game described differently elicits different strategies — a hallmark of bounded rationality.</li>
+<li><strong>Anchoring</strong>: LLMs, like humans, can anchor on salient numbers or focal points.</li>
+</ul>
+<p>The level-k framework provides a natural benchmark: we can classify an LLM’s strategic sophistication by determining which level-k model best fits its behavior across a battery of games.</p>
+</section>
+</section>
+<section id="sec-llm-impl" class="level2" data-number="33.3">
+<h2 data-number="33.3" class="anchored" data-anchor-id="sec-llm-impl"><span class="header-section-number">33.3</span> Implementation in R</h2>
+<section id="level-k-beauty-contest-simulation" class="level3" data-number="33.3.1">
+<h3 data-number="33.3.1" class="anchored" data-anchor-id="level-k-beauty-contest-simulation"><span class="header-section-number">33.3.1</span> Level-k beauty contest simulation</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>beauty_contest <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_players =</span> <span class="dv">20</span>, <span class="at">p =</span> <span class="dv">2</span><span class="sc">/</span><span class="dv">3</span>, <span class="at">tau =</span> <span class="fl">1.5</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                            <span class="at">level_distribution =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(level_distribution)) {</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Poisson cognitive hierarchy</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    max_level <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    levels <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span>max_level</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    probs <span class="ot">&lt;-</span> <span class="fu">dpois</span>(levels, <span class="at">lambda =</span> tau)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    probs <span class="ot">&lt;-</span> probs <span class="sc">/</span> <span class="fu">sum</span>(probs)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    player_levels <span class="ot">&lt;-</span> <span class="fu">sample</span>(levels, n_players, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> probs)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    player_levels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">names</span>(level_distribution), n_players,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> level_distribution)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    player_levels <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(player_levels)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute level-k choices</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  level_choice <span class="ot">&lt;-</span> <span class="cf">function</span>(k, p) {</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Level-0: uniform random -&gt; expected value = 50</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Level-k: best respond to level-(k-1)</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (k <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="dv">50</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="dv">50</span> <span class="sc">*</span> p<span class="sc">^</span>k</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  choices <span class="ot">&lt;-</span> <span class="fu">sapply</span>(player_levels, level_choice, <span class="at">p =</span> p)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add small noise for realism</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  choices <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="dv">0</span>, <span class="fu">pmin</span>(<span class="dv">100</span>, choices <span class="sc">+</span> <span class="fu">rnorm</span>(n_players, <span class="dv">0</span>, <span class="dv">2</span>)))</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">player =</span> <span class="fu">seq_len</span>(n_players),</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">level =</span> player_levels,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">choice =</span> choices</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="run-the-simulation" class="level3" data-number="33.3.2">
+<h3 data-number="33.3.2" class="anchored" data-anchor-id="run-the-simulation"><span class="header-section-number">33.3.2</span> Run the simulation</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>n_rounds <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">/</span><span class="dv">3</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq_len</span>(n_rounds), <span class="cf">function</span>(round) {</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">20</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(game<span class="sc">$</span>choice)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  game <span class="sc">|&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">round =</span> round,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">target =</span> target,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">distance =</span> <span class="fu">abs</span>(choice <span class="sc">-</span> target),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      <span class="at">won =</span> distance <span class="sc">==</span> <span class="fu">min</span>(distance)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="figure-1-level-k-action-distributions" class="level3" data-number="33.3.3">
+<h3 data-number="33.3.3" class="anchored" data-anchor-id="figure-1-level-k-action-distributions"><span class="header-section-number">33.3.3</span> Figure 1: Level-k action distributions</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Theoretical level-k distributions</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>level_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">theoretical_choice =</span> <span class="dv">50</span> <span class="sc">*</span> p<span class="sc">^</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulated distributions from our runs</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>sim_dist <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(level <span class="sc">&lt;=</span> <span class="dv">4</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, level))</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>p_levels <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(sim_dist, <span class="fu">aes</span>(<span class="at">x =</span> choice, <span class="at">fill =</span> label)) <span class="sc">+</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">position =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">data =</span> level_data, <span class="fu">aes</span>(<span class="at">xintercept =</span> theoretical_choice,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">colour =</span> label),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">setNames</span>(okabe_ito[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">paste0</span>(<span class="st">"Level-"</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>))) <span class="sc">+</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">setNames</span>(okabe_ito[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                                         <span class="fu">paste0</span>(<span class="st">"Level-"</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>))) <span class="sc">+</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>label, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Choice Distributions by Reasoning Level"</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"p-Beauty Contest with p = 2/3"</span>,</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Choice (0-100)"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">70</span>)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>p_levels</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_levels, <span class="st">"levelk-distributions"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-levelk-distributions" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-levelk-distributions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="30-llm-agents-and-strategy_files/figure-html/fig-levelk-distributions-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-levelk-distributions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;33.1: Predicted choice distributions in a 2/3-beauty contest for different levels of reasoning. Level-0 players choose near 50 (uniform random anchor). Each subsequent level best-responds to the level below, producing geometrically decreasing choices that converge toward the Nash equilibrium of 0.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="figure-2-strategy-performance-comparison" class="level3" data-number="33.3.4">
+<h3 data-number="33.3.4" class="anchored" data-anchor-id="figure-2-strategy-performance-comparison"><span class="header-section-number">33.3.4</span> Figure 2: Strategy performance comparison</h3>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute win rates by level</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>win_rates <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(level <span class="sc">&lt;=</span> <span class="dv">4</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(level) <span class="sc">|&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_games =</span> <span class="fu">n</span>(),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_wins =</span> <span class="fu">sum</span>(won),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">win_rate =</span> n_wins <span class="sc">/</span> n_games,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, level))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Add Nash equilibrium player for comparison</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate NE player (choice = 0) against the population</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>ne_wins <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>ne_games <span class="ot">&lt;-</span> n_rounds</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (r <span class="cf">in</span> <span class="fu">seq_len</span>(ne_games)) {</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">19</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  all_choices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, game<span class="sc">$</span>choice)  <span class="co"># NE player chooses 0</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(all_choices)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  distances <span class="ot">&lt;-</span> <span class="fu">abs</span>(all_choices <span class="sc">-</span> target)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">which.min</span>(distances) <span class="sc">==</span> <span class="dv">1</span>) ne_wins <span class="ot">&lt;-</span> ne_wins <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Add random player for comparison</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>rand_wins <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (r <span class="cf">in</span> <span class="fu">seq_len</span>(ne_games)) {</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">19</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  rand_choice <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">100</span>)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  all_choices <span class="ot">&lt;-</span> <span class="fu">c</span>(rand_choice, game<span class="sc">$</span>choice)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(all_choices)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  distances <span class="ot">&lt;-</span> <span class="fu">abs</span>(all_choices <span class="sc">-</span> target)</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">which.min</span>(distances) <span class="sc">==</span> <span class="dv">1</span>) rand_wins <span class="ot">&lt;-</span> rand_wins <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  win_rates <span class="sc">|&gt;</span> <span class="fu">select</span>(label, win_rate),</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">label =</span> <span class="st">"Nash (0)"</span>, <span class="at">win_rate =</span> ne_wins <span class="sc">/</span> ne_games),</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">label =</span> <span class="st">"Random"</span>, <span class="at">win_rate =</span> rand_wins <span class="sc">/</span> ne_games)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">factor</span>(label,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Random"</span>, <span class="st">"Level-0"</span>, <span class="st">"Level-1"</span>, <span class="st">"Level-2"</span>,</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Level-3"</span>, <span class="st">"Level-4"</span>, <span class="st">"Nash (0)"</span>)))</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>p_perf <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(comparison, <span class="fu">aes</span>(<span class="at">x =</span> label, <span class="at">y =</span> win_rate, <span class="at">fill =</span> label)) <span class="sc">+</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">20</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey50"</span>) <span class="sc">+</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Random"</span> <span class="ot">=</span> <span class="st">"grey60"</span>, okabe_ito[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Nash (0)"</span> <span class="ot">=</span> okabe_ito[<span class="dv">8</span>])) <span class="sc">+</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Win Rates by Strategy Type"</span>,</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"p-Beauty Contest (p = 2/3, 20 players, Poisson CH population)"</span>,</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Strategy"</span>, <span class="at">y =</span> <span class="st">"Win rate"</span>) <span class="sc">+</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fl">6.5</span>, <span class="at">y =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">20</span> <span class="sc">+</span> <span class="fl">0.005</span>, <span class="at">label =</span> <span class="st">"Chance = 1/20"</span>,</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>           <span class="at">colour =</span> <span class="st">"grey50"</span>, <span class="at">size =</span> <span class="fl">3.5</span>)</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>p_perf</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_perf, <span class="st">"strategy-performance-comparison"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="fl">4.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-strategy-performance" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-strategy-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="30-llm-agents-and-strategy_files/figure-html/fig-strategy-performance-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-strategy-performance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;33.2: Win rates by strategy type in simulated beauty contest games. Level-1 and level-2 players outperform level-0 (random) players, but higher levels show diminishing returns because the population contains mostly low-level reasoners. The Nash equilibrium strategy (choose 0) rarely wins against bounded rational opponents.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="worked-example" class="level2" data-number="33.4">
+<h2 data-number="33.4" class="anchored" data-anchor-id="worked-example"><span class="header-section-number">33.4</span> Worked example</h2>
+<p>We walk through a single round of the p-beauty contest with explicit level-k reasoning.</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== p-Beauty Contest Walkthrough (p = 2/3) ===</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; === p-Beauty Contest Walkthrough (p = 2/3) ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 1: Level-0 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Step 1: Level-0 reasoning</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  A level-0 player chooses randomly; expected value = 50.</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   A level-0 player chooses randomly; expected value = 50.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 2: Level-1 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Step 2: Level-1 reasoning</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  'If everyone else is level-0, the average will be ~50.'</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   'If everyone else is level-0, the average will be ~50.'</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Best response: p * 50 = 2/3 * 50 = %.1f</span><span class="sc">\n\n</span><span class="st">"</span>, p <span class="sc">*</span> <span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   Best response: p * 50 = 2/3 * 50 = 33.3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 3: Level-2 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Step 3: Level-2 reasoning</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  'If everyone else is level-1, the average will be ~33.3.'</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   'If everyone else is level-1, the average will be ~33.3.'</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Best response: p * 33.3 = 2/3 * 33.3 = %.1f</span><span class="sc">\n\n</span><span class="st">"</span>, p<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   Best response: p * 33.3 = 2/3 * 33.3 = 22.2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 4: Level-3 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Step 4: Level-3 reasoning</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  'If everyone else is level-2, the average will be ~22.2.'</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   'If everyone else is level-2, the average will be ~22.2.'</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Best response: p * 22.2 = 2/3 * 22.2 = %.1f</span><span class="sc">\n\n</span><span class="st">"</span>, p<span class="sc">^</span><span class="dv">3</span> <span class="sc">*</span> <span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   Best response: p * 22.2 = 2/3 * 22.2 = 14.8</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 5: Nash equilibrium (infinite levels)</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Step 5: Nash equilibrium (infinite levels)</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  As k -&gt; infinity, the choice converges to 0.</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   As k -&gt; infinity, the choice converges to 0.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  But choosing 0 only wins if ALL other players also choose 0.</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;   But choosing 0 only wins if ALL other players also choose 0.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Show a concrete simulated round</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>example_game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">10</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(example_game<span class="sc">$</span>choice)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== Example Round with 10 Players ===</span><span class="sc">\n\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; === Example Round with 10 Players ===</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>example_game <span class="sc">|&gt;</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, level),</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">distance =</span> <span class="fu">abs</span>(choice <span class="sc">-</span> target)</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(distance) <span class="sc">|&gt;</span></span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(player, label, choice, distance) <span class="sc">|&gt;</span></span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Player =</span> player, <span class="at">Level =</span> label,</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">Choice =</span> choice, <span class="st">`</span><span class="at">Dist to target</span><span class="st">`</span> <span class="ot">=</span> distance) <span class="sc">|&gt;</span></span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 10 × 4
+#&gt;    Player Level   Choice `Dist to target`
+#&gt;     &lt;int&gt; &lt;chr&gt;    &lt;dbl&gt;            &lt;dbl&gt;
+#&gt;  1      8 Level-3  15.6             0.897
+#&gt;  2      4 Level-3  13.4             3.07 
+#&gt;  3      3 Level-2  19.7             3.18 
+#&gt;  4     10 Level-2  21.1             4.60 
+#&gt;  5      9 Level-2  22.4             5.93 
+#&gt;  6      7 Level-2  22.9             6.43 
+#&gt;  7      5 Level-4   8.99            7.53 
+#&gt;  8      6 Level-1  35.8            19.3  
+#&gt;  9      1 Level-1  36.8            20.3  
+#&gt; 10      2 Level-0  50.9            34.4</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Average choice: %.1f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(example_game<span class="sc">$</span>choice)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; 
+#&gt; Average choice: 24.8</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Target (2/3 * average): %.1f</span><span class="sc">\n</span><span class="st">"</span>, target))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Target (2/3 * average): 16.5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Winner: Player %d (Level-%d, chose %.1f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>            example_game<span class="sc">$</span>player[<span class="fu">which.min</span>(<span class="fu">abs</span>(example_game<span class="sc">$</span>choice <span class="sc">-</span> target))],</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>            example_game<span class="sc">$</span>level[<span class="fu">which.min</span>(<span class="fu">abs</span>(example_game<span class="sc">$</span>choice <span class="sc">-</span> target))],</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>            example_game<span class="sc">$</span>choice[<span class="fu">which.min</span>(<span class="fu">abs</span>(example_game<span class="sc">$</span>choice <span class="sc">-</span> target))]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Winner: Player 8 (Level-3, chose 15.6)</code></pre>
+</div>
+</div>
+<p><strong>Key takeaway.</strong> In a population of bounded rational players, the Nash equilibrium (choose 0) performs poorly. The best strategy depends on the sophistication distribution of the population — exactly the insight from cognitive hierarchy theory. An LLM that reasons at approximately level-2 would outperform both a naive randomizer and a fully rational Nash player in this setting.</p>
+</section>
+<section id="extensions" class="level2" data-number="33.5">
+<h2 data-number="33.5" class="anchored" data-anchor-id="extensions"><span class="header-section-number">33.5</span> Extensions</h2>
+<ul>
+<li><strong>Experimental design for LLM evaluation</strong>: To test an LLM’s strategic level, present it with multiple beauty contest games using different <span class="math inline">\(p\)</span> values and population descriptions. A consistent level-k response pattern reveals the model’s reasoning depth.</li>
+<li><strong>Prompt sensitivity</strong>: Rephrasing the same game (e.g., “competitive” vs.&nbsp;“cooperative” framing) can shift LLM behavior by 1–2 levels, paralleling human framing effects.</li>
+<li><strong>Multi-game batteries</strong>: Testing across Prisoner’s Dilemma, public goods games, and ultimatum games builds a richer profile of strategic sophistication.</li>
+<li><strong>Q-learning</strong> (<a href="25-q-learning-in-games.html" class="quarto-xref"><span>Chapter 28</span></a>) and <strong>multi-agent RL</strong> (<a href="26-multi-agent-rl.html" class="quarto-xref"><span>Chapter 29</span></a>) offer alternative approaches to AI game-playing that learn through experience rather than language understanding.</li>
+</ul>
+<p>For the foundational level-k theory, see <span class="citation" data-cites="stahl1995">Stahl &amp; Wilson (<a href="#ref-stahl1995" role="doc-biblioref">1995</a>)</span>; for cognitive hierarchy theory, see <span class="citation" data-cites="camerer2004">Camerer et al. (<a href="#ref-camerer2004" role="doc-biblioref">2004</a>)</span>; and for the original beauty contest experiment, see <span class="citation" data-cites="nagel1995">Nagel (<a href="#ref-nagel1995" role="doc-biblioref">1995</a>)</span>.</p>
+</section>
+<section id="exercises" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="exercises">Exercises</h2>
+<ol type="1">
+<li><p><strong>Varying <span class="math inline">\(\tau\)</span>.</strong> Simulate the beauty contest with cognitive hierarchy parameter <span class="math inline">\(\tau \in \{0.5, 1.0, 1.5, 2.0, 3.0\}\)</span>. How does the average depth of reasoning affect the optimal level-k strategy? Plot win rates for each level as a function of <span class="math inline">\(\tau\)</span>.</p></li>
+<li><p><strong>Different <span class="math inline">\(p\)</span> values.</strong> Run the beauty contest with <span class="math inline">\(p \in \{1/3, 1/2, 2/3, 3/4\}\)</span>. How does the target multiplier affect the separation between level-k predictions? At what value of <span class="math inline">\(p\)</span> is level-1 vs.&nbsp;level-2 distinction largest?</p></li>
+<li><p><strong>Iterated beauty contest.</strong> Simulate 20 rounds of the beauty contest where players update their level each round: after each round, a player whose choice was far from the target increases their level by 1 (up to level 5). Does the population converge to Nash equilibrium over time? Plot the average choice per round.</p></li>
+</ol>
+<p>Solutions appear in <a href="../appendices/D-solutions.html" class="quarto-xref"><span>Appendix E</span></a>.</p>
+
+
+<!-- -->
+
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-camerer2004" class="csl-entry" role="listitem">
+Camerer, C. F., Ho, T.-H., &amp; Chong, J.-K. (2004). A cognitive hierarchy model of games. <em>Quarterly Journal of Economics</em>, <em>119</em>(3), 861–898. <a href="https://doi.org/10.1162/0033553041502225">https://doi.org/10.1162/0033553041502225</a>
+</div>
+<div id="ref-nagel1995" class="csl-entry" role="listitem">
+Nagel, R. (1995). Unraveling in guessing games: An experimental study. <em>American Economic Review</em>, <em>85</em>(5), 1313–1326.
+</div>
+<div id="ref-stahl1995" class="csl-entry" role="listitem">
+Stahl, D. O., &amp; Wilson, P. W. (1995). On players’ models of other players: Theory and experimental evidence. <em>Games and Economic Behavior</em>, <em>10</em>(1), 218–254. <a href="https://doi.org/10.1006/game.1995.1031">https://doi.org/10.1006/game.1995.1031</a>
+</div>
+</div>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/r-heller\.github\.io\/strategy-in-r\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../part-4-ai-ml/29-gans-as-minmax.html" class="pagination-link" aria-label="GANs as Minimax Games">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">31</span>&nbsp; <span class="chapter-title">GANs as Minimax Games</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../part-5-applications/31-auctions.html" class="pagination-link" aria-label="Auction Theory">
+        <span class="nav-page-text"><span class="chapter-number">33</span>&nbsp; <span class="chapter-title">Auction Theory</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb45" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "LLM Agents and Strategic Reasoning"</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="an">short-title:</span><span class="co"> "LLM Agents"</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Raban Heller"</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "Large language models as game-playing agents: level-k reasoning, cognitive hierarchy theory, bounded rationality, and simulated beauty contest experiments in R."</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["LLM", "language model", "agents", "strategic reasoning", "level-k", "cognitive hierarchy"]</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># LLM Agents and Strategy {#sec-llm-agents}</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Describe how LLMs can serve as game-playing agents and the challenges of evaluating their strategic sophistication.</span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Explain level-k reasoning and cognitive hierarchy theory as models of bounded rationality.</span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Simulate a p-beauty contest with level-0 through level-3 players in R.</span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare the strategic performance of different reasoning levels against Nash equilibrium predictions.</span>
+<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
+<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a>Large language models (LLMs) have shown surprising abilities in strategic settings. When prompted to play matrix games or auction settings, LLMs exhibit behavior that resembles --- but does not perfectly match --- game-theoretic rationality. Do they compute Nash equilibria? Do they reason about opponents? Or do they pattern-match from training data?</span>
+<span id="cb45-30"><a href="#cb45-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-31"><a href="#cb45-31" aria-hidden="true" tabindex="-1"></a>These questions connect directly to a long tradition in behavioral game theory: humans also deviate from Nash equilibrium in systematic ways. The **level-k** model [@stahl1995] and **cognitive hierarchy** theory <span class="co">[</span><span class="ot">@camerer2004</span><span class="co">]</span> were developed to explain human strategic behavior. These same frameworks provide a lens for understanding LLM agents.</span>
+<span id="cb45-32"><a href="#cb45-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-33"><a href="#cb45-33" aria-hidden="true" tabindex="-1"></a>This chapter is more conceptual than implementation-heavy, since we cannot call LLM APIs from our R setup. Instead, we build the theoretical framework and simulate the models that researchers use to evaluate strategic sophistication in both humans and AI agents.</span>
+<span id="cb45-34"><a href="#cb45-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-35"><a href="#cb45-35" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
+<span id="cb45-36"><a href="#cb45-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-37"><a href="#cb45-37" aria-hidden="true" tabindex="-1"></a><span class="fu">### LLMs as game-playing agents</span></span>
+<span id="cb45-38"><a href="#cb45-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-39"><a href="#cb45-39" aria-hidden="true" tabindex="-1"></a>An LLM can play a game when given a natural-language description of the rules, payoffs, and its role. The "strategy" emerges from the model's text generation process rather than from explicit optimization. Several empirical findings have emerged:</span>
+<span id="cb45-40"><a href="#cb45-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-41"><a href="#cb45-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Matrix games**: LLMs often cooperate in Prisoner's Dilemma variants at rates similar to human subjects, but their behavior is sensitive to framing effects (how the game is described).</span>
+<span id="cb45-42"><a href="#cb45-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Coordination games**: LLMs can coordinate on focal points, suggesting they leverage the same cultural knowledge that helps humans coordinate.</span>
+<span id="cb45-43"><a href="#cb45-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Auctions and bargaining**: LLMs show varying degrees of strategic sophistication, sometimes overbidding or underbidding relative to equilibrium predictions.</span>
+<span id="cb45-44"><a href="#cb45-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-45"><a href="#cb45-45" aria-hidden="true" tabindex="-1"></a><span class="fu">### Level-k reasoning</span></span>
+<span id="cb45-46"><a href="#cb45-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-47"><a href="#cb45-47" aria-hidden="true" tabindex="-1"></a>The **level-k** model posits that players differ in their depth of strategic reasoning:</span>
+<span id="cb45-48"><a href="#cb45-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-49"><a href="#cb45-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Level-0** ($L_0$): Plays uniformly at random (or according to some non-strategic rule).</span>
+<span id="cb45-50"><a href="#cb45-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Level-1** ($L_1$): Best-responds to a level-0 opponent.</span>
+<span id="cb45-51"><a href="#cb45-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Level-2** ($L_2$): Best-responds to a level-1 opponent.</span>
+<span id="cb45-52"><a href="#cb45-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Level-k** ($L_k$): Best-responds to a level-$(k-1)$ opponent.</span>
+<span id="cb45-53"><a href="#cb45-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-54"><a href="#cb45-54" aria-hidden="true" tabindex="-1"></a>Each level assumes the opponent is exactly one level below. This anchored reasoning chain was proposed by @stahl1995 and contrasts with Nash equilibrium, which requires players to reason about opponents of the *same* sophistication level.</span>
+<span id="cb45-55"><a href="#cb45-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-56"><a href="#cb45-56" aria-hidden="true" tabindex="-1"></a><span class="fu">### Cognitive hierarchy</span></span>
+<span id="cb45-57"><a href="#cb45-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-58"><a href="#cb45-58" aria-hidden="true" tabindex="-1"></a>The **cognitive hierarchy** model <span class="co">[</span><span class="ot">@camerer2004</span><span class="co">]</span> generalizes level-k reasoning. Instead of assuming the opponent is exactly one level below, a level-$k$ player believes opponents are distributed across levels $0, 1, \ldots, k-1$ according to a Poisson distribution with parameter $\tau$:</span>
+<span id="cb45-59"><a href="#cb45-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-60"><a href="#cb45-60" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb45-61"><a href="#cb45-61" aria-hidden="true" tabindex="-1"></a>f(k) = \frac{e^{-\tau} \tau^k}{k!}</span>
+<span id="cb45-62"><a href="#cb45-62" aria-hidden="true" tabindex="-1"></a>$$ {#eq-cognitive-hierarchy}</span>
+<span id="cb45-63"><a href="#cb45-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-64"><a href="#cb45-64" aria-hidden="true" tabindex="-1"></a>A level-$k$ player then best-responds to the *mixture* of lower-level strategies, weighted by their perceived frequencies. The parameter $\tau$ captures the average depth of reasoning in the population.</span>
+<span id="cb45-65"><a href="#cb45-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-66"><a href="#cb45-66" aria-hidden="true" tabindex="-1"></a><span class="fu">### The p-beauty contest</span></span>
+<span id="cb45-67"><a href="#cb45-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-68"><a href="#cb45-68" aria-hidden="true" tabindex="-1"></a>The **p-beauty contest** (or "guessing game") introduced by @nagel1995 is the canonical testbed for level-k reasoning. The rules:</span>
+<span id="cb45-69"><a href="#cb45-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-70"><a href="#cb45-70" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>$N$ players simultaneously choose a number from 0 to 100.</span>
+<span id="cb45-71"><a href="#cb45-71" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>The winner is the player whose number is closest to $p$ times the average of all chosen numbers (typically $p = 2/3$).</span>
+<span id="cb45-72"><a href="#cb45-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-73"><a href="#cb45-73" aria-hidden="true" tabindex="-1"></a>The Nash equilibrium is for all players to choose 0 (by iterated elimination of dominated strategies). But in experiments, humans cluster around level-1 ($\approx 33$) and level-2 ($\approx 22$) responses.</span>
+<span id="cb45-74"><a href="#cb45-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-75"><a href="#cb45-75" aria-hidden="true" tabindex="-1"></a><span class="fu">### Bounded rationality and LLMs</span></span>
+<span id="cb45-76"><a href="#cb45-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-77"><a href="#cb45-77" aria-hidden="true" tabindex="-1"></a>LLMs exhibit a form of **bounded rationality**: they reason strategically but imperfectly, much like human subjects. Key parallels include:</span>
+<span id="cb45-78"><a href="#cb45-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-79"><a href="#cb45-79" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Finite depth of reasoning**: LLMs rarely compute Nash equilibria from first principles; they appear to perform a few steps of iterated reasoning.</span>
+<span id="cb45-80"><a href="#cb45-80" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Framing effects**: The same game described differently elicits different strategies --- a hallmark of bounded rationality.</span>
+<span id="cb45-81"><a href="#cb45-81" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Anchoring**: LLMs, like humans, can anchor on salient numbers or focal points.</span>
+<span id="cb45-82"><a href="#cb45-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-83"><a href="#cb45-83" aria-hidden="true" tabindex="-1"></a>The level-k framework provides a natural benchmark: we can classify an LLM's strategic sophistication by determining which level-k model best fits its behavior across a battery of games.</span>
+<span id="cb45-84"><a href="#cb45-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-85"><a href="#cb45-85" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R {#sec-llm-impl}</span></span>
+<span id="cb45-86"><a href="#cb45-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-87"><a href="#cb45-87" aria-hidden="true" tabindex="-1"></a><span class="fu">### Level-k beauty contest simulation</span></span>
+<span id="cb45-88"><a href="#cb45-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-91"><a href="#cb45-91" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-92"><a href="#cb45-92" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: beauty-contest</span></span>
+<span id="cb45-93"><a href="#cb45-93" aria-hidden="true" tabindex="-1"></a>beauty_contest <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_players =</span> <span class="dv">20</span>, <span class="at">p =</span> <span class="dv">2</span><span class="sc">/</span><span class="dv">3</span>, <span class="at">tau =</span> <span class="fl">1.5</span>,</span>
+<span id="cb45-94"><a href="#cb45-94" aria-hidden="true" tabindex="-1"></a>                            <span class="at">level_distribution =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb45-95"><a href="#cb45-95" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(level_distribution)) {</span>
+<span id="cb45-96"><a href="#cb45-96" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Poisson cognitive hierarchy</span></span>
+<span id="cb45-97"><a href="#cb45-97" aria-hidden="true" tabindex="-1"></a>    max_level <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb45-98"><a href="#cb45-98" aria-hidden="true" tabindex="-1"></a>    levels <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span>max_level</span>
+<span id="cb45-99"><a href="#cb45-99" aria-hidden="true" tabindex="-1"></a>    probs <span class="ot">&lt;-</span> <span class="fu">dpois</span>(levels, <span class="at">lambda =</span> tau)</span>
+<span id="cb45-100"><a href="#cb45-100" aria-hidden="true" tabindex="-1"></a>    probs <span class="ot">&lt;-</span> probs <span class="sc">/</span> <span class="fu">sum</span>(probs)</span>
+<span id="cb45-101"><a href="#cb45-101" aria-hidden="true" tabindex="-1"></a>    player_levels <span class="ot">&lt;-</span> <span class="fu">sample</span>(levels, n_players, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> probs)</span>
+<span id="cb45-102"><a href="#cb45-102" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb45-103"><a href="#cb45-103" aria-hidden="true" tabindex="-1"></a>    player_levels <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">names</span>(level_distribution), n_players,</span>
+<span id="cb45-104"><a href="#cb45-104" aria-hidden="true" tabindex="-1"></a>                            <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> level_distribution)</span>
+<span id="cb45-105"><a href="#cb45-105" aria-hidden="true" tabindex="-1"></a>    player_levels <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(player_levels)</span>
+<span id="cb45-106"><a href="#cb45-106" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb45-107"><a href="#cb45-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-108"><a href="#cb45-108" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Compute level-k choices</span></span>
+<span id="cb45-109"><a href="#cb45-109" aria-hidden="true" tabindex="-1"></a>  level_choice <span class="ot">&lt;-</span> <span class="cf">function</span>(k, p) {</span>
+<span id="cb45-110"><a href="#cb45-110" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Level-0: uniform random -&gt; expected value = 50</span></span>
+<span id="cb45-111"><a href="#cb45-111" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Level-k: best respond to level-(k-1)</span></span>
+<span id="cb45-112"><a href="#cb45-112" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (k <span class="sc">==</span> <span class="dv">0</span>) <span class="fu">return</span>(<span class="dv">50</span>)</span>
+<span id="cb45-113"><a href="#cb45-113" aria-hidden="true" tabindex="-1"></a>    <span class="dv">50</span> <span class="sc">*</span> p<span class="sc">^</span>k</span>
+<span id="cb45-114"><a href="#cb45-114" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb45-115"><a href="#cb45-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-116"><a href="#cb45-116" aria-hidden="true" tabindex="-1"></a>  choices <span class="ot">&lt;-</span> <span class="fu">sapply</span>(player_levels, level_choice, <span class="at">p =</span> p)</span>
+<span id="cb45-117"><a href="#cb45-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-118"><a href="#cb45-118" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add small noise for realism</span></span>
+<span id="cb45-119"><a href="#cb45-119" aria-hidden="true" tabindex="-1"></a>  choices <span class="ot">&lt;-</span> <span class="fu">pmax</span>(<span class="dv">0</span>, <span class="fu">pmin</span>(<span class="dv">100</span>, choices <span class="sc">+</span> <span class="fu">rnorm</span>(n_players, <span class="dv">0</span>, <span class="dv">2</span>)))</span>
+<span id="cb45-120"><a href="#cb45-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-121"><a href="#cb45-121" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb45-122"><a href="#cb45-122" aria-hidden="true" tabindex="-1"></a>    <span class="at">player =</span> <span class="fu">seq_len</span>(n_players),</span>
+<span id="cb45-123"><a href="#cb45-123" aria-hidden="true" tabindex="-1"></a>    <span class="at">level =</span> player_levels,</span>
+<span id="cb45-124"><a href="#cb45-124" aria-hidden="true" tabindex="-1"></a>    <span class="at">choice =</span> choices</span>
+<span id="cb45-125"><a href="#cb45-125" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb45-126"><a href="#cb45-126" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-127"><a href="#cb45-127" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-128"><a href="#cb45-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-129"><a href="#cb45-129" aria-hidden="true" tabindex="-1"></a><span class="fu">### Run the simulation</span></span>
+<span id="cb45-130"><a href="#cb45-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-133"><a href="#cb45-133" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-134"><a href="#cb45-134" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: run-beauty-contest</span></span>
+<span id="cb45-135"><a href="#cb45-135" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb45-136"><a href="#cb45-136" aria-hidden="true" tabindex="-1"></a>n_rounds <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb45-137"><a href="#cb45-137" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="dv">2</span><span class="sc">/</span><span class="dv">3</span></span>
+<span id="cb45-138"><a href="#cb45-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-139"><a href="#cb45-139" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq_len</span>(n_rounds), <span class="cf">function</span>(round) {</span>
+<span id="cb45-140"><a href="#cb45-140" aria-hidden="true" tabindex="-1"></a>  game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">20</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb45-141"><a href="#cb45-141" aria-hidden="true" tabindex="-1"></a>  target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(game<span class="sc">$</span>choice)</span>
+<span id="cb45-142"><a href="#cb45-142" aria-hidden="true" tabindex="-1"></a>  game <span class="sc">|&gt;</span></span>
+<span id="cb45-143"><a href="#cb45-143" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb45-144"><a href="#cb45-144" aria-hidden="true" tabindex="-1"></a>      <span class="at">round =</span> round,</span>
+<span id="cb45-145"><a href="#cb45-145" aria-hidden="true" tabindex="-1"></a>      <span class="at">target =</span> target,</span>
+<span id="cb45-146"><a href="#cb45-146" aria-hidden="true" tabindex="-1"></a>      <span class="at">distance =</span> <span class="fu">abs</span>(choice <span class="sc">-</span> target),</span>
+<span id="cb45-147"><a href="#cb45-147" aria-hidden="true" tabindex="-1"></a>      <span class="at">won =</span> distance <span class="sc">==</span> <span class="fu">min</span>(distance)</span>
+<span id="cb45-148"><a href="#cb45-148" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb45-149"><a href="#cb45-149" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb45-150"><a href="#cb45-150" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-151"><a href="#cb45-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-152"><a href="#cb45-152" aria-hidden="true" tabindex="-1"></a><span class="fu">### Figure 1: Level-k action distributions</span></span>
+<span id="cb45-153"><a href="#cb45-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-156"><a href="#cb45-156" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-157"><a href="#cb45-157" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-levelk-distributions</span></span>
+<span id="cb45-158"><a href="#cb45-158" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Predicted choice distributions in a 2/3-beauty contest for different levels of reasoning. Level-0 players choose near 50 (uniform random anchor). Each subsequent level best-responds to the level below, producing geometrically decreasing choices that converge toward the Nash equilibrium of 0."</span></span>
+<span id="cb45-159"><a href="#cb45-159" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb45-160"><a href="#cb45-160" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
+<span id="cb45-161"><a href="#cb45-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-162"><a href="#cb45-162" aria-hidden="true" tabindex="-1"></a><span class="co"># Theoretical level-k distributions</span></span>
+<span id="cb45-163"><a href="#cb45-163" aria-hidden="true" tabindex="-1"></a>level_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb45-164"><a href="#cb45-164" aria-hidden="true" tabindex="-1"></a>  <span class="at">level =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb45-165"><a href="#cb45-165" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>),</span>
+<span id="cb45-166"><a href="#cb45-166" aria-hidden="true" tabindex="-1"></a>  <span class="at">theoretical_choice =</span> <span class="dv">50</span> <span class="sc">*</span> p<span class="sc">^</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>)</span>
+<span id="cb45-167"><a href="#cb45-167" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-168"><a href="#cb45-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-169"><a href="#cb45-169" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulated distributions from our runs</span></span>
+<span id="cb45-170"><a href="#cb45-170" aria-hidden="true" tabindex="-1"></a>sim_dist <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span></span>
+<span id="cb45-171"><a href="#cb45-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(level <span class="sc">&lt;=</span> <span class="dv">4</span>) <span class="sc">|&gt;</span></span>
+<span id="cb45-172"><a href="#cb45-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, level))</span>
+<span id="cb45-173"><a href="#cb45-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-174"><a href="#cb45-174" aria-hidden="true" tabindex="-1"></a>p_levels <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(sim_dist, <span class="fu">aes</span>(<span class="at">x =</span> choice, <span class="at">fill =</span> label)) <span class="sc">+</span></span>
+<span id="cb45-175"><a href="#cb45-175" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>, <span class="at">position =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb45-176"><a href="#cb45-176" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">data =</span> level_data, <span class="fu">aes</span>(<span class="at">xintercept =</span> theoretical_choice,</span>
+<span id="cb45-177"><a href="#cb45-177" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">colour =</span> label),</span>
+<span id="cb45-178"><a href="#cb45-178" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb45-179"><a href="#cb45-179" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">setNames</span>(okabe_ito[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],</span>
+<span id="cb45-180"><a href="#cb45-180" aria-hidden="true" tabindex="-1"></a>                                       <span class="fu">paste0</span>(<span class="st">"Level-"</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>))) <span class="sc">+</span></span>
+<span id="cb45-181"><a href="#cb45-181" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">setNames</span>(okabe_ito[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],</span>
+<span id="cb45-182"><a href="#cb45-182" aria-hidden="true" tabindex="-1"></a>                                         <span class="fu">paste0</span>(<span class="st">"Level-"</span>, <span class="dv">0</span><span class="sc">:</span><span class="dv">4</span>))) <span class="sc">+</span></span>
+<span id="cb45-183"><a href="#cb45-183" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>label, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb45-184"><a href="#cb45-184" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb45-185"><a href="#cb45-185" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb45-186"><a href="#cb45-186" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Choice Distributions by Reasoning Level"</span>,</span>
+<span id="cb45-187"><a href="#cb45-187" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"p-Beauty Contest with p = 2/3"</span>,</span>
+<span id="cb45-188"><a href="#cb45-188" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Choice (0-100)"</span>, <span class="at">y =</span> <span class="st">"Count"</span>) <span class="sc">+</span></span>
+<span id="cb45-189"><a href="#cb45-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">70</span>)</span>
+<span id="cb45-190"><a href="#cb45-190" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-191"><a href="#cb45-191" aria-hidden="true" tabindex="-1"></a>p_levels</span>
+<span id="cb45-192"><a href="#cb45-192" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_levels, <span class="st">"levelk-distributions"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
+<span id="cb45-193"><a href="#cb45-193" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-194"><a href="#cb45-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-195"><a href="#cb45-195" aria-hidden="true" tabindex="-1"></a><span class="fu">### Figure 2: Strategy performance comparison</span></span>
+<span id="cb45-196"><a href="#cb45-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-199"><a href="#cb45-199" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-200"><a href="#cb45-200" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-strategy-performance</span></span>
+<span id="cb45-201"><a href="#cb45-201" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Win rates by strategy type in simulated beauty contest games. Level-1 and level-2 players outperform level-0 (random) players, but higher levels show diminishing returns because the population contains mostly low-level reasoners. The Nash equilibrium strategy (choose 0) rarely wins against bounded rational opponents."</span></span>
+<span id="cb45-202"><a href="#cb45-202" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb45-203"><a href="#cb45-203" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4.5</span></span>
+<span id="cb45-204"><a href="#cb45-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-205"><a href="#cb45-205" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute win rates by level</span></span>
+<span id="cb45-206"><a href="#cb45-206" aria-hidden="true" tabindex="-1"></a>win_rates <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span></span>
+<span id="cb45-207"><a href="#cb45-207" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(level <span class="sc">&lt;=</span> <span class="dv">4</span>) <span class="sc">|&gt;</span></span>
+<span id="cb45-208"><a href="#cb45-208" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(level) <span class="sc">|&gt;</span></span>
+<span id="cb45-209"><a href="#cb45-209" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb45-210"><a href="#cb45-210" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_games =</span> <span class="fu">n</span>(),</span>
+<span id="cb45-211"><a href="#cb45-211" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_wins =</span> <span class="fu">sum</span>(won),</span>
+<span id="cb45-212"><a href="#cb45-212" aria-hidden="true" tabindex="-1"></a>    <span class="at">win_rate =</span> n_wins <span class="sc">/</span> n_games,</span>
+<span id="cb45-213"><a href="#cb45-213" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb45-214"><a href="#cb45-214" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb45-215"><a href="#cb45-215" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, level))</span>
+<span id="cb45-216"><a href="#cb45-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-217"><a href="#cb45-217" aria-hidden="true" tabindex="-1"></a><span class="co"># Add Nash equilibrium player for comparison</span></span>
+<span id="cb45-218"><a href="#cb45-218" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulate NE player (choice = 0) against the population</span></span>
+<span id="cb45-219"><a href="#cb45-219" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb45-220"><a href="#cb45-220" aria-hidden="true" tabindex="-1"></a>ne_wins <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb45-221"><a href="#cb45-221" aria-hidden="true" tabindex="-1"></a>ne_games <span class="ot">&lt;-</span> n_rounds</span>
+<span id="cb45-222"><a href="#cb45-222" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (r <span class="cf">in</span> <span class="fu">seq_len</span>(ne_games)) {</span>
+<span id="cb45-223"><a href="#cb45-223" aria-hidden="true" tabindex="-1"></a>  game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">19</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb45-224"><a href="#cb45-224" aria-hidden="true" tabindex="-1"></a>  all_choices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, game<span class="sc">$</span>choice)  <span class="co"># NE player chooses 0</span></span>
+<span id="cb45-225"><a href="#cb45-225" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-226"><a href="#cb45-226" aria-hidden="true" tabindex="-1"></a>  target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(all_choices)</span>
+<span id="cb45-227"><a href="#cb45-227" aria-hidden="true" tabindex="-1"></a>  distances <span class="ot">&lt;-</span> <span class="fu">abs</span>(all_choices <span class="sc">-</span> target)</span>
+<span id="cb45-228"><a href="#cb45-228" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">which.min</span>(distances) <span class="sc">==</span> <span class="dv">1</span>) ne_wins <span class="ot">&lt;-</span> ne_wins <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb45-229"><a href="#cb45-229" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-230"><a href="#cb45-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-231"><a href="#cb45-231" aria-hidden="true" tabindex="-1"></a><span class="co"># Add random player for comparison</span></span>
+<span id="cb45-232"><a href="#cb45-232" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb45-233"><a href="#cb45-233" aria-hidden="true" tabindex="-1"></a>rand_wins <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb45-234"><a href="#cb45-234" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (r <span class="cf">in</span> <span class="fu">seq_len</span>(ne_games)) {</span>
+<span id="cb45-235"><a href="#cb45-235" aria-hidden="true" tabindex="-1"></a>  game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">19</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb45-236"><a href="#cb45-236" aria-hidden="true" tabindex="-1"></a>  rand_choice <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">100</span>)</span>
+<span id="cb45-237"><a href="#cb45-237" aria-hidden="true" tabindex="-1"></a>  all_choices <span class="ot">&lt;-</span> <span class="fu">c</span>(rand_choice, game<span class="sc">$</span>choice)</span>
+<span id="cb45-238"><a href="#cb45-238" aria-hidden="true" tabindex="-1"></a>  target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(all_choices)</span>
+<span id="cb45-239"><a href="#cb45-239" aria-hidden="true" tabindex="-1"></a>  distances <span class="ot">&lt;-</span> <span class="fu">abs</span>(all_choices <span class="sc">-</span> target)</span>
+<span id="cb45-240"><a href="#cb45-240" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">which.min</span>(distances) <span class="sc">==</span> <span class="dv">1</span>) rand_wins <span class="ot">&lt;-</span> rand_wins <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb45-241"><a href="#cb45-241" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-242"><a href="#cb45-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-243"><a href="#cb45-243" aria-hidden="true" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb45-244"><a href="#cb45-244" aria-hidden="true" tabindex="-1"></a>  win_rates <span class="sc">|&gt;</span> <span class="fu">select</span>(label, win_rate),</span>
+<span id="cb45-245"><a href="#cb45-245" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">label =</span> <span class="st">"Nash (0)"</span>, <span class="at">win_rate =</span> ne_wins <span class="sc">/</span> ne_games),</span>
+<span id="cb45-246"><a href="#cb45-246" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">label =</span> <span class="st">"Random"</span>, <span class="at">win_rate =</span> rand_wins <span class="sc">/</span> ne_games)</span>
+<span id="cb45-247"><a href="#cb45-247" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb45-248"><a href="#cb45-248" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">label =</span> <span class="fu">factor</span>(label,</span>
+<span id="cb45-249"><a href="#cb45-249" aria-hidden="true" tabindex="-1"></a>    <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Random"</span>, <span class="st">"Level-0"</span>, <span class="st">"Level-1"</span>, <span class="st">"Level-2"</span>,</span>
+<span id="cb45-250"><a href="#cb45-250" aria-hidden="true" tabindex="-1"></a>               <span class="st">"Level-3"</span>, <span class="st">"Level-4"</span>, <span class="st">"Nash (0)"</span>)))</span>
+<span id="cb45-251"><a href="#cb45-251" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-252"><a href="#cb45-252" aria-hidden="true" tabindex="-1"></a>p_perf <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(comparison, <span class="fu">aes</span>(<span class="at">x =</span> label, <span class="at">y =</span> win_rate, <span class="at">fill =</span> label)) <span class="sc">+</span></span>
+<span id="cb45-253"><a href="#cb45-253" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb45-254"><a href="#cb45-254" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">20</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey50"</span>) <span class="sc">+</span></span>
+<span id="cb45-255"><a href="#cb45-255" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Random"</span> <span class="ot">=</span> <span class="st">"grey60"</span>, okabe_ito[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],</span>
+<span id="cb45-256"><a href="#cb45-256" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Nash (0)"</span> <span class="ot">=</span> okabe_ito[<span class="dv">8</span>])) <span class="sc">+</span></span>
+<span id="cb45-257"><a href="#cb45-257" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb45-258"><a href="#cb45-258" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb45-259"><a href="#cb45-259" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Win Rates by Strategy Type"</span>,</span>
+<span id="cb45-260"><a href="#cb45-260" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"p-Beauty Contest (p = 2/3, 20 players, Poisson CH population)"</span>,</span>
+<span id="cb45-261"><a href="#cb45-261" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Strategy"</span>, <span class="at">y =</span> <span class="st">"Win rate"</span>) <span class="sc">+</span></span>
+<span id="cb45-262"><a href="#cb45-262" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> <span class="fl">6.5</span>, <span class="at">y =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">20</span> <span class="sc">+</span> <span class="fl">0.005</span>, <span class="at">label =</span> <span class="st">"Chance = 1/20"</span>,</span>
+<span id="cb45-263"><a href="#cb45-263" aria-hidden="true" tabindex="-1"></a>           <span class="at">colour =</span> <span class="st">"grey50"</span>, <span class="at">size =</span> <span class="fl">3.5</span>)</span>
+<span id="cb45-264"><a href="#cb45-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-265"><a href="#cb45-265" aria-hidden="true" tabindex="-1"></a>p_perf</span>
+<span id="cb45-266"><a href="#cb45-266" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_perf, <span class="st">"strategy-performance-comparison"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="fl">4.5</span>)</span>
+<span id="cb45-267"><a href="#cb45-267" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-268"><a href="#cb45-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-269"><a href="#cb45-269" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
+<span id="cb45-270"><a href="#cb45-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-271"><a href="#cb45-271" aria-hidden="true" tabindex="-1"></a>We walk through a single round of the p-beauty contest with explicit level-k reasoning.</span>
+<span id="cb45-272"><a href="#cb45-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-275"><a href="#cb45-275" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-276"><a href="#cb45-276" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-example</span></span>
+<span id="cb45-277"><a href="#cb45-277" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== p-Beauty Contest Walkthrough (p = 2/3) ===</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb45-278"><a href="#cb45-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-279"><a href="#cb45-279" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 1: Level-0 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-280"><a href="#cb45-280" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  A level-0 player chooses randomly; expected value = 50.</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb45-281"><a href="#cb45-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-282"><a href="#cb45-282" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 2: Level-1 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-283"><a href="#cb45-283" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  'If everyone else is level-0, the average will be ~50.'</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-284"><a href="#cb45-284" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Best response: p * 50 = 2/3 * 50 = %.1f</span><span class="sc">\n\n</span><span class="st">"</span>, p <span class="sc">*</span> <span class="dv">50</span>))</span>
+<span id="cb45-285"><a href="#cb45-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-286"><a href="#cb45-286" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 3: Level-2 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-287"><a href="#cb45-287" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  'If everyone else is level-1, the average will be ~33.3.'</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-288"><a href="#cb45-288" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Best response: p * 33.3 = 2/3 * 33.3 = %.1f</span><span class="sc">\n\n</span><span class="st">"</span>, p<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> <span class="dv">50</span>))</span>
+<span id="cb45-289"><a href="#cb45-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-290"><a href="#cb45-290" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 4: Level-3 reasoning</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-291"><a href="#cb45-291" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  'If everyone else is level-2, the average will be ~22.2.'</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-292"><a href="#cb45-292" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Best response: p * 22.2 = 2/3 * 22.2 = %.1f</span><span class="sc">\n\n</span><span class="st">"</span>, p<span class="sc">^</span><span class="dv">3</span> <span class="sc">*</span> <span class="dv">50</span>))</span>
+<span id="cb45-293"><a href="#cb45-293" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-294"><a href="#cb45-294" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Step 5: Nash equilibrium (infinite levels)</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-295"><a href="#cb45-295" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  As k -&gt; infinity, the choice converges to 0.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-296"><a href="#cb45-296" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  But choosing 0 only wins if ALL other players also choose 0.</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb45-297"><a href="#cb45-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-298"><a href="#cb45-298" aria-hidden="true" tabindex="-1"></a><span class="co"># Show a concrete simulated round</span></span>
+<span id="cb45-299"><a href="#cb45-299" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb45-300"><a href="#cb45-300" aria-hidden="true" tabindex="-1"></a>example_game <span class="ot">&lt;-</span> <span class="fu">beauty_contest</span>(<span class="at">n_players =</span> <span class="dv">10</span>, <span class="at">p =</span> p, <span class="at">tau =</span> <span class="fl">1.5</span>)</span>
+<span id="cb45-301"><a href="#cb45-301" aria-hidden="true" tabindex="-1"></a>target <span class="ot">&lt;-</span> p <span class="sc">*</span> <span class="fu">mean</span>(example_game<span class="sc">$</span>choice)</span>
+<span id="cb45-302"><a href="#cb45-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-303"><a href="#cb45-303" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== Example Round with 10 Players ===</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb45-304"><a href="#cb45-304" aria-hidden="true" tabindex="-1"></a>example_game <span class="sc">|&gt;</span></span>
+<span id="cb45-305"><a href="#cb45-305" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb45-306"><a href="#cb45-306" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">paste0</span>(<span class="st">"Level-"</span>, level),</span>
+<span id="cb45-307"><a href="#cb45-307" aria-hidden="true" tabindex="-1"></a>    <span class="at">distance =</span> <span class="fu">abs</span>(choice <span class="sc">-</span> target)</span>
+<span id="cb45-308"><a href="#cb45-308" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb45-309"><a href="#cb45-309" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(distance) <span class="sc">|&gt;</span></span>
+<span id="cb45-310"><a href="#cb45-310" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(player, label, choice, distance) <span class="sc">|&gt;</span></span>
+<span id="cb45-311"><a href="#cb45-311" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">Player =</span> player, <span class="at">Level =</span> label,</span>
+<span id="cb45-312"><a href="#cb45-312" aria-hidden="true" tabindex="-1"></a>         <span class="at">Choice =</span> choice, <span class="st">`</span><span class="at">Dist to target</span><span class="st">`</span> <span class="ot">=</span> distance) <span class="sc">|&gt;</span></span>
+<span id="cb45-313"><a href="#cb45-313" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
+<span id="cb45-314"><a href="#cb45-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-315"><a href="#cb45-315" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Average choice: %.1f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">mean</span>(example_game<span class="sc">$</span>choice)))</span>
+<span id="cb45-316"><a href="#cb45-316" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Target (2/3 * average): %.1f</span><span class="sc">\n</span><span class="st">"</span>, target))</span>
+<span id="cb45-317"><a href="#cb45-317" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Winner: Player %d (Level-%d, chose %.1f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-318"><a href="#cb45-318" aria-hidden="true" tabindex="-1"></a>            example_game<span class="sc">$</span>player[<span class="fu">which.min</span>(<span class="fu">abs</span>(example_game<span class="sc">$</span>choice <span class="sc">-</span> target))],</span>
+<span id="cb45-319"><a href="#cb45-319" aria-hidden="true" tabindex="-1"></a>            example_game<span class="sc">$</span>level[<span class="fu">which.min</span>(<span class="fu">abs</span>(example_game<span class="sc">$</span>choice <span class="sc">-</span> target))],</span>
+<span id="cb45-320"><a href="#cb45-320" aria-hidden="true" tabindex="-1"></a>            example_game<span class="sc">$</span>choice[<span class="fu">which.min</span>(<span class="fu">abs</span>(example_game<span class="sc">$</span>choice <span class="sc">-</span> target))]))</span>
+<span id="cb45-321"><a href="#cb45-321" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-322"><a href="#cb45-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-323"><a href="#cb45-323" aria-hidden="true" tabindex="-1"></a>**Key takeaway.** In a population of bounded rational players, the Nash equilibrium (choose 0) performs poorly. The best strategy depends on the sophistication distribution of the population --- exactly the insight from cognitive hierarchy theory. An LLM that reasons at approximately level-2 would outperform both a naive randomizer and a fully rational Nash player in this setting.</span>
+<span id="cb45-324"><a href="#cb45-324" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-325"><a href="#cb45-325" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
+<span id="cb45-326"><a href="#cb45-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-327"><a href="#cb45-327" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Experimental design for LLM evaluation**: To test an LLM's strategic level, present it with multiple beauty contest games using different $p$ values and population descriptions. A consistent level-k response pattern reveals the model's reasoning depth.</span>
+<span id="cb45-328"><a href="#cb45-328" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Prompt sensitivity**: Rephrasing the same game (e.g., "competitive" vs. "cooperative" framing) can shift LLM behavior by 1--2 levels, paralleling human framing effects.</span>
+<span id="cb45-329"><a href="#cb45-329" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Multi-game batteries**: Testing across Prisoner's Dilemma, public goods games, and ultimatum games builds a richer profile of strategic sophistication.</span>
+<span id="cb45-330"><a href="#cb45-330" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Q-learning** (@sec-q-learning) and **multi-agent RL** (@sec-multi-agent-rl) offer alternative approaches to AI game-playing that learn through experience rather than language understanding.</span>
+<span id="cb45-331"><a href="#cb45-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-332"><a href="#cb45-332" aria-hidden="true" tabindex="-1"></a>For the foundational level-k theory, see @stahl1995; for cognitive hierarchy theory, see @camerer2004; and for the original beauty contest experiment, see @nagel1995.</span>
+<span id="cb45-333"><a href="#cb45-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-334"><a href="#cb45-334" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
+<span id="cb45-335"><a href="#cb45-335" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-336"><a href="#cb45-336" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Varying $\tau$.** Simulate the beauty contest with cognitive hierarchy parameter $\tau \in <span class="sc">\{</span>0.5, 1.0, 1.5, 2.0, 3.0<span class="sc">\}</span>$. How does the average depth of reasoning affect the optimal level-k strategy? Plot win rates for each level as a function of $\tau$.</span>
+<span id="cb45-337"><a href="#cb45-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-338"><a href="#cb45-338" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Different $p$ values.** Run the beauty contest with $p \in <span class="sc">\{</span>1/3, 1/2, 2/3, 3/4<span class="sc">\}</span>$. How does the target multiplier affect the separation between level-k predictions? At what value of $p$ is level-1 vs. level-2 distinction largest?</span>
+<span id="cb45-339"><a href="#cb45-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-340"><a href="#cb45-340" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Iterated beauty contest.** Simulate 20 rounds of the beauty contest where players update their level each round: after each round, a player whose choice was far from the target increases their level by 1 (up to level 5). Does the population converge to Nash equilibrium over time? Plot the average choice per round.</span>
+<span id="cb45-341"><a href="#cb45-341" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-342"><a href="#cb45-342" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
+</code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-4-ai-ml/30-llm-agents-and-strategy.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-4-ai-ml/30-llm-agents-and-strategy.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
