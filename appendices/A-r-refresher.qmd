@@ -9,4 +9,341 @@ keywords: ["R", "refresher", "tutorial", "basics"]
 
 # R Refresher {#sec-r-refresher}
 
-<!-- TODO: Content to be added. -->
+```{r}
+#| label: setup
+#| include: false
+source(here::here("R", "_common.R"))
+```
+
+This appendix provides a quick reference for the R features used most often in this book. It is not a substitute for a full R tutorial but should be enough to remind you of the essentials. For a deeper treatment, see @wickham2023r.
+
+## Data structures
+
+### Vectors
+
+Vectors are the fundamental data type in R. Every element must share the same type (logical, integer, double, character).
+
+```{r}
+#| label: vectors
+# Numeric vector
+payoffs <- c(3, 0, 5, 1)
+
+# Character vector
+strategies <- c("Cooperate", "Defect")
+
+# Logical vector
+is_dominated <- c(FALSE, TRUE, FALSE)
+
+# Sequence shortcuts
+indices <- 1:10
+grid <- seq(0, 1, by = 0.1)
+
+# Vectorised arithmetic
+payoffs * 2
+payoffs > 2
+```
+
+### Matrices
+
+Matrices are two-dimensional vectors. They are central to payoff representations throughout this book.
+
+```{r}
+#| label: matrices
+# Create a 2x2 payoff matrix (filled by column by default)
+A <- matrix(c(3, 5, 0, 1), nrow = 2, byrow = TRUE)
+rownames(A) <- c("Cooperate", "Defect")
+colnames(A) <- c("Cooperate", "Defect")
+A
+
+# Matrix indexing
+A[1, 2]       # row 1, column 2
+A["Defect", ] # entire row by name
+
+# Dimensions
+dim(A)
+nrow(A)
+ncol(A)
+```
+
+### Lists
+
+Lists can hold elements of different types and different lengths. They are used throughout the book to bundle game components together.
+
+```{r}
+#| label: lists
+game <- list(
+  players  = c("Player 1", "Player 2"),
+  payoff_1 = matrix(c(3, 5, 0, 1), nrow = 2, byrow = TRUE),
+  payoff_2 = matrix(c(3, 0, 5, 1), nrow = 2, byrow = TRUE)
+)
+
+# Access by name
+game$players
+game[["payoff_1"]]
+
+# Access by position
+game[[1]]
+```
+
+### Data frames and tibbles
+
+Data frames (and their tidyverse counterpart, tibbles) are the primary structure for tabular data.
+
+```{r}
+#| label: tibbles
+# Base R data frame
+df <- data.frame(
+  strategy = c("Cooperate", "Defect"),
+  payoff   = c(3, 1)
+)
+
+# Tidyverse tibble
+tbl <- tibble(
+  strategy = c("Cooperate", "Defect"),
+  payoff   = c(3, 1)
+)
+
+# Tibbles print more informatively
+tbl
+```
+
+## Control flow
+
+### Conditionals
+
+```{r}
+#| label: conditionals
+x <- 5
+
+if (x > 3) {
+  result <- "high"
+} else if (x > 1) {
+  result <- "medium"
+} else {
+  result <- "low"
+}
+result
+
+# Vectorised conditional
+ifelse(c(3, 0, 5, 1) > 2, "above", "below")
+```
+
+### Loops
+
+```{r}
+#| label: loops
+# for loop
+total <- 0
+for (i in 1:5) {
+  total <- total + i
+}
+total
+
+# while loop
+count <- 0
+value <- 1
+while (value < 100) {
+  value <- value * 2
+  count <- count + 1
+}
+count
+```
+
+### The apply family
+
+The `apply` functions replace explicit loops with concise functional calls.
+
+```{r}
+#| label: apply
+A <- matrix(1:12, nrow = 3)
+
+# Apply across rows (margin = 1)
+apply(A, 1, sum)
+
+# Apply across columns (margin = 2)
+apply(A, 2, mean)
+
+# sapply returns a vector; lapply returns a list
+sapply(1:5, function(x) x^2)
+lapply(1:3, function(x) rep(x, x))
+
+# vapply is like sapply but with a specified return type
+vapply(1:5, function(x) x^2, numeric(1))
+```
+
+## Functions
+
+### Defining functions
+
+```{r}
+#| label: functions
+# A function that computes expected payoff
+expected_payoff <- function(payoff_vec, prob_vec) {
+  sum(payoff_vec * prob_vec)
+}
+
+expected_payoff(c(3, 0), c(0.6, 0.4))
+
+# Default arguments
+greet <- function(name, greeting = "Hello") {
+  paste(greeting, name)
+}
+greet("Alice")
+greet("Bob", greeting = "Hi")
+```
+
+### Closures and environments
+
+A closure is a function that captures variables from its enclosing environment. This pattern is useful for creating parameterised game constructors.
+
+```{r}
+#| label: closures
+make_discounter <- function(delta) {
+  # delta is captured in the closure
+  function(payoffs) {
+    n <- length(payoffs)
+    weights <- delta^(seq_len(n) - 1)
+    sum(payoffs * weights)
+  }
+}
+
+discount_95 <- make_discounter(0.95)
+discount_95(c(3, 3, 3, 3, 3))
+
+# The enclosed value of delta persists
+discount_50 <- make_discounter(0.50)
+discount_50(c(3, 3, 3, 3, 3))
+```
+
+### Anonymous functions
+
+R 4.1+ supports the shorthand `\(x)` syntax for anonymous (lambda) functions.
+
+```{r}
+#| label: anonymous
+sapply(1:5, \(x) x^2)
+
+# Equivalent to the older syntax:
+sapply(1:5, function(x) x^2)
+```
+
+## Tidyverse basics
+
+The tidyverse is a collection of packages for data wrangling and visualisation. This book uses it extensively.
+
+### The pipe operator
+
+The pipe `|>` (base R 4.1+) or `%>%` (magrittr) passes the left-hand side as the first argument to the right-hand side.
+
+```{r}
+#| label: pipe
+c(4, 1, 7, 2, 9) |>
+  sort() |>
+  rev() |>
+  head(3)
+```
+
+### dplyr verbs
+
+The five core verbs handle the vast majority of data manipulation tasks.
+
+```{r}
+#| label: dplyr
+game_results <- tibble(
+  round    = 1:6,
+  player_1 = c("C", "D", "C", "C", "D", "D"),
+  player_2 = c("C", "C", "D", "C", "D", "C"),
+  payoff_1 = c(3, 5, 0, 3, 1, 5),
+  payoff_2 = c(3, 0, 5, 3, 1, 0)
+)
+
+# filter: keep rows matching a condition
+game_results |> filter(player_1 == "C")
+
+# mutate: create or modify columns
+game_results |> mutate(total = payoff_1 + payoff_2)
+
+# select: choose columns
+game_results |> select(round, payoff_1, payoff_2)
+
+# arrange: reorder rows
+game_results |> arrange(desc(payoff_1))
+
+# summarise (often with group_by)
+game_results |>
+  group_by(player_1) |>
+  summarise(
+    mean_payoff = mean(payoff_1),
+    n_rounds    = n()
+  )
+```
+
+### Pivoting
+
+Converting between wide and long formats is essential for plotting.
+
+```{r}
+#| label: pivot
+# Wide to long
+game_long <- game_results |>
+  pivot_longer(
+    cols      = starts_with("payoff"),
+    names_to  = "player",
+    values_to = "payoff"
+  )
+head(game_long)
+
+# Long to wide
+game_long |>
+  pivot_wider(names_from = player, values_from = payoff)
+```
+
+### ggplot2 layers
+
+The grammar of graphics builds plots layer by layer: data, aesthetics, geometries, and scales.
+```{r}
+#| label: ggplot2-example
+#| fig-cap: "Payoffs across six rounds of a repeated game."
+game_results |>
+  pivot_longer(
+    cols = starts_with("payoff"),
+    names_to = "player",
+    values_to = "payoff"
+  ) |>
+  ggplot(aes(x = round, y = payoff, colour = player)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 2) +
+  scale_colour_manual(
+    values = c(payoff_1 = "#1b9e77", payoff_2 = "#d95f02"),
+    labels = c("Player 1", "Player 2")
+  ) +
+  labs(x = "Round", y = "Payoff", colour = NULL) +
+  theme_minimal()
+```
+
+## Useful idioms for this book
+
+A handful of patterns recur throughout the chapters.
+
+```{r}
+#| label: idioms
+# Replicate a simulation many times
+results <- replicate(1000, {
+  sample(c("Heads", "Tails"), 1)
+})
+table(results)
+
+# Outer product for payoff grids
+p <- seq(0, 1, by = 0.25)
+q <- seq(0, 1, by = 0.25)
+payoff_grid <- outer(p, q, function(pi, qi) 3 * pi * qi + 1 * (1 - pi))
+payoff_grid
+
+# Named vectors for readable code
+strategy_names <- c(C = "Cooperate", D = "Defect")
+strategy_names["C"]
+
+# Setting seeds for reproducibility
+set.seed(42)
+sample(1:100, 5)
+```
