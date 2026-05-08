@@ -17,3 +17,4 @@ One line per Claude Code turn. Append-only.
 | 2026-05-08 | 5.5 | Part V complete (31,32,33,34,35,36) | 6 chapters: auctions, mechanism design, matching, bargaining, conflict, case studies |
 | 2026-05-08 | 5.6 | Part VI complete (37,38,39,40,41) | 5 chapters: ethics, fairness, alignment, cooperative AI, future |
 | 2026-05-08 | 5.7 | Appendices complete (A,B,C,D,E) | R refresher, linear algebra, probability, solutions, glossary |
+| 2026-05-08 | 6 | Deployment prep | 26 missing bib entries added, Ch27 MCTS compute reduced, _quarto.yml cleaned, .gitignore updated |
