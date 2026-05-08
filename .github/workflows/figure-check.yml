@@ -1,0 +1,30 @@
+name: Figure Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/*.qmd'
+
+jobs:
+  check-figures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for publication figures
+        run: |
+          echo "Checking chapters for save_pub_fig() or fig-cap..."
+          missing=()
+          for f in $(find . -name "*.qmd" -not -path "./appendices/*" -not -path "./index.qmd"); do
+            if ! grep -qE "(save_pub_fig|fig-cap|under development)" "$f"; then
+              missing+=("$f")
+            fi
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "WARNING: The following chapters may be missing publication figures:"
+            printf '  %s\n' "${missing[@]}"
+            echo "::warning::Some chapters may lack publication-ready figures"
+          else
+            echo "All completed chapters have figures."
+          fi
