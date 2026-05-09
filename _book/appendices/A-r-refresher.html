@@ -743,7 +743,7 @@ div.csl-indent {
   <li><a href="#useful-idioms-for-this-book" id="toc-useful-idioms-for-this-book" class="nav-link" data-scroll-target="#useful-idioms-for-this-book"><span class="header-section-number">B.5</span> Useful idioms for this book</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/appendices/A-r-refresher.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/appendices/A-r-refresher.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/appendices/A-r-refresher.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/appendices/A-r-refresher.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="../downloads/r-refresher.pdf"><i class="bi bi-file-pdf"></i>Download Chapter PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1778,348 +1778,351 @@ Wickham, H., Çetinkaya-Rundel, M., &amp; Grolemund, G. (2023). <em>R for data s
 <span id="cb82-5"><a href="#cb82-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
 <span id="cb82-6"><a href="#cb82-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "A concise refresher on R fundamentals for readers who need a quick review."</span></span>
 <span id="cb82-7"><a href="#cb82-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["R", "refresher", "tutorial", "basics"]</span></span>
-<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb82-9"><a href="#cb82-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-10"><a href="#cb82-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># R Refresher {#sec-r-refresher}</span></span>
-<span id="cb82-11"><a href="#cb82-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-14"><a href="#cb82-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-15"><a href="#cb82-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
-<span id="cb82-16"><a href="#cb82-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb82-17"><a href="#cb82-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
-<span id="cb82-18"><a href="#cb82-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-19"><a href="#cb82-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-20"><a href="#cb82-20" aria-hidden="true" tabindex="-1"></a>This appendix provides a quick reference for the R features used most often in this book. It is not a substitute for a full R tutorial but should be enough to remind you of the essentials. For a deeper treatment, see @wickham2023r.</span>
-<span id="cb82-21"><a href="#cb82-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-22"><a href="#cb82-22" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data structures</span></span>
-<span id="cb82-23"><a href="#cb82-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-24"><a href="#cb82-24" aria-hidden="true" tabindex="-1"></a><span class="fu">### Vectors</span></span>
-<span id="cb82-25"><a href="#cb82-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-26"><a href="#cb82-26" aria-hidden="true" tabindex="-1"></a>Vectors are the fundamental data type in R. Every element must share the same type (logical, integer, double, character).</span>
-<span id="cb82-27"><a href="#cb82-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-30"><a href="#cb82-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-31"><a href="#cb82-31" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: vectors</span></span>
-<span id="cb82-32"><a href="#cb82-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Numeric vector</span></span>
-<span id="cb82-33"><a href="#cb82-33" aria-hidden="true" tabindex="-1"></a>payoffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>)</span>
-<span id="cb82-34"><a href="#cb82-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-35"><a href="#cb82-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Character vector</span></span>
-<span id="cb82-36"><a href="#cb82-36" aria-hidden="true" tabindex="-1"></a>strategies <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>)</span>
+<span id="cb82-8"><a href="#cb82-8" aria-hidden="true" tabindex="-1"></a><span class="an">other-links:</span></span>
+<span id="cb82-9"><a href="#cb82-9" aria-hidden="true" tabindex="-1"></a><span class="co">  - text: Download Chapter PDF</span></span>
+<span id="cb82-10"><a href="#cb82-10" aria-hidden="true" tabindex="-1"></a><span class="co">    href: ../downloads/r-refresher.pdf</span></span>
+<span id="cb82-11"><a href="#cb82-11" aria-hidden="true" tabindex="-1"></a><span class="co">    icon: file-pdf</span></span>
+<span id="cb82-12"><a href="#cb82-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb82-13"><a href="#cb82-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># R Refresher {#sec-r-refresher}</span></span>
+<span id="cb82-14"><a href="#cb82-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-17"><a href="#cb82-17" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-18"><a href="#cb82-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb82-19"><a href="#cb82-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb82-20"><a href="#cb82-20" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb82-21"><a href="#cb82-21" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-22"><a href="#cb82-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-23"><a href="#cb82-23" aria-hidden="true" tabindex="-1"></a>This appendix provides a quick reference for the R features used most often in this book. It is not a substitute for a full R tutorial but should be enough to remind you of the essentials. For a deeper treatment, see @wickham2023r.</span>
+<span id="cb82-24"><a href="#cb82-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-25"><a href="#cb82-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data structures</span></span>
+<span id="cb82-26"><a href="#cb82-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-27"><a href="#cb82-27" aria-hidden="true" tabindex="-1"></a><span class="fu">### Vectors</span></span>
+<span id="cb82-28"><a href="#cb82-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-29"><a href="#cb82-29" aria-hidden="true" tabindex="-1"></a>Vectors are the fundamental data type in R. Every element must share the same type (logical, integer, double, character).</span>
+<span id="cb82-30"><a href="#cb82-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-33"><a href="#cb82-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-34"><a href="#cb82-34" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: vectors</span></span>
+<span id="cb82-35"><a href="#cb82-35" aria-hidden="true" tabindex="-1"></a><span class="co"># Numeric vector</span></span>
+<span id="cb82-36"><a href="#cb82-36" aria-hidden="true" tabindex="-1"></a>payoffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>)</span>
 <span id="cb82-37"><a href="#cb82-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-38"><a href="#cb82-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Logical vector</span></span>
-<span id="cb82-39"><a href="#cb82-39" aria-hidden="true" tabindex="-1"></a>is_dominated <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb82-38"><a href="#cb82-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Character vector</span></span>
+<span id="cb82-39"><a href="#cb82-39" aria-hidden="true" tabindex="-1"></a>strategies <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>)</span>
 <span id="cb82-40"><a href="#cb82-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-41"><a href="#cb82-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequence shortcuts</span></span>
-<span id="cb82-42"><a href="#cb82-42" aria-hidden="true" tabindex="-1"></a>indices <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
-<span id="cb82-43"><a href="#cb82-43" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.1</span>)</span>
-<span id="cb82-44"><a href="#cb82-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-45"><a href="#cb82-45" aria-hidden="true" tabindex="-1"></a><span class="co"># Vectorised arithmetic</span></span>
-<span id="cb82-46"><a href="#cb82-46" aria-hidden="true" tabindex="-1"></a>payoffs <span class="sc">*</span> <span class="dv">2</span></span>
-<span id="cb82-47"><a href="#cb82-47" aria-hidden="true" tabindex="-1"></a>payoffs <span class="sc">&gt;</span> <span class="dv">2</span></span>
-<span id="cb82-48"><a href="#cb82-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-49"><a href="#cb82-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-50"><a href="#cb82-50" aria-hidden="true" tabindex="-1"></a><span class="fu">### Matrices</span></span>
-<span id="cb82-51"><a href="#cb82-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-52"><a href="#cb82-52" aria-hidden="true" tabindex="-1"></a>Matrices are two-dimensional vectors. They are central to payoff representations throughout this book.</span>
-<span id="cb82-53"><a href="#cb82-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-56"><a href="#cb82-56" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-57"><a href="#cb82-57" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: matrices</span></span>
-<span id="cb82-58"><a href="#cb82-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 2x2 payoff matrix (filled by column by default)</span></span>
-<span id="cb82-59"><a href="#cb82-59" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb82-60"><a href="#cb82-60" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(A) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>)</span>
-<span id="cb82-61"><a href="#cb82-61" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(A) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>)</span>
-<span id="cb82-62"><a href="#cb82-62" aria-hidden="true" tabindex="-1"></a>A</span>
-<span id="cb82-63"><a href="#cb82-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-64"><a href="#cb82-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrix indexing</span></span>
-<span id="cb82-65"><a href="#cb82-65" aria-hidden="true" tabindex="-1"></a>A[<span class="dv">1</span>, <span class="dv">2</span>]       <span class="co"># row 1, column 2</span></span>
-<span id="cb82-66"><a href="#cb82-66" aria-hidden="true" tabindex="-1"></a>A[<span class="st">"Defect"</span>, ] <span class="co"># entire row by name</span></span>
-<span id="cb82-67"><a href="#cb82-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-68"><a href="#cb82-68" aria-hidden="true" tabindex="-1"></a><span class="co"># Dimensions</span></span>
-<span id="cb82-69"><a href="#cb82-69" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(A)</span>
-<span id="cb82-70"><a href="#cb82-70" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(A)</span>
-<span id="cb82-71"><a href="#cb82-71" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(A)</span>
-<span id="cb82-72"><a href="#cb82-72" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-73"><a href="#cb82-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-74"><a href="#cb82-74" aria-hidden="true" tabindex="-1"></a><span class="fu">### Lists</span></span>
-<span id="cb82-75"><a href="#cb82-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-76"><a href="#cb82-76" aria-hidden="true" tabindex="-1"></a>Lists can hold elements of different types and different lengths. They are used throughout the book to bundle game components together.</span>
-<span id="cb82-77"><a href="#cb82-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-80"><a href="#cb82-80" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-81"><a href="#cb82-81" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: lists</span></span>
-<span id="cb82-82"><a href="#cb82-82" aria-hidden="true" tabindex="-1"></a>game <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb82-83"><a href="#cb82-83" aria-hidden="true" tabindex="-1"></a>  <span class="at">players  =</span> <span class="fu">c</span>(<span class="st">"Player 1"</span>, <span class="st">"Player 2"</span>),</span>
-<span id="cb82-84"><a href="#cb82-84" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_1 =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb82-85"><a href="#cb82-85" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_2 =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb82-86"><a href="#cb82-86" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb82-87"><a href="#cb82-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-88"><a href="#cb82-88" aria-hidden="true" tabindex="-1"></a><span class="co"># Access by name</span></span>
-<span id="cb82-89"><a href="#cb82-89" aria-hidden="true" tabindex="-1"></a>game<span class="sc">$</span>players</span>
-<span id="cb82-90"><a href="#cb82-90" aria-hidden="true" tabindex="-1"></a>game[[<span class="st">"payoff_1"</span>]]</span>
-<span id="cb82-91"><a href="#cb82-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-92"><a href="#cb82-92" aria-hidden="true" tabindex="-1"></a><span class="co"># Access by position</span></span>
-<span id="cb82-93"><a href="#cb82-93" aria-hidden="true" tabindex="-1"></a>game[[<span class="dv">1</span>]]</span>
-<span id="cb82-94"><a href="#cb82-94" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-95"><a href="#cb82-95" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-96"><a href="#cb82-96" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data frames and tibbles</span></span>
-<span id="cb82-97"><a href="#cb82-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-98"><a href="#cb82-98" aria-hidden="true" tabindex="-1"></a>Data frames (and their tidyverse counterpart, tibbles) are the primary structure for tabular data.</span>
-<span id="cb82-99"><a href="#cb82-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-102"><a href="#cb82-102" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-103"><a href="#cb82-103" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: tibbles</span></span>
-<span id="cb82-104"><a href="#cb82-104" aria-hidden="true" tabindex="-1"></a><span class="co"># Base R data frame</span></span>
-<span id="cb82-105"><a href="#cb82-105" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb82-106"><a href="#cb82-106" aria-hidden="true" tabindex="-1"></a>  <span class="at">strategy =</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>),</span>
-<span id="cb82-107"><a href="#cb82-107" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff   =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>)</span>
-<span id="cb82-108"><a href="#cb82-108" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb82-109"><a href="#cb82-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-110"><a href="#cb82-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Tidyverse tibble</span></span>
-<span id="cb82-111"><a href="#cb82-111" aria-hidden="true" tabindex="-1"></a>tbl <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb82-112"><a href="#cb82-112" aria-hidden="true" tabindex="-1"></a>  <span class="at">strategy =</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>),</span>
-<span id="cb82-113"><a href="#cb82-113" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff   =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>)</span>
-<span id="cb82-114"><a href="#cb82-114" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb82-115"><a href="#cb82-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-116"><a href="#cb82-116" aria-hidden="true" tabindex="-1"></a><span class="co"># Tibbles print more informatively</span></span>
-<span id="cb82-117"><a href="#cb82-117" aria-hidden="true" tabindex="-1"></a>tbl</span>
-<span id="cb82-118"><a href="#cb82-118" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-119"><a href="#cb82-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-120"><a href="#cb82-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## Control flow</span></span>
-<span id="cb82-121"><a href="#cb82-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-122"><a href="#cb82-122" aria-hidden="true" tabindex="-1"></a><span class="fu">### Conditionals</span></span>
-<span id="cb82-123"><a href="#cb82-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-126"><a href="#cb82-126" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-127"><a href="#cb82-127" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: conditionals</span></span>
-<span id="cb82-128"><a href="#cb82-128" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">5</span></span>
-<span id="cb82-129"><a href="#cb82-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-130"><a href="#cb82-130" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">3</span>) {</span>
-<span id="cb82-131"><a href="#cb82-131" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="st">"high"</span></span>
-<span id="cb82-132"><a href="#cb82-132" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
-<span id="cb82-133"><a href="#cb82-133" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="st">"medium"</span></span>
-<span id="cb82-134"><a href="#cb82-134" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb82-135"><a href="#cb82-135" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="st">"low"</span></span>
-<span id="cb82-136"><a href="#cb82-136" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb82-137"><a href="#cb82-137" aria-hidden="true" tabindex="-1"></a>result</span>
-<span id="cb82-138"><a href="#cb82-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-139"><a href="#cb82-139" aria-hidden="true" tabindex="-1"></a><span class="co"># Vectorised conditional</span></span>
-<span id="cb82-140"><a href="#cb82-140" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>) <span class="sc">&gt;</span> <span class="dv">2</span>, <span class="st">"above"</span>, <span class="st">"below"</span>)</span>
-<span id="cb82-141"><a href="#cb82-141" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-142"><a href="#cb82-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-143"><a href="#cb82-143" aria-hidden="true" tabindex="-1"></a><span class="fu">### Loops</span></span>
-<span id="cb82-144"><a href="#cb82-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-147"><a href="#cb82-147" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-148"><a href="#cb82-148" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: loops</span></span>
-<span id="cb82-149"><a href="#cb82-149" aria-hidden="true" tabindex="-1"></a><span class="co"># for loop</span></span>
-<span id="cb82-150"><a href="#cb82-150" aria-hidden="true" tabindex="-1"></a>total <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb82-151"><a href="#cb82-151" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) {</span>
-<span id="cb82-152"><a href="#cb82-152" aria-hidden="true" tabindex="-1"></a>  total <span class="ot">&lt;-</span> total <span class="sc">+</span> i</span>
-<span id="cb82-153"><a href="#cb82-153" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb82-154"><a href="#cb82-154" aria-hidden="true" tabindex="-1"></a>total</span>
-<span id="cb82-155"><a href="#cb82-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-156"><a href="#cb82-156" aria-hidden="true" tabindex="-1"></a><span class="co"># while loop</span></span>
-<span id="cb82-157"><a href="#cb82-157" aria-hidden="true" tabindex="-1"></a>count <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb82-158"><a href="#cb82-158" aria-hidden="true" tabindex="-1"></a>value <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb82-159"><a href="#cb82-159" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (value <span class="sc">&lt;</span> <span class="dv">100</span>) {</span>
-<span id="cb82-160"><a href="#cb82-160" aria-hidden="true" tabindex="-1"></a>  value <span class="ot">&lt;-</span> value <span class="sc">*</span> <span class="dv">2</span></span>
-<span id="cb82-161"><a href="#cb82-161" aria-hidden="true" tabindex="-1"></a>  count <span class="ot">&lt;-</span> count <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb82-162"><a href="#cb82-162" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb82-163"><a href="#cb82-163" aria-hidden="true" tabindex="-1"></a>count</span>
-<span id="cb82-164"><a href="#cb82-164" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-165"><a href="#cb82-165" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-166"><a href="#cb82-166" aria-hidden="true" tabindex="-1"></a><span class="fu">### The apply family</span></span>
-<span id="cb82-167"><a href="#cb82-167" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-168"><a href="#cb82-168" aria-hidden="true" tabindex="-1"></a>The <span class="in">`apply`</span> functions replace explicit loops with concise functional calls.</span>
-<span id="cb82-169"><a href="#cb82-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-172"><a href="#cb82-172" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-173"><a href="#cb82-173" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: apply</span></span>
-<span id="cb82-174"><a href="#cb82-174" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, <span class="at">nrow =</span> <span class="dv">3</span>)</span>
-<span id="cb82-175"><a href="#cb82-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-176"><a href="#cb82-176" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply across rows (margin = 1)</span></span>
-<span id="cb82-177"><a href="#cb82-177" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(A, <span class="dv">1</span>, sum)</span>
+<span id="cb82-41"><a href="#cb82-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Logical vector</span></span>
+<span id="cb82-42"><a href="#cb82-42" aria-hidden="true" tabindex="-1"></a>is_dominated <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb82-43"><a href="#cb82-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-44"><a href="#cb82-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequence shortcuts</span></span>
+<span id="cb82-45"><a href="#cb82-45" aria-hidden="true" tabindex="-1"></a>indices <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb82-46"><a href="#cb82-46" aria-hidden="true" tabindex="-1"></a>grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.1</span>)</span>
+<span id="cb82-47"><a href="#cb82-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-48"><a href="#cb82-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Vectorised arithmetic</span></span>
+<span id="cb82-49"><a href="#cb82-49" aria-hidden="true" tabindex="-1"></a>payoffs <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb82-50"><a href="#cb82-50" aria-hidden="true" tabindex="-1"></a>payoffs <span class="sc">&gt;</span> <span class="dv">2</span></span>
+<span id="cb82-51"><a href="#cb82-51" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-52"><a href="#cb82-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-53"><a href="#cb82-53" aria-hidden="true" tabindex="-1"></a><span class="fu">### Matrices</span></span>
+<span id="cb82-54"><a href="#cb82-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-55"><a href="#cb82-55" aria-hidden="true" tabindex="-1"></a>Matrices are two-dimensional vectors. They are central to payoff representations throughout this book.</span>
+<span id="cb82-56"><a href="#cb82-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-59"><a href="#cb82-59" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-60"><a href="#cb82-60" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: matrices</span></span>
+<span id="cb82-61"><a href="#cb82-61" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a 2x2 payoff matrix (filled by column by default)</span></span>
+<span id="cb82-62"><a href="#cb82-62" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb82-63"><a href="#cb82-63" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(A) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>)</span>
+<span id="cb82-64"><a href="#cb82-64" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(A) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>)</span>
+<span id="cb82-65"><a href="#cb82-65" aria-hidden="true" tabindex="-1"></a>A</span>
+<span id="cb82-66"><a href="#cb82-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-67"><a href="#cb82-67" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrix indexing</span></span>
+<span id="cb82-68"><a href="#cb82-68" aria-hidden="true" tabindex="-1"></a>A[<span class="dv">1</span>, <span class="dv">2</span>]       <span class="co"># row 1, column 2</span></span>
+<span id="cb82-69"><a href="#cb82-69" aria-hidden="true" tabindex="-1"></a>A[<span class="st">"Defect"</span>, ] <span class="co"># entire row by name</span></span>
+<span id="cb82-70"><a href="#cb82-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-71"><a href="#cb82-71" aria-hidden="true" tabindex="-1"></a><span class="co"># Dimensions</span></span>
+<span id="cb82-72"><a href="#cb82-72" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(A)</span>
+<span id="cb82-73"><a href="#cb82-73" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(A)</span>
+<span id="cb82-74"><a href="#cb82-74" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(A)</span>
+<span id="cb82-75"><a href="#cb82-75" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-76"><a href="#cb82-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-77"><a href="#cb82-77" aria-hidden="true" tabindex="-1"></a><span class="fu">### Lists</span></span>
+<span id="cb82-78"><a href="#cb82-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-79"><a href="#cb82-79" aria-hidden="true" tabindex="-1"></a>Lists can hold elements of different types and different lengths. They are used throughout the book to bundle game components together.</span>
+<span id="cb82-80"><a href="#cb82-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-83"><a href="#cb82-83" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-84"><a href="#cb82-84" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: lists</span></span>
+<span id="cb82-85"><a href="#cb82-85" aria-hidden="true" tabindex="-1"></a>game <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb82-86"><a href="#cb82-86" aria-hidden="true" tabindex="-1"></a>  <span class="at">players  =</span> <span class="fu">c</span>(<span class="st">"Player 1"</span>, <span class="st">"Player 2"</span>),</span>
+<span id="cb82-87"><a href="#cb82-87" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_1 =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb82-88"><a href="#cb82-88" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_2 =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb82-89"><a href="#cb82-89" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb82-90"><a href="#cb82-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-91"><a href="#cb82-91" aria-hidden="true" tabindex="-1"></a><span class="co"># Access by name</span></span>
+<span id="cb82-92"><a href="#cb82-92" aria-hidden="true" tabindex="-1"></a>game<span class="sc">$</span>players</span>
+<span id="cb82-93"><a href="#cb82-93" aria-hidden="true" tabindex="-1"></a>game[[<span class="st">"payoff_1"</span>]]</span>
+<span id="cb82-94"><a href="#cb82-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-95"><a href="#cb82-95" aria-hidden="true" tabindex="-1"></a><span class="co"># Access by position</span></span>
+<span id="cb82-96"><a href="#cb82-96" aria-hidden="true" tabindex="-1"></a>game[[<span class="dv">1</span>]]</span>
+<span id="cb82-97"><a href="#cb82-97" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-98"><a href="#cb82-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-99"><a href="#cb82-99" aria-hidden="true" tabindex="-1"></a><span class="fu">### Data frames and tibbles</span></span>
+<span id="cb82-100"><a href="#cb82-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-101"><a href="#cb82-101" aria-hidden="true" tabindex="-1"></a>Data frames (and their tidyverse counterpart, tibbles) are the primary structure for tabular data.</span>
+<span id="cb82-102"><a href="#cb82-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-105"><a href="#cb82-105" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-106"><a href="#cb82-106" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: tibbles</span></span>
+<span id="cb82-107"><a href="#cb82-107" aria-hidden="true" tabindex="-1"></a><span class="co"># Base R data frame</span></span>
+<span id="cb82-108"><a href="#cb82-108" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb82-109"><a href="#cb82-109" aria-hidden="true" tabindex="-1"></a>  <span class="at">strategy =</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>),</span>
+<span id="cb82-110"><a href="#cb82-110" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff   =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>)</span>
+<span id="cb82-111"><a href="#cb82-111" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb82-112"><a href="#cb82-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-113"><a href="#cb82-113" aria-hidden="true" tabindex="-1"></a><span class="co"># Tidyverse tibble</span></span>
+<span id="cb82-114"><a href="#cb82-114" aria-hidden="true" tabindex="-1"></a>tbl <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb82-115"><a href="#cb82-115" aria-hidden="true" tabindex="-1"></a>  <span class="at">strategy =</span> <span class="fu">c</span>(<span class="st">"Cooperate"</span>, <span class="st">"Defect"</span>),</span>
+<span id="cb82-116"><a href="#cb82-116" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff   =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>)</span>
+<span id="cb82-117"><a href="#cb82-117" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb82-118"><a href="#cb82-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-119"><a href="#cb82-119" aria-hidden="true" tabindex="-1"></a><span class="co"># Tibbles print more informatively</span></span>
+<span id="cb82-120"><a href="#cb82-120" aria-hidden="true" tabindex="-1"></a>tbl</span>
+<span id="cb82-121"><a href="#cb82-121" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-122"><a href="#cb82-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-123"><a href="#cb82-123" aria-hidden="true" tabindex="-1"></a><span class="fu">## Control flow</span></span>
+<span id="cb82-124"><a href="#cb82-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-125"><a href="#cb82-125" aria-hidden="true" tabindex="-1"></a><span class="fu">### Conditionals</span></span>
+<span id="cb82-126"><a href="#cb82-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-129"><a href="#cb82-129" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-130"><a href="#cb82-130" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: conditionals</span></span>
+<span id="cb82-131"><a href="#cb82-131" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb82-132"><a href="#cb82-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-133"><a href="#cb82-133" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">3</span>) {</span>
+<span id="cb82-134"><a href="#cb82-134" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="st">"high"</span></span>
+<span id="cb82-135"><a href="#cb82-135" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (x <span class="sc">&gt;</span> <span class="dv">1</span>) {</span>
+<span id="cb82-136"><a href="#cb82-136" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="st">"medium"</span></span>
+<span id="cb82-137"><a href="#cb82-137" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb82-138"><a href="#cb82-138" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="st">"low"</span></span>
+<span id="cb82-139"><a href="#cb82-139" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb82-140"><a href="#cb82-140" aria-hidden="true" tabindex="-1"></a>result</span>
+<span id="cb82-141"><a href="#cb82-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-142"><a href="#cb82-142" aria-hidden="true" tabindex="-1"></a><span class="co"># Vectorised conditional</span></span>
+<span id="cb82-143"><a href="#cb82-143" aria-hidden="true" tabindex="-1"></a><span class="fu">ifelse</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>) <span class="sc">&gt;</span> <span class="dv">2</span>, <span class="st">"above"</span>, <span class="st">"below"</span>)</span>
+<span id="cb82-144"><a href="#cb82-144" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-145"><a href="#cb82-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-146"><a href="#cb82-146" aria-hidden="true" tabindex="-1"></a><span class="fu">### Loops</span></span>
+<span id="cb82-147"><a href="#cb82-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-150"><a href="#cb82-150" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-151"><a href="#cb82-151" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: loops</span></span>
+<span id="cb82-152"><a href="#cb82-152" aria-hidden="true" tabindex="-1"></a><span class="co"># for loop</span></span>
+<span id="cb82-153"><a href="#cb82-153" aria-hidden="true" tabindex="-1"></a>total <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb82-154"><a href="#cb82-154" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>) {</span>
+<span id="cb82-155"><a href="#cb82-155" aria-hidden="true" tabindex="-1"></a>  total <span class="ot">&lt;-</span> total <span class="sc">+</span> i</span>
+<span id="cb82-156"><a href="#cb82-156" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb82-157"><a href="#cb82-157" aria-hidden="true" tabindex="-1"></a>total</span>
+<span id="cb82-158"><a href="#cb82-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-159"><a href="#cb82-159" aria-hidden="true" tabindex="-1"></a><span class="co"># while loop</span></span>
+<span id="cb82-160"><a href="#cb82-160" aria-hidden="true" tabindex="-1"></a>count <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb82-161"><a href="#cb82-161" aria-hidden="true" tabindex="-1"></a>value <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb82-162"><a href="#cb82-162" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (value <span class="sc">&lt;</span> <span class="dv">100</span>) {</span>
+<span id="cb82-163"><a href="#cb82-163" aria-hidden="true" tabindex="-1"></a>  value <span class="ot">&lt;-</span> value <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb82-164"><a href="#cb82-164" aria-hidden="true" tabindex="-1"></a>  count <span class="ot">&lt;-</span> count <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb82-165"><a href="#cb82-165" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb82-166"><a href="#cb82-166" aria-hidden="true" tabindex="-1"></a>count</span>
+<span id="cb82-167"><a href="#cb82-167" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-168"><a href="#cb82-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-169"><a href="#cb82-169" aria-hidden="true" tabindex="-1"></a><span class="fu">### The apply family</span></span>
+<span id="cb82-170"><a href="#cb82-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-171"><a href="#cb82-171" aria-hidden="true" tabindex="-1"></a>The <span class="in">`apply`</span> functions replace explicit loops with concise functional calls.</span>
+<span id="cb82-172"><a href="#cb82-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-175"><a href="#cb82-175" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-176"><a href="#cb82-176" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: apply</span></span>
+<span id="cb82-177"><a href="#cb82-177" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, <span class="at">nrow =</span> <span class="dv">3</span>)</span>
 <span id="cb82-178"><a href="#cb82-178" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-179"><a href="#cb82-179" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply across columns (margin = 2)</span></span>
-<span id="cb82-180"><a href="#cb82-180" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(A, <span class="dv">2</span>, mean)</span>
+<span id="cb82-179"><a href="#cb82-179" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply across rows (margin = 1)</span></span>
+<span id="cb82-180"><a href="#cb82-180" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(A, <span class="dv">1</span>, sum)</span>
 <span id="cb82-181"><a href="#cb82-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-182"><a href="#cb82-182" aria-hidden="true" tabindex="-1"></a><span class="co"># sapply returns a vector; lapply returns a list</span></span>
-<span id="cb82-183"><a href="#cb82-183" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb82-184"><a href="#cb82-184" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="cf">function</span>(x) <span class="fu">rep</span>(x, x))</span>
-<span id="cb82-185"><a href="#cb82-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-186"><a href="#cb82-186" aria-hidden="true" tabindex="-1"></a><span class="co"># vapply is like sapply but with a specified return type</span></span>
-<span id="cb82-187"><a href="#cb82-187" aria-hidden="true" tabindex="-1"></a><span class="fu">vapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>, <span class="fu">numeric</span>(<span class="dv">1</span>))</span>
-<span id="cb82-188"><a href="#cb82-188" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-189"><a href="#cb82-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-190"><a href="#cb82-190" aria-hidden="true" tabindex="-1"></a><span class="fu">## Functions</span></span>
-<span id="cb82-191"><a href="#cb82-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-192"><a href="#cb82-192" aria-hidden="true" tabindex="-1"></a><span class="fu">### Defining functions</span></span>
-<span id="cb82-193"><a href="#cb82-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-196"><a href="#cb82-196" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-197"><a href="#cb82-197" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: functions</span></span>
-<span id="cb82-198"><a href="#cb82-198" aria-hidden="true" tabindex="-1"></a><span class="co"># A function that computes expected payoff</span></span>
-<span id="cb82-199"><a href="#cb82-199" aria-hidden="true" tabindex="-1"></a>expected_payoff <span class="ot">&lt;-</span> <span class="cf">function</span>(payoff_vec, prob_vec) {</span>
-<span id="cb82-200"><a href="#cb82-200" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>(payoff_vec <span class="sc">*</span> prob_vec)</span>
-<span id="cb82-201"><a href="#cb82-201" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb82-202"><a href="#cb82-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-203"><a href="#cb82-203" aria-hidden="true" tabindex="-1"></a><span class="fu">expected_payoff</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.4</span>))</span>
-<span id="cb82-204"><a href="#cb82-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-205"><a href="#cb82-205" aria-hidden="true" tabindex="-1"></a><span class="co"># Default arguments</span></span>
-<span id="cb82-206"><a href="#cb82-206" aria-hidden="true" tabindex="-1"></a>greet <span class="ot">&lt;-</span> <span class="cf">function</span>(name, <span class="at">greeting =</span> <span class="st">"Hello"</span>) {</span>
-<span id="cb82-207"><a href="#cb82-207" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste</span>(greeting, name)</span>
-<span id="cb82-208"><a href="#cb82-208" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb82-209"><a href="#cb82-209" aria-hidden="true" tabindex="-1"></a><span class="fu">greet</span>(<span class="st">"Alice"</span>)</span>
-<span id="cb82-210"><a href="#cb82-210" aria-hidden="true" tabindex="-1"></a><span class="fu">greet</span>(<span class="st">"Bob"</span>, <span class="at">greeting =</span> <span class="st">"Hi"</span>)</span>
-<span id="cb82-211"><a href="#cb82-211" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-212"><a href="#cb82-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-213"><a href="#cb82-213" aria-hidden="true" tabindex="-1"></a><span class="fu">### Closures and environments</span></span>
-<span id="cb82-214"><a href="#cb82-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-215"><a href="#cb82-215" aria-hidden="true" tabindex="-1"></a>A closure is a function that captures variables from its enclosing environment. This pattern is useful for creating parameterised game constructors.</span>
-<span id="cb82-216"><a href="#cb82-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-219"><a href="#cb82-219" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-220"><a href="#cb82-220" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: closures</span></span>
-<span id="cb82-221"><a href="#cb82-221" aria-hidden="true" tabindex="-1"></a>make_discounter <span class="ot">&lt;-</span> <span class="cf">function</span>(delta) {</span>
-<span id="cb82-222"><a href="#cb82-222" aria-hidden="true" tabindex="-1"></a>  <span class="co"># delta is captured in the closure</span></span>
-<span id="cb82-223"><a href="#cb82-223" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(payoffs) {</span>
-<span id="cb82-224"><a href="#cb82-224" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(payoffs)</span>
-<span id="cb82-225"><a href="#cb82-225" aria-hidden="true" tabindex="-1"></a>    weights <span class="ot">&lt;-</span> delta<span class="sc">^</span>(<span class="fu">seq_len</span>(n) <span class="sc">-</span> <span class="dv">1</span>)</span>
-<span id="cb82-226"><a href="#cb82-226" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(payoffs <span class="sc">*</span> weights)</span>
-<span id="cb82-227"><a href="#cb82-227" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb82-228"><a href="#cb82-228" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb82-229"><a href="#cb82-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-230"><a href="#cb82-230" aria-hidden="true" tabindex="-1"></a>discount_95 <span class="ot">&lt;-</span> <span class="fu">make_discounter</span>(<span class="fl">0.95</span>)</span>
-<span id="cb82-231"><a href="#cb82-231" aria-hidden="true" tabindex="-1"></a><span class="fu">discount_95</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>))</span>
+<span id="cb82-182"><a href="#cb82-182" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply across columns (margin = 2)</span></span>
+<span id="cb82-183"><a href="#cb82-183" aria-hidden="true" tabindex="-1"></a><span class="fu">apply</span>(A, <span class="dv">2</span>, mean)</span>
+<span id="cb82-184"><a href="#cb82-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-185"><a href="#cb82-185" aria-hidden="true" tabindex="-1"></a><span class="co"># sapply returns a vector; lapply returns a list</span></span>
+<span id="cb82-186"><a href="#cb82-186" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb82-187"><a href="#cb82-187" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, <span class="cf">function</span>(x) <span class="fu">rep</span>(x, x))</span>
+<span id="cb82-188"><a href="#cb82-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-189"><a href="#cb82-189" aria-hidden="true" tabindex="-1"></a><span class="co"># vapply is like sapply but with a specified return type</span></span>
+<span id="cb82-190"><a href="#cb82-190" aria-hidden="true" tabindex="-1"></a><span class="fu">vapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>, <span class="fu">numeric</span>(<span class="dv">1</span>))</span>
+<span id="cb82-191"><a href="#cb82-191" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-192"><a href="#cb82-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-193"><a href="#cb82-193" aria-hidden="true" tabindex="-1"></a><span class="fu">## Functions</span></span>
+<span id="cb82-194"><a href="#cb82-194" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-195"><a href="#cb82-195" aria-hidden="true" tabindex="-1"></a><span class="fu">### Defining functions</span></span>
+<span id="cb82-196"><a href="#cb82-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-199"><a href="#cb82-199" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-200"><a href="#cb82-200" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: functions</span></span>
+<span id="cb82-201"><a href="#cb82-201" aria-hidden="true" tabindex="-1"></a><span class="co"># A function that computes expected payoff</span></span>
+<span id="cb82-202"><a href="#cb82-202" aria-hidden="true" tabindex="-1"></a>expected_payoff <span class="ot">&lt;-</span> <span class="cf">function</span>(payoff_vec, prob_vec) {</span>
+<span id="cb82-203"><a href="#cb82-203" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>(payoff_vec <span class="sc">*</span> prob_vec)</span>
+<span id="cb82-204"><a href="#cb82-204" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb82-205"><a href="#cb82-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-206"><a href="#cb82-206" aria-hidden="true" tabindex="-1"></a><span class="fu">expected_payoff</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>), <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.4</span>))</span>
+<span id="cb82-207"><a href="#cb82-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-208"><a href="#cb82-208" aria-hidden="true" tabindex="-1"></a><span class="co"># Default arguments</span></span>
+<span id="cb82-209"><a href="#cb82-209" aria-hidden="true" tabindex="-1"></a>greet <span class="ot">&lt;-</span> <span class="cf">function</span>(name, <span class="at">greeting =</span> <span class="st">"Hello"</span>) {</span>
+<span id="cb82-210"><a href="#cb82-210" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste</span>(greeting, name)</span>
+<span id="cb82-211"><a href="#cb82-211" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb82-212"><a href="#cb82-212" aria-hidden="true" tabindex="-1"></a><span class="fu">greet</span>(<span class="st">"Alice"</span>)</span>
+<span id="cb82-213"><a href="#cb82-213" aria-hidden="true" tabindex="-1"></a><span class="fu">greet</span>(<span class="st">"Bob"</span>, <span class="at">greeting =</span> <span class="st">"Hi"</span>)</span>
+<span id="cb82-214"><a href="#cb82-214" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-215"><a href="#cb82-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-216"><a href="#cb82-216" aria-hidden="true" tabindex="-1"></a><span class="fu">### Closures and environments</span></span>
+<span id="cb82-217"><a href="#cb82-217" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-218"><a href="#cb82-218" aria-hidden="true" tabindex="-1"></a>A closure is a function that captures variables from its enclosing environment. This pattern is useful for creating parameterised game constructors.</span>
+<span id="cb82-219"><a href="#cb82-219" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-222"><a href="#cb82-222" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-223"><a href="#cb82-223" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: closures</span></span>
+<span id="cb82-224"><a href="#cb82-224" aria-hidden="true" tabindex="-1"></a>make_discounter <span class="ot">&lt;-</span> <span class="cf">function</span>(delta) {</span>
+<span id="cb82-225"><a href="#cb82-225" aria-hidden="true" tabindex="-1"></a>  <span class="co"># delta is captured in the closure</span></span>
+<span id="cb82-226"><a href="#cb82-226" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(payoffs) {</span>
+<span id="cb82-227"><a href="#cb82-227" aria-hidden="true" tabindex="-1"></a>    n <span class="ot">&lt;-</span> <span class="fu">length</span>(payoffs)</span>
+<span id="cb82-228"><a href="#cb82-228" aria-hidden="true" tabindex="-1"></a>    weights <span class="ot">&lt;-</span> delta<span class="sc">^</span>(<span class="fu">seq_len</span>(n) <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb82-229"><a href="#cb82-229" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(payoffs <span class="sc">*</span> weights)</span>
+<span id="cb82-230"><a href="#cb82-230" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb82-231"><a href="#cb82-231" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb82-232"><a href="#cb82-232" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-233"><a href="#cb82-233" aria-hidden="true" tabindex="-1"></a><span class="co"># The enclosed value of delta persists</span></span>
-<span id="cb82-234"><a href="#cb82-234" aria-hidden="true" tabindex="-1"></a>discount_50 <span class="ot">&lt;-</span> <span class="fu">make_discounter</span>(<span class="fl">0.50</span>)</span>
-<span id="cb82-235"><a href="#cb82-235" aria-hidden="true" tabindex="-1"></a><span class="fu">discount_50</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>))</span>
-<span id="cb82-236"><a href="#cb82-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-237"><a href="#cb82-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-238"><a href="#cb82-238" aria-hidden="true" tabindex="-1"></a><span class="fu">### Anonymous functions</span></span>
-<span id="cb82-239"><a href="#cb82-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-240"><a href="#cb82-240" aria-hidden="true" tabindex="-1"></a>R 4.1+ supports the shorthand <span class="in">`\(x)`</span> syntax for anonymous (lambda) functions.</span>
-<span id="cb82-241"><a href="#cb82-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-244"><a href="#cb82-244" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-245"><a href="#cb82-245" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: anonymous</span></span>
-<span id="cb82-246"><a href="#cb82-246" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, \(x) x<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb82-247"><a href="#cb82-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-248"><a href="#cb82-248" aria-hidden="true" tabindex="-1"></a><span class="co"># Equivalent to the older syntax:</span></span>
-<span id="cb82-249"><a href="#cb82-249" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb82-250"><a href="#cb82-250" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-251"><a href="#cb82-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-252"><a href="#cb82-252" aria-hidden="true" tabindex="-1"></a><span class="fu">## Tidyverse basics</span></span>
-<span id="cb82-253"><a href="#cb82-253" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-254"><a href="#cb82-254" aria-hidden="true" tabindex="-1"></a>The tidyverse is a collection of packages for data wrangling and visualisation. This book uses it extensively.</span>
-<span id="cb82-255"><a href="#cb82-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-256"><a href="#cb82-256" aria-hidden="true" tabindex="-1"></a><span class="fu">### The pipe operator</span></span>
-<span id="cb82-257"><a href="#cb82-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-258"><a href="#cb82-258" aria-hidden="true" tabindex="-1"></a>The pipe <span class="in">`|&gt;`</span> (base R 4.1+) or <span class="in">`%&gt;%`</span> (magrittr) passes the left-hand side as the first argument to the right-hand side.</span>
-<span id="cb82-259"><a href="#cb82-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-262"><a href="#cb82-262" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-263"><a href="#cb82-263" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pipe</span></span>
-<span id="cb82-264"><a href="#cb82-264" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">9</span>) <span class="sc">|&gt;</span></span>
-<span id="cb82-265"><a href="#cb82-265" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sort</span>() <span class="sc">|&gt;</span></span>
-<span id="cb82-266"><a href="#cb82-266" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rev</span>() <span class="sc">|&gt;</span></span>
-<span id="cb82-267"><a href="#cb82-267" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">3</span>)</span>
-<span id="cb82-268"><a href="#cb82-268" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-269"><a href="#cb82-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-270"><a href="#cb82-270" aria-hidden="true" tabindex="-1"></a><span class="fu">### dplyr verbs</span></span>
-<span id="cb82-271"><a href="#cb82-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-272"><a href="#cb82-272" aria-hidden="true" tabindex="-1"></a>The five core verbs handle the vast majority of data manipulation tasks.</span>
-<span id="cb82-273"><a href="#cb82-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-276"><a href="#cb82-276" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-277"><a href="#cb82-277" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: dplyr</span></span>
-<span id="cb82-278"><a href="#cb82-278" aria-hidden="true" tabindex="-1"></a>game_results <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb82-279"><a href="#cb82-279" aria-hidden="true" tabindex="-1"></a>  <span class="at">round    =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>,</span>
-<span id="cb82-280"><a href="#cb82-280" aria-hidden="true" tabindex="-1"></a>  <span class="at">player_1 =</span> <span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"D"</span>),</span>
-<span id="cb82-281"><a href="#cb82-281" aria-hidden="true" tabindex="-1"></a>  <span class="at">player_2 =</span> <span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>),</span>
-<span id="cb82-282"><a href="#cb82-282" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_1 =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
-<span id="cb82-283"><a href="#cb82-283" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_2 =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb82-284"><a href="#cb82-284" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb82-285"><a href="#cb82-285" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-286"><a href="#cb82-286" aria-hidden="true" tabindex="-1"></a><span class="co"># filter: keep rows matching a condition</span></span>
-<span id="cb82-287"><a href="#cb82-287" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">filter</span>(player_1 <span class="sc">==</span> <span class="st">"C"</span>)</span>
+<span id="cb82-233"><a href="#cb82-233" aria-hidden="true" tabindex="-1"></a>discount_95 <span class="ot">&lt;-</span> <span class="fu">make_discounter</span>(<span class="fl">0.95</span>)</span>
+<span id="cb82-234"><a href="#cb82-234" aria-hidden="true" tabindex="-1"></a><span class="fu">discount_95</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>))</span>
+<span id="cb82-235"><a href="#cb82-235" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-236"><a href="#cb82-236" aria-hidden="true" tabindex="-1"></a><span class="co"># The enclosed value of delta persists</span></span>
+<span id="cb82-237"><a href="#cb82-237" aria-hidden="true" tabindex="-1"></a>discount_50 <span class="ot">&lt;-</span> <span class="fu">make_discounter</span>(<span class="fl">0.50</span>)</span>
+<span id="cb82-238"><a href="#cb82-238" aria-hidden="true" tabindex="-1"></a><span class="fu">discount_50</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>, <span class="dv">3</span>))</span>
+<span id="cb82-239"><a href="#cb82-239" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-240"><a href="#cb82-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-241"><a href="#cb82-241" aria-hidden="true" tabindex="-1"></a><span class="fu">### Anonymous functions</span></span>
+<span id="cb82-242"><a href="#cb82-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-243"><a href="#cb82-243" aria-hidden="true" tabindex="-1"></a>R 4.1+ supports the shorthand <span class="in">`\(x)`</span> syntax for anonymous (lambda) functions.</span>
+<span id="cb82-244"><a href="#cb82-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-247"><a href="#cb82-247" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-248"><a href="#cb82-248" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: anonymous</span></span>
+<span id="cb82-249"><a href="#cb82-249" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, \(x) x<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb82-250"><a href="#cb82-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-251"><a href="#cb82-251" aria-hidden="true" tabindex="-1"></a><span class="co"># Equivalent to the older syntax:</span></span>
+<span id="cb82-252"><a href="#cb82-252" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="cf">function</span>(x) x<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb82-253"><a href="#cb82-253" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-254"><a href="#cb82-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-255"><a href="#cb82-255" aria-hidden="true" tabindex="-1"></a><span class="fu">## Tidyverse basics</span></span>
+<span id="cb82-256"><a href="#cb82-256" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-257"><a href="#cb82-257" aria-hidden="true" tabindex="-1"></a>The tidyverse is a collection of packages for data wrangling and visualisation. This book uses it extensively.</span>
+<span id="cb82-258"><a href="#cb82-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-259"><a href="#cb82-259" aria-hidden="true" tabindex="-1"></a><span class="fu">### The pipe operator</span></span>
+<span id="cb82-260"><a href="#cb82-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-261"><a href="#cb82-261" aria-hidden="true" tabindex="-1"></a>The pipe <span class="in">`|&gt;`</span> (base R 4.1+) or <span class="in">`%&gt;%`</span> (magrittr) passes the left-hand side as the first argument to the right-hand side.</span>
+<span id="cb82-262"><a href="#cb82-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-265"><a href="#cb82-265" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-266"><a href="#cb82-266" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pipe</span></span>
+<span id="cb82-267"><a href="#cb82-267" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">9</span>) <span class="sc">|&gt;</span></span>
+<span id="cb82-268"><a href="#cb82-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sort</span>() <span class="sc">|&gt;</span></span>
+<span id="cb82-269"><a href="#cb82-269" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rev</span>() <span class="sc">|&gt;</span></span>
+<span id="cb82-270"><a href="#cb82-270" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">3</span>)</span>
+<span id="cb82-271"><a href="#cb82-271" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-272"><a href="#cb82-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-273"><a href="#cb82-273" aria-hidden="true" tabindex="-1"></a><span class="fu">### dplyr verbs</span></span>
+<span id="cb82-274"><a href="#cb82-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-275"><a href="#cb82-275" aria-hidden="true" tabindex="-1"></a>The five core verbs handle the vast majority of data manipulation tasks.</span>
+<span id="cb82-276"><a href="#cb82-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-279"><a href="#cb82-279" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-280"><a href="#cb82-280" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: dplyr</span></span>
+<span id="cb82-281"><a href="#cb82-281" aria-hidden="true" tabindex="-1"></a>game_results <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb82-282"><a href="#cb82-282" aria-hidden="true" tabindex="-1"></a>  <span class="at">round    =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>,</span>
+<span id="cb82-283"><a href="#cb82-283" aria-hidden="true" tabindex="-1"></a>  <span class="at">player_1 =</span> <span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"D"</span>),</span>
+<span id="cb82-284"><a href="#cb82-284" aria-hidden="true" tabindex="-1"></a>  <span class="at">player_2 =</span> <span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>),</span>
+<span id="cb82-285"><a href="#cb82-285" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_1 =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb82-286"><a href="#cb82-286" aria-hidden="true" tabindex="-1"></a>  <span class="at">payoff_2 =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb82-287"><a href="#cb82-287" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb82-288"><a href="#cb82-288" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-289"><a href="#cb82-289" aria-hidden="true" tabindex="-1"></a><span class="co"># mutate: create or modify columns</span></span>
-<span id="cb82-290"><a href="#cb82-290" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">total =</span> payoff_1 <span class="sc">+</span> payoff_2)</span>
+<span id="cb82-289"><a href="#cb82-289" aria-hidden="true" tabindex="-1"></a><span class="co"># filter: keep rows matching a condition</span></span>
+<span id="cb82-290"><a href="#cb82-290" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">filter</span>(player_1 <span class="sc">==</span> <span class="st">"C"</span>)</span>
 <span id="cb82-291"><a href="#cb82-291" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-292"><a href="#cb82-292" aria-hidden="true" tabindex="-1"></a><span class="co"># select: choose columns</span></span>
-<span id="cb82-293"><a href="#cb82-293" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">select</span>(round, payoff_1, payoff_2)</span>
+<span id="cb82-292"><a href="#cb82-292" aria-hidden="true" tabindex="-1"></a><span class="co"># mutate: create or modify columns</span></span>
+<span id="cb82-293"><a href="#cb82-293" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">total =</span> payoff_1 <span class="sc">+</span> payoff_2)</span>
 <span id="cb82-294"><a href="#cb82-294" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-295"><a href="#cb82-295" aria-hidden="true" tabindex="-1"></a><span class="co"># arrange: reorder rows</span></span>
-<span id="cb82-296"><a href="#cb82-296" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(payoff_1))</span>
+<span id="cb82-295"><a href="#cb82-295" aria-hidden="true" tabindex="-1"></a><span class="co"># select: choose columns</span></span>
+<span id="cb82-296"><a href="#cb82-296" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">select</span>(round, payoff_1, payoff_2)</span>
 <span id="cb82-297"><a href="#cb82-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-298"><a href="#cb82-298" aria-hidden="true" tabindex="-1"></a><span class="co"># summarise (often with group_by)</span></span>
-<span id="cb82-299"><a href="#cb82-299" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span></span>
-<span id="cb82-300"><a href="#cb82-300" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(player_1) <span class="sc">|&gt;</span></span>
-<span id="cb82-301"><a href="#cb82-301" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb82-302"><a href="#cb82-302" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_payoff =</span> <span class="fu">mean</span>(payoff_1),</span>
-<span id="cb82-303"><a href="#cb82-303" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_rounds    =</span> <span class="fu">n</span>()</span>
-<span id="cb82-304"><a href="#cb82-304" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb82-305"><a href="#cb82-305" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-306"><a href="#cb82-306" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-307"><a href="#cb82-307" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pivoting</span></span>
-<span id="cb82-308"><a href="#cb82-308" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-309"><a href="#cb82-309" aria-hidden="true" tabindex="-1"></a>Converting between wide and long formats is essential for plotting.</span>
-<span id="cb82-310"><a href="#cb82-310" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-313"><a href="#cb82-313" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-314"><a href="#cb82-314" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pivot</span></span>
-<span id="cb82-315"><a href="#cb82-315" aria-hidden="true" tabindex="-1"></a><span class="co"># Wide to long</span></span>
-<span id="cb82-316"><a href="#cb82-316" aria-hidden="true" tabindex="-1"></a>game_long <span class="ot">&lt;-</span> game_results <span class="sc">|&gt;</span></span>
-<span id="cb82-317"><a href="#cb82-317" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb82-318"><a href="#cb82-318" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols      =</span> <span class="fu">starts_with</span>(<span class="st">"payoff"</span>),</span>
-<span id="cb82-319"><a href="#cb82-319" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to  =</span> <span class="st">"player"</span>,</span>
-<span id="cb82-320"><a href="#cb82-320" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"payoff"</span></span>
-<span id="cb82-321"><a href="#cb82-321" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb82-322"><a href="#cb82-322" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(game_long)</span>
-<span id="cb82-323"><a href="#cb82-323" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-324"><a href="#cb82-324" aria-hidden="true" tabindex="-1"></a><span class="co"># Long to wide</span></span>
-<span id="cb82-325"><a href="#cb82-325" aria-hidden="true" tabindex="-1"></a>game_long <span class="sc">|&gt;</span></span>
-<span id="cb82-326"><a href="#cb82-326" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> player, <span class="at">values_from =</span> payoff)</span>
-<span id="cb82-327"><a href="#cb82-327" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-328"><a href="#cb82-328" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-329"><a href="#cb82-329" aria-hidden="true" tabindex="-1"></a><span class="fu">### ggplot2 layers</span></span>
-<span id="cb82-330"><a href="#cb82-330" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-331"><a href="#cb82-331" aria-hidden="true" tabindex="-1"></a>The grammar of graphics builds plots layer by layer: data, aesthetics, geometries, and scales.</span>
-<span id="cb82-334"><a href="#cb82-334" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-335"><a href="#cb82-335" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: ggplot2-example</span></span>
-<span id="cb82-336"><a href="#cb82-336" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Payoffs across six rounds of a repeated game."</span></span>
-<span id="cb82-337"><a href="#cb82-337" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span></span>
-<span id="cb82-338"><a href="#cb82-338" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb82-339"><a href="#cb82-339" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"payoff"</span>),</span>
-<span id="cb82-340"><a href="#cb82-340" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"player"</span>,</span>
-<span id="cb82-341"><a href="#cb82-341" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"payoff"</span></span>
-<span id="cb82-342"><a href="#cb82-342" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb82-343"><a href="#cb82-343" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> round, <span class="at">y =</span> payoff, <span class="at">colour =</span> player)) <span class="sc">+</span></span>
-<span id="cb82-344"><a href="#cb82-344" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb82-345"><a href="#cb82-345" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb82-346"><a href="#cb82-346" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb82-347"><a href="#cb82-347" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="at">payoff_1 =</span> <span class="st">"#1b9e77"</span>, <span class="at">payoff_2 =</span> <span class="st">"#d95f02"</span>),</span>
-<span id="cb82-348"><a href="#cb82-348" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Player 1"</span>, <span class="st">"Player 2"</span>)</span>
-<span id="cb82-349"><a href="#cb82-349" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb82-350"><a href="#cb82-350" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Round"</span>, <span class="at">y =</span> <span class="st">"Payoff"</span>, <span class="at">colour =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb82-351"><a href="#cb82-351" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
-<span id="cb82-352"><a href="#cb82-352" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb82-353"><a href="#cb82-353" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-354"><a href="#cb82-354" aria-hidden="true" tabindex="-1"></a><span class="fu">## Useful idioms for this book</span></span>
-<span id="cb82-355"><a href="#cb82-355" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-356"><a href="#cb82-356" aria-hidden="true" tabindex="-1"></a>A handful of patterns recur throughout the chapters.</span>
-<span id="cb82-357"><a href="#cb82-357" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-360"><a href="#cb82-360" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb82-361"><a href="#cb82-361" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: idioms</span></span>
-<span id="cb82-362"><a href="#cb82-362" aria-hidden="true" tabindex="-1"></a><span class="co"># Replicate a simulation many times</span></span>
-<span id="cb82-363"><a href="#cb82-363" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">1000</span>, {</span>
-<span id="cb82-364"><a href="#cb82-364" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Heads"</span>, <span class="st">"Tails"</span>), <span class="dv">1</span>)</span>
-<span id="cb82-365"><a href="#cb82-365" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb82-366"><a href="#cb82-366" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(results)</span>
-<span id="cb82-367"><a href="#cb82-367" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-368"><a href="#cb82-368" aria-hidden="true" tabindex="-1"></a><span class="co"># Outer product for payoff grids</span></span>
-<span id="cb82-369"><a href="#cb82-369" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.25</span>)</span>
-<span id="cb82-370"><a href="#cb82-370" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.25</span>)</span>
-<span id="cb82-371"><a href="#cb82-371" aria-hidden="true" tabindex="-1"></a>payoff_grid <span class="ot">&lt;-</span> <span class="fu">outer</span>(p, q, <span class="cf">function</span>(pi, qi) <span class="dv">3</span> <span class="sc">*</span> pi <span class="sc">*</span> qi <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> pi))</span>
-<span id="cb82-372"><a href="#cb82-372" aria-hidden="true" tabindex="-1"></a>payoff_grid</span>
-<span id="cb82-373"><a href="#cb82-373" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-374"><a href="#cb82-374" aria-hidden="true" tabindex="-1"></a><span class="co"># Named vectors for readable code</span></span>
-<span id="cb82-375"><a href="#cb82-375" aria-hidden="true" tabindex="-1"></a>strategy_names <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">C =</span> <span class="st">"Cooperate"</span>, <span class="at">D =</span> <span class="st">"Defect"</span>)</span>
-<span id="cb82-376"><a href="#cb82-376" aria-hidden="true" tabindex="-1"></a>strategy_names[<span class="st">"C"</span>]</span>
-<span id="cb82-377"><a href="#cb82-377" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-378"><a href="#cb82-378" aria-hidden="true" tabindex="-1"></a><span class="co"># Setting seeds for reproducibility</span></span>
-<span id="cb82-379"><a href="#cb82-379" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb82-380"><a href="#cb82-380" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, <span class="dv">5</span>)</span>
-<span id="cb82-381"><a href="#cb82-381" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-298"><a href="#cb82-298" aria-hidden="true" tabindex="-1"></a><span class="co"># arrange: reorder rows</span></span>
+<span id="cb82-299"><a href="#cb82-299" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(payoff_1))</span>
+<span id="cb82-300"><a href="#cb82-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-301"><a href="#cb82-301" aria-hidden="true" tabindex="-1"></a><span class="co"># summarise (often with group_by)</span></span>
+<span id="cb82-302"><a href="#cb82-302" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span></span>
+<span id="cb82-303"><a href="#cb82-303" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(player_1) <span class="sc">|&gt;</span></span>
+<span id="cb82-304"><a href="#cb82-304" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb82-305"><a href="#cb82-305" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_payoff =</span> <span class="fu">mean</span>(payoff_1),</span>
+<span id="cb82-306"><a href="#cb82-306" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_rounds    =</span> <span class="fu">n</span>()</span>
+<span id="cb82-307"><a href="#cb82-307" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb82-308"><a href="#cb82-308" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-309"><a href="#cb82-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-310"><a href="#cb82-310" aria-hidden="true" tabindex="-1"></a><span class="fu">### Pivoting</span></span>
+<span id="cb82-311"><a href="#cb82-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-312"><a href="#cb82-312" aria-hidden="true" tabindex="-1"></a>Converting between wide and long formats is essential for plotting.</span>
+<span id="cb82-313"><a href="#cb82-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-316"><a href="#cb82-316" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-317"><a href="#cb82-317" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pivot</span></span>
+<span id="cb82-318"><a href="#cb82-318" aria-hidden="true" tabindex="-1"></a><span class="co"># Wide to long</span></span>
+<span id="cb82-319"><a href="#cb82-319" aria-hidden="true" tabindex="-1"></a>game_long <span class="ot">&lt;-</span> game_results <span class="sc">|&gt;</span></span>
+<span id="cb82-320"><a href="#cb82-320" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb82-321"><a href="#cb82-321" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols      =</span> <span class="fu">starts_with</span>(<span class="st">"payoff"</span>),</span>
+<span id="cb82-322"><a href="#cb82-322" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to  =</span> <span class="st">"player"</span>,</span>
+<span id="cb82-323"><a href="#cb82-323" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"payoff"</span></span>
+<span id="cb82-324"><a href="#cb82-324" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb82-325"><a href="#cb82-325" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(game_long)</span>
+<span id="cb82-326"><a href="#cb82-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-327"><a href="#cb82-327" aria-hidden="true" tabindex="-1"></a><span class="co"># Long to wide</span></span>
+<span id="cb82-328"><a href="#cb82-328" aria-hidden="true" tabindex="-1"></a>game_long <span class="sc">|&gt;</span></span>
+<span id="cb82-329"><a href="#cb82-329" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> player, <span class="at">values_from =</span> payoff)</span>
+<span id="cb82-330"><a href="#cb82-330" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-331"><a href="#cb82-331" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-332"><a href="#cb82-332" aria-hidden="true" tabindex="-1"></a><span class="fu">### ggplot2 layers</span></span>
+<span id="cb82-333"><a href="#cb82-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-334"><a href="#cb82-334" aria-hidden="true" tabindex="-1"></a>The grammar of graphics builds plots layer by layer: data, aesthetics, geometries, and scales.</span>
+<span id="cb82-337"><a href="#cb82-337" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-338"><a href="#cb82-338" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: ggplot2-example</span></span>
+<span id="cb82-339"><a href="#cb82-339" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Payoffs across six rounds of a repeated game."</span></span>
+<span id="cb82-340"><a href="#cb82-340" aria-hidden="true" tabindex="-1"></a>game_results <span class="sc">|&gt;</span></span>
+<span id="cb82-341"><a href="#cb82-341" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb82-342"><a href="#cb82-342" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"payoff"</span>),</span>
+<span id="cb82-343"><a href="#cb82-343" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"player"</span>,</span>
+<span id="cb82-344"><a href="#cb82-344" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"payoff"</span></span>
+<span id="cb82-345"><a href="#cb82-345" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb82-346"><a href="#cb82-346" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> round, <span class="at">y =</span> payoff, <span class="at">colour =</span> player)) <span class="sc">+</span></span>
+<span id="cb82-347"><a href="#cb82-347" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb82-348"><a href="#cb82-348" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb82-349"><a href="#cb82-349" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb82-350"><a href="#cb82-350" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="at">payoff_1 =</span> <span class="st">"#1b9e77"</span>, <span class="at">payoff_2 =</span> <span class="st">"#d95f02"</span>),</span>
+<span id="cb82-351"><a href="#cb82-351" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Player 1"</span>, <span class="st">"Player 2"</span>)</span>
+<span id="cb82-352"><a href="#cb82-352" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb82-353"><a href="#cb82-353" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Round"</span>, <span class="at">y =</span> <span class="st">"Payoff"</span>, <span class="at">colour =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb82-354"><a href="#cb82-354" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb82-355"><a href="#cb82-355" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb82-356"><a href="#cb82-356" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-357"><a href="#cb82-357" aria-hidden="true" tabindex="-1"></a><span class="fu">## Useful idioms for this book</span></span>
+<span id="cb82-358"><a href="#cb82-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-359"><a href="#cb82-359" aria-hidden="true" tabindex="-1"></a>A handful of patterns recur throughout the chapters.</span>
+<span id="cb82-360"><a href="#cb82-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-363"><a href="#cb82-363" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb82-364"><a href="#cb82-364" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: idioms</span></span>
+<span id="cb82-365"><a href="#cb82-365" aria-hidden="true" tabindex="-1"></a><span class="co"># Replicate a simulation many times</span></span>
+<span id="cb82-366"><a href="#cb82-366" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">replicate</span>(<span class="dv">1000</span>, {</span>
+<span id="cb82-367"><a href="#cb82-367" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Heads"</span>, <span class="st">"Tails"</span>), <span class="dv">1</span>)</span>
+<span id="cb82-368"><a href="#cb82-368" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb82-369"><a href="#cb82-369" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(results)</span>
+<span id="cb82-370"><a href="#cb82-370" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-371"><a href="#cb82-371" aria-hidden="true" tabindex="-1"></a><span class="co"># Outer product for payoff grids</span></span>
+<span id="cb82-372"><a href="#cb82-372" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.25</span>)</span>
+<span id="cb82-373"><a href="#cb82-373" aria-hidden="true" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.25</span>)</span>
+<span id="cb82-374"><a href="#cb82-374" aria-hidden="true" tabindex="-1"></a>payoff_grid <span class="ot">&lt;-</span> <span class="fu">outer</span>(p, q, <span class="cf">function</span>(pi, qi) <span class="dv">3</span> <span class="sc">*</span> pi <span class="sc">*</span> qi <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> pi))</span>
+<span id="cb82-375"><a href="#cb82-375" aria-hidden="true" tabindex="-1"></a>payoff_grid</span>
+<span id="cb82-376"><a href="#cb82-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-377"><a href="#cb82-377" aria-hidden="true" tabindex="-1"></a><span class="co"># Named vectors for readable code</span></span>
+<span id="cb82-378"><a href="#cb82-378" aria-hidden="true" tabindex="-1"></a>strategy_names <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">C =</span> <span class="st">"Cooperate"</span>, <span class="at">D =</span> <span class="st">"Defect"</span>)</span>
+<span id="cb82-379"><a href="#cb82-379" aria-hidden="true" tabindex="-1"></a>strategy_names[<span class="st">"C"</span>]</span>
+<span id="cb82-380"><a href="#cb82-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb82-381"><a href="#cb82-381" aria-hidden="true" tabindex="-1"></a><span class="co"># Setting seeds for reproducibility</span></span>
+<span id="cb82-382"><a href="#cb82-382" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb82-383"><a href="#cb82-383" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, <span class="dv">5</span>)</span>
+<span id="cb82-384"><a href="#cb82-384" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

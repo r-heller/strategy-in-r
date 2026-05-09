@@ -769,7 +769,7 @@ window.Quarto = {
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-2-r-toolkit/14-custom-solvers.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-2-r-toolkit/14-custom-solvers.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-2-r-toolkit/14-custom-solvers.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-2-r-toolkit/14-custom-solvers.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="../downloads/building-custom-solvers-in-r.pdf"><i class="bi bi-file-pdf"></i>Download Chapter PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1878,477 +1878,480 @@ Shoham, Y., &amp; Leyton-Brown, K. (2009). <em>Multiagent systems: Algorithmic, 
 <span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
 <span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "Lemke-Howson, support enumeration, and fictitious play implemented from scratch in R --- understanding the algorithms behind Nash equilibrium computation by building them yourself."</span></span>
 <span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["Lemke-Howson", "support enumeration", "fictitious play", "solver", "Nash equilibrium", "algorithm"]</span></span>
-<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Building Custom Solvers in R {#sec-custom-solvers}</span></span>
-<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
-<span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
-<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"solvers.R"</span>))</span>
-<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-20"><a href="#cb62-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-21"><a href="#cb62-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
-<span id="cb62-22"><a href="#cb62-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-23"><a href="#cb62-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Explain the geometric intuition behind the Lemke--Howson algorithm as a path-following method on the best-response polytope.</span>
-<span id="cb62-24"><a href="#cb62-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement support enumeration for general $N \times M$ bimatrix games and understand its exponential worst-case complexity.</span>
-<span id="cb62-25"><a href="#cb62-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement fictitious play from scratch and interpret its convergence properties.</span>
-<span id="cb62-26"><a href="#cb62-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visualize fictitious play trajectories and assess convergence to mixed Nash equilibria.</span>
-<span id="cb62-27"><a href="#cb62-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare the strengths and limitations of exact vs. iterative equilibrium solvers.</span>
-<span id="cb62-28"><a href="#cb62-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-29"><a href="#cb62-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
-<span id="cb62-30"><a href="#cb62-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-31"><a href="#cb62-31" aria-hidden="true" tabindex="-1"></a>The solvers in <span class="in">`R/solvers.R`</span> handle 2x2 games by closed-form calculation. The support enumeration solver in @sec-nashpy-reticulate extends this to general bimatrix games but is exponential in the number of strategies. Neither approach gives us geometric insight into *why* equilibria exist or *how* they are structured in the space of strategy profiles.</span>
-<span id="cb62-32"><a href="#cb62-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-33"><a href="#cb62-33" aria-hidden="true" tabindex="-1"></a>This chapter builds three algorithms from scratch, each offering a different perspective on Nash equilibrium computation:</span>
-<span id="cb62-34"><a href="#cb62-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-35"><a href="#cb62-35" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Support enumeration** (recap and generalization) finds all equilibria by exhaustive search over possible support pairs. It is complete for generic games but slow for large ones.</span>
-<span id="cb62-36"><a href="#cb62-36" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**The Lemke--Howson algorithm** follows a path through the vertices of a polytope defined by the best-response conditions, arriving at a Nash equilibrium in finite steps. It is the most widely used exact algorithm for bimatrix games and underlies Gambit's <span class="in">`gambit-lcp`</span> solver.</span>
-<span id="cb62-37"><a href="#cb62-37" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Fictitious play** is an iterative learning process: each player repeatedly best-responds to the empirical frequency of the opponent's past actions. Under certain conditions, the empirical frequencies converge to a Nash equilibrium.</span>
-<span id="cb62-38"><a href="#cb62-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-39"><a href="#cb62-39" aria-hidden="true" tabindex="-1"></a>Together these three algorithms span the landscape from brute-force enumeration through structured exact computation to adaptive approximation. Building them from scratch demystifies the "black box" of equilibrium solvers and prepares the reader to modify or extend them for custom applications <span class="co">[</span><span class="ot">@shoham2009, Chapter 4</span><span class="co">]</span>.</span>
-<span id="cb62-40"><a href="#cb62-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-41"><a href="#cb62-41" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
-<span id="cb62-42"><a href="#cb62-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-43"><a href="#cb62-43" aria-hidden="true" tabindex="-1"></a><span class="fu">### Support enumeration (recap)</span></span>
-<span id="cb62-44"><a href="#cb62-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-45"><a href="#cb62-45" aria-hidden="true" tabindex="-1"></a>Support enumeration, detailed in @sec-nashpy-reticulate, exploits the indifference principle from @sec-mixed-strategies. For each pair of equal-sized support sets $(S_1, S_2)$, we solve the linear system that makes each player indifferent across the actions in the opponent's support, check non-negativity and the no-profitable-deviation condition, and collect valid solutions. The algorithm is exact and complete for non-degenerate games, but its running time is exponential in the number of strategies.</span>
-<span id="cb62-46"><a href="#cb62-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-47"><a href="#cb62-47" aria-hidden="true" tabindex="-1"></a><span class="fu">### The Lemke--Howson algorithm</span></span>
-<span id="cb62-48"><a href="#cb62-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-49"><a href="#cb62-49" aria-hidden="true" tabindex="-1"></a>The Lemke--Howson algorithm (1964) takes a geometric approach. Given an $m \times n$ bimatrix game $(A, B)$ with $A, B &gt; 0$ (achieved by adding a constant if needed), define the **best-response polytopes**:</span>
-<span id="cb62-50"><a href="#cb62-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-51"><a href="#cb62-51" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb62-52"><a href="#cb62-52" aria-hidden="true" tabindex="-1"></a>P = <span class="sc">\{</span> x \in \mathbb{R}^m_{\geq 0} : B^\top x \leq \mathbf{1} <span class="sc">\}</span>, \quad</span>
-<span id="cb62-53"><a href="#cb62-53" aria-hidden="true" tabindex="-1"></a>Q = <span class="sc">\{</span> y \in \mathbb{R}^n_{\geq 0} : A y \leq \mathbf{1} <span class="sc">\}</span></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a><span class="an">other-links:</span></span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a><span class="co">  - text: Download Chapter PDF</span></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a><span class="co">    href: ../downloads/building-custom-solvers-in-r.pdf</span></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a><span class="co">    icon: file-pdf</span></span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># Building Custom Solvers in R {#sec-custom-solvers}</span></span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb62-20"><a href="#cb62-20" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb62-21"><a href="#cb62-21" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"solvers.R"</span>))</span>
+<span id="cb62-22"><a href="#cb62-22" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-23"><a href="#cb62-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-24"><a href="#cb62-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
+<span id="cb62-25"><a href="#cb62-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-26"><a href="#cb62-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Explain the geometric intuition behind the Lemke--Howson algorithm as a path-following method on the best-response polytope.</span>
+<span id="cb62-27"><a href="#cb62-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement support enumeration for general $N \times M$ bimatrix games and understand its exponential worst-case complexity.</span>
+<span id="cb62-28"><a href="#cb62-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement fictitious play from scratch and interpret its convergence properties.</span>
+<span id="cb62-29"><a href="#cb62-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visualize fictitious play trajectories and assess convergence to mixed Nash equilibria.</span>
+<span id="cb62-30"><a href="#cb62-30" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Compare the strengths and limitations of exact vs. iterative equilibrium solvers.</span>
+<span id="cb62-31"><a href="#cb62-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-32"><a href="#cb62-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
+<span id="cb62-33"><a href="#cb62-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-34"><a href="#cb62-34" aria-hidden="true" tabindex="-1"></a>The solvers in <span class="in">`R/solvers.R`</span> handle 2x2 games by closed-form calculation. The support enumeration solver in @sec-nashpy-reticulate extends this to general bimatrix games but is exponential in the number of strategies. Neither approach gives us geometric insight into *why* equilibria exist or *how* they are structured in the space of strategy profiles.</span>
+<span id="cb62-35"><a href="#cb62-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-36"><a href="#cb62-36" aria-hidden="true" tabindex="-1"></a>This chapter builds three algorithms from scratch, each offering a different perspective on Nash equilibrium computation:</span>
+<span id="cb62-37"><a href="#cb62-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-38"><a href="#cb62-38" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Support enumeration** (recap and generalization) finds all equilibria by exhaustive search over possible support pairs. It is complete for generic games but slow for large ones.</span>
+<span id="cb62-39"><a href="#cb62-39" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**The Lemke--Howson algorithm** follows a path through the vertices of a polytope defined by the best-response conditions, arriving at a Nash equilibrium in finite steps. It is the most widely used exact algorithm for bimatrix games and underlies Gambit's <span class="in">`gambit-lcp`</span> solver.</span>
+<span id="cb62-40"><a href="#cb62-40" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Fictitious play** is an iterative learning process: each player repeatedly best-responds to the empirical frequency of the opponent's past actions. Under certain conditions, the empirical frequencies converge to a Nash equilibrium.</span>
+<span id="cb62-41"><a href="#cb62-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-42"><a href="#cb62-42" aria-hidden="true" tabindex="-1"></a>Together these three algorithms span the landscape from brute-force enumeration through structured exact computation to adaptive approximation. Building them from scratch demystifies the "black box" of equilibrium solvers and prepares the reader to modify or extend them for custom applications <span class="co">[</span><span class="ot">@shoham2009, Chapter 4</span><span class="co">]</span>.</span>
+<span id="cb62-43"><a href="#cb62-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-44"><a href="#cb62-44" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
+<span id="cb62-45"><a href="#cb62-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-46"><a href="#cb62-46" aria-hidden="true" tabindex="-1"></a><span class="fu">### Support enumeration (recap)</span></span>
+<span id="cb62-47"><a href="#cb62-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-48"><a href="#cb62-48" aria-hidden="true" tabindex="-1"></a>Support enumeration, detailed in @sec-nashpy-reticulate, exploits the indifference principle from @sec-mixed-strategies. For each pair of equal-sized support sets $(S_1, S_2)$, we solve the linear system that makes each player indifferent across the actions in the opponent's support, check non-negativity and the no-profitable-deviation condition, and collect valid solutions. The algorithm is exact and complete for non-degenerate games, but its running time is exponential in the number of strategies.</span>
+<span id="cb62-49"><a href="#cb62-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-50"><a href="#cb62-50" aria-hidden="true" tabindex="-1"></a><span class="fu">### The Lemke--Howson algorithm</span></span>
+<span id="cb62-51"><a href="#cb62-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-52"><a href="#cb62-52" aria-hidden="true" tabindex="-1"></a>The Lemke--Howson algorithm (1964) takes a geometric approach. Given an $m \times n$ bimatrix game $(A, B)$ with $A, B &gt; 0$ (achieved by adding a constant if needed), define the **best-response polytopes**:</span>
+<span id="cb62-53"><a href="#cb62-53" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb62-54"><a href="#cb62-54" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb62-55"><a href="#cb62-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-56"><a href="#cb62-56" aria-hidden="true" tabindex="-1"></a>Each vertex of $P \times Q$ is labelled by the set of binding constraints. A pair $(x, y)$ is a Nash equilibrium if and only if it is **completely labelled** --- the union of labels from $x$ and $y$ covers all $m + n$ labels $<span class="sc">\{</span>1, \ldots, m+n<span class="sc">\}</span>$.</span>
-<span id="cb62-57"><a href="#cb62-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-58"><a href="#cb62-58" aria-hidden="true" tabindex="-1"></a>The algorithm starts from the artificial equilibrium $(0, 0)$ and drops one label $k$ (creating a "missing label"). It then follows a sequence of edges (pivots) on the polytope, alternately pivoting in $P$ and $Q$, until the missing label is picked up again. The resulting vertex pair is a Nash equilibrium.</span>
-<span id="cb62-59"><a href="#cb62-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-60"><a href="#cb62-60" aria-hidden="true" tabindex="-1"></a>The key properties are:</span>
-<span id="cb62-61"><a href="#cb62-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-62"><a href="#cb62-62" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Finiteness:** the path visits at most $2^{m+n}$ vertices, so the algorithm terminates.</span>
-<span id="cb62-63"><a href="#cb62-63" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Complementary pivoting:** at each step, exactly one constraint becomes binding or non-binding, analogous to a simplex-method pivot.</span>
-<span id="cb62-64"><a href="#cb62-64" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Choice of $k$ matters:** different starting labels $k$ may lead to different equilibria.</span>
-<span id="cb62-65"><a href="#cb62-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-66"><a href="#cb62-66" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb62-67"><a href="#cb62-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## Simplified implementation</span></span>
-<span id="cb62-68"><a href="#cb62-68" aria-hidden="true" tabindex="-1"></a>A full Lemke--Howson implementation requires careful handling of degeneracy via lexicographic pivoting. Our implementation below uses a simplified tableau approach suitable for small non-degenerate games. For production use, a solver like Gambit (see @sec-gtree-package) is preferable.</span>
-<span id="cb62-69"><a href="#cb62-69" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb62-70"><a href="#cb62-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-71"><a href="#cb62-71" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fictitious play</span></span>
-<span id="cb62-72"><a href="#cb62-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-73"><a href="#cb62-73" aria-hidden="true" tabindex="-1"></a>Fictitious play, introduced by Brown (1951), is an iterative learning dynamic:</span>
-<span id="cb62-74"><a href="#cb62-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-75"><a href="#cb62-75" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Each player starts with an initial action (or belief).</span>
-<span id="cb62-76"><a href="#cb62-76" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>At each iteration $t$, each player observes the opponent's entire history of actions and computes the **empirical frequency** of each action.</span>
-<span id="cb62-77"><a href="#cb62-77" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Each player best-responds to the opponent's empirical frequency.</span>
-<span id="cb62-78"><a href="#cb62-78" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>The empirical frequencies are updated.</span>
-<span id="cb62-79"><a href="#cb62-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-80"><a href="#cb62-80" aria-hidden="true" tabindex="-1"></a>Formally, let $n_j^t$ be the number of times the column player has chosen action $j$ through iteration $t$. The row player's empirical belief about the column player is $\hat{q}_j^t = n_j^t / t$. The row player then plays:</span>
-<span id="cb62-81"><a href="#cb62-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-82"><a href="#cb62-82" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb62-83"><a href="#cb62-83" aria-hidden="true" tabindex="-1"></a>a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t</span>
-<span id="cb62-84"><a href="#cb62-84" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb62-85"><a href="#cb62-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-86"><a href="#cb62-86" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
-<span id="cb62-87"><a href="#cb62-87" aria-hidden="true" tabindex="-1"></a><span class="fu">## Convergence of Fictitious Play</span></span>
-<span id="cb62-88"><a href="#cb62-88" aria-hidden="true" tabindex="-1"></a>Fictitious play converges to a Nash equilibrium in the following classes of games:</span>
-<span id="cb62-89"><a href="#cb62-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-90"><a href="#cb62-90" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Zero-sum games (Robinson, 1951), the class originally studied by @von-neumann1944.</span>
-<span id="cb62-91"><a href="#cb62-91" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Games solvable by iterated strict dominance.</span>
-<span id="cb62-92"><a href="#cb62-92" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$2 \times N$ games.</span>
-<span id="cb62-93"><a href="#cb62-93" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Games with a unique Nash equilibrium that is completely mixed.</span>
-<span id="cb62-94"><a href="#cb62-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-95"><a href="#cb62-95" aria-hidden="true" tabindex="-1"></a>However, fictitious play does *not* converge in all games --- Shapley (1964) constructed a $3 \times 3$ counterexample with cycling behaviour <span class="co">[</span><span class="ot">@osborne2004</span><span class="co">]</span>.</span>
-<span id="cb62-96"><a href="#cb62-96" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb62-55"><a href="#cb62-55" aria-hidden="true" tabindex="-1"></a>P = <span class="sc">\{</span> x \in \mathbb{R}^m_{\geq 0} : B^\top x \leq \mathbf{1} <span class="sc">\}</span>, \quad</span>
+<span id="cb62-56"><a href="#cb62-56" aria-hidden="true" tabindex="-1"></a>Q = <span class="sc">\{</span> y \in \mathbb{R}^n_{\geq 0} : A y \leq \mathbf{1} <span class="sc">\}</span></span>
+<span id="cb62-57"><a href="#cb62-57" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb62-58"><a href="#cb62-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-59"><a href="#cb62-59" aria-hidden="true" tabindex="-1"></a>Each vertex of $P \times Q$ is labelled by the set of binding constraints. A pair $(x, y)$ is a Nash equilibrium if and only if it is **completely labelled** --- the union of labels from $x$ and $y$ covers all $m + n$ labels $<span class="sc">\{</span>1, \ldots, m+n<span class="sc">\}</span>$.</span>
+<span id="cb62-60"><a href="#cb62-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-61"><a href="#cb62-61" aria-hidden="true" tabindex="-1"></a>The algorithm starts from the artificial equilibrium $(0, 0)$ and drops one label $k$ (creating a "missing label"). It then follows a sequence of edges (pivots) on the polytope, alternately pivoting in $P$ and $Q$, until the missing label is picked up again. The resulting vertex pair is a Nash equilibrium.</span>
+<span id="cb62-62"><a href="#cb62-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-63"><a href="#cb62-63" aria-hidden="true" tabindex="-1"></a>The key properties are:</span>
+<span id="cb62-64"><a href="#cb62-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-65"><a href="#cb62-65" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Finiteness:** the path visits at most $2^{m+n}$ vertices, so the algorithm terminates.</span>
+<span id="cb62-66"><a href="#cb62-66" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Complementary pivoting:** at each step, exactly one constraint becomes binding or non-binding, analogous to a simplex-method pivot.</span>
+<span id="cb62-67"><a href="#cb62-67" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Choice of $k$ matters:** different starting labels $k$ may lead to different equilibria.</span>
+<span id="cb62-68"><a href="#cb62-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-69"><a href="#cb62-69" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb62-70"><a href="#cb62-70" aria-hidden="true" tabindex="-1"></a><span class="fu">## Simplified implementation</span></span>
+<span id="cb62-71"><a href="#cb62-71" aria-hidden="true" tabindex="-1"></a>A full Lemke--Howson implementation requires careful handling of degeneracy via lexicographic pivoting. Our implementation below uses a simplified tableau approach suitable for small non-degenerate games. For production use, a solver like Gambit (see @sec-gtree-package) is preferable.</span>
+<span id="cb62-72"><a href="#cb62-72" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb62-73"><a href="#cb62-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-74"><a href="#cb62-74" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fictitious play</span></span>
+<span id="cb62-75"><a href="#cb62-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-76"><a href="#cb62-76" aria-hidden="true" tabindex="-1"></a>Fictitious play, introduced by Brown (1951), is an iterative learning dynamic:</span>
+<span id="cb62-77"><a href="#cb62-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-78"><a href="#cb62-78" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>Each player starts with an initial action (or belief).</span>
+<span id="cb62-79"><a href="#cb62-79" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>At each iteration $t$, each player observes the opponent's entire history of actions and computes the **empirical frequency** of each action.</span>
+<span id="cb62-80"><a href="#cb62-80" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>Each player best-responds to the opponent's empirical frequency.</span>
+<span id="cb62-81"><a href="#cb62-81" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>The empirical frequencies are updated.</span>
+<span id="cb62-82"><a href="#cb62-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-83"><a href="#cb62-83" aria-hidden="true" tabindex="-1"></a>Formally, let $n_j^t$ be the number of times the column player has chosen action $j$ through iteration $t$. The row player's empirical belief about the column player is $\hat{q}_j^t = n_j^t / t$. The row player then plays:</span>
+<span id="cb62-84"><a href="#cb62-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-85"><a href="#cb62-85" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb62-86"><a href="#cb62-86" aria-hidden="true" tabindex="-1"></a>a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t</span>
+<span id="cb62-87"><a href="#cb62-87" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb62-88"><a href="#cb62-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-89"><a href="#cb62-89" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip}</span>
+<span id="cb62-90"><a href="#cb62-90" aria-hidden="true" tabindex="-1"></a><span class="fu">## Convergence of Fictitious Play</span></span>
+<span id="cb62-91"><a href="#cb62-91" aria-hidden="true" tabindex="-1"></a>Fictitious play converges to a Nash equilibrium in the following classes of games:</span>
+<span id="cb62-92"><a href="#cb62-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-93"><a href="#cb62-93" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Zero-sum games (Robinson, 1951), the class originally studied by @von-neumann1944.</span>
+<span id="cb62-94"><a href="#cb62-94" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Games solvable by iterated strict dominance.</span>
+<span id="cb62-95"><a href="#cb62-95" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>$2 \times N$ games.</span>
+<span id="cb62-96"><a href="#cb62-96" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Games with a unique Nash equilibrium that is completely mixed.</span>
 <span id="cb62-97"><a href="#cb62-97" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-98"><a href="#cb62-98" aria-hidden="true" tabindex="-1"></a>When fictitious play converges, the empirical frequencies $(\hat{p}^t, \hat{q}^t)$ approach a Nash equilibrium, but the actual actions may continue to cycle. The convergence is of the *time-averaged* strategies, not the instantaneous ones.</span>
-<span id="cb62-99"><a href="#cb62-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-100"><a href="#cb62-100" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R</span></span>
-<span id="cb62-101"><a href="#cb62-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-102"><a href="#cb62-102" aria-hidden="true" tabindex="-1"></a><span class="fu">### Lemke--Howson sketch for 2x2 games</span></span>
-<span id="cb62-103"><a href="#cb62-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-104"><a href="#cb62-104" aria-hidden="true" tabindex="-1"></a>The following function demonstrates the complementary pivoting logic for 2x2 games. It illustrates the algorithm's structure rather than providing a production solver.</span>
-<span id="cb62-105"><a href="#cb62-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-108"><a href="#cb62-108" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-109"><a href="#cb62-109" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: lemke-howson-sketch</span></span>
-<span id="cb62-110"><a href="#cb62-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-111"><a href="#cb62-111" aria-hidden="true" tabindex="-1"></a>lemke_howson_2x2 <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B) {</span>
-<span id="cb62-112"><a href="#cb62-112" aria-hidden="true" tabindex="-1"></a>  <span class="co"># For 2x2 games, the Lemke-Howson path is short enough</span></span>
+<span id="cb62-98"><a href="#cb62-98" aria-hidden="true" tabindex="-1"></a>However, fictitious play does *not* converge in all games --- Shapley (1964) constructed a $3 \times 3$ counterexample with cycling behaviour <span class="co">[</span><span class="ot">@osborne2004</span><span class="co">]</span>.</span>
+<span id="cb62-99"><a href="#cb62-99" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb62-100"><a href="#cb62-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-101"><a href="#cb62-101" aria-hidden="true" tabindex="-1"></a>When fictitious play converges, the empirical frequencies $(\hat{p}^t, \hat{q}^t)$ approach a Nash equilibrium, but the actual actions may continue to cycle. The convergence is of the *time-averaged* strategies, not the instantaneous ones.</span>
+<span id="cb62-102"><a href="#cb62-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-103"><a href="#cb62-103" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R</span></span>
+<span id="cb62-104"><a href="#cb62-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-105"><a href="#cb62-105" aria-hidden="true" tabindex="-1"></a><span class="fu">### Lemke--Howson sketch for 2x2 games</span></span>
+<span id="cb62-106"><a href="#cb62-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-107"><a href="#cb62-107" aria-hidden="true" tabindex="-1"></a>The following function demonstrates the complementary pivoting logic for 2x2 games. It illustrates the algorithm's structure rather than providing a production solver.</span>
+<span id="cb62-108"><a href="#cb62-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-111"><a href="#cb62-111" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-112"><a href="#cb62-112" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: lemke-howson-sketch</span></span>
 <span id="cb62-113"><a href="#cb62-113" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-114"><a href="#cb62-114" aria-hidden="true" tabindex="-1"></a>  <span class="co"># that we can implement the pivoting explicitly.</span></span>
-<span id="cb62-115"><a href="#cb62-115" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 1: Check for pure strategy equilibria</span></span>
-<span id="cb62-116"><a href="#cb62-116" aria-hidden="true" tabindex="-1"></a>  pure <span class="ot">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span>(A, B)</span>
-<span id="cb62-117"><a href="#cb62-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-118"><a href="#cb62-118" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 2: Attempt mixed equilibrium via indifference</span></span>
-<span id="cb62-119"><a href="#cb62-119" aria-hidden="true" tabindex="-1"></a>  mixed <span class="ot">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span>(A, B)</span>
+<span id="cb62-114"><a href="#cb62-114" aria-hidden="true" tabindex="-1"></a>lemke_howson_2x2 <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B) {</span>
+<span id="cb62-115"><a href="#cb62-115" aria-hidden="true" tabindex="-1"></a>  <span class="co"># For 2x2 games, the Lemke-Howson path is short enough</span></span>
+<span id="cb62-116"><a href="#cb62-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-117"><a href="#cb62-117" aria-hidden="true" tabindex="-1"></a>  <span class="co"># that we can implement the pivoting explicitly.</span></span>
+<span id="cb62-118"><a href="#cb62-118" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 1: Check for pure strategy equilibria</span></span>
+<span id="cb62-119"><a href="#cb62-119" aria-hidden="true" tabindex="-1"></a>  pure <span class="ot">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span>(A, B)</span>
 <span id="cb62-120"><a href="#cb62-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-121"><a href="#cb62-121" aria-hidden="true" tabindex="-1"></a>  <span class="co"># In a full implementation, dropping label k=1 traces a path</span></span>
-<span id="cb62-122"><a href="#cb62-122" aria-hidden="true" tabindex="-1"></a>  <span class="co"># through the polytope vertices. For 2x2, this reduces to</span></span>
-<span id="cb62-123"><a href="#cb62-123" aria-hidden="true" tabindex="-1"></a>  <span class="co"># checking the indifference conditions directly.</span></span>
-<span id="cb62-124"><a href="#cb62-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-125"><a href="#cb62-125" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return the first equilibrium found</span></span>
-<span id="cb62-126"><a href="#cb62-126" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(pure) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb62-127"><a href="#cb62-127" aria-hidden="true" tabindex="-1"></a>    eq <span class="ot">&lt;-</span> pure[[<span class="dv">1</span>]]</span>
-<span id="cb62-128"><a href="#cb62-128" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">2</span>)</span>
-<span id="cb62-129"><a href="#cb62-129" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">2</span>)</span>
-<span id="cb62-130"><a href="#cb62-130" aria-hidden="true" tabindex="-1"></a>    p[eq[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb62-131"><a href="#cb62-131" aria-hidden="true" tabindex="-1"></a>    q[eq[<span class="dv">2</span>]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb62-132"><a href="#cb62-132" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">p =</span> p, <span class="at">q =</span> q, <span class="at">type =</span> <span class="st">"pure"</span>,</span>
-<span id="cb62-133"><a href="#cb62-133" aria-hidden="true" tabindex="-1"></a>                <span class="at">payoff_1 =</span> A[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]],</span>
-<span id="cb62-134"><a href="#cb62-134" aria-hidden="true" tabindex="-1"></a>                <span class="at">payoff_2 =</span> B[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]]))</span>
-<span id="cb62-135"><a href="#cb62-135" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb62-136"><a href="#cb62-136" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(mixed)) {</span>
-<span id="cb62-137"><a href="#cb62-137" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed<span class="sc">$</span>p, <span class="dv">1</span> <span class="sc">-</span> mixed<span class="sc">$</span>p)</span>
-<span id="cb62-138"><a href="#cb62-138" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed<span class="sc">$</span>q, <span class="dv">1</span> <span class="sc">-</span> mixed<span class="sc">$</span>q)</span>
-<span id="cb62-139"><a href="#cb62-139" aria-hidden="true" tabindex="-1"></a>    payoff_1 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p <span class="sc">%*%</span> A <span class="sc">%*%</span> q)</span>
-<span id="cb62-140"><a href="#cb62-140" aria-hidden="true" tabindex="-1"></a>    payoff_2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p <span class="sc">%*%</span> B <span class="sc">%*%</span> q)</span>
-<span id="cb62-141"><a href="#cb62-141" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">p =</span> p, <span class="at">q =</span> q, <span class="at">type =</span> <span class="st">"mixed"</span>,</span>
-<span id="cb62-142"><a href="#cb62-142" aria-hidden="true" tabindex="-1"></a>                <span class="at">payoff_1 =</span> payoff_1, <span class="at">payoff_2 =</span> payoff_2))</span>
-<span id="cb62-143"><a href="#cb62-143" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb62-144"><a href="#cb62-144" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NULL</span></span>
-<span id="cb62-145"><a href="#cb62-145" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb62-146"><a href="#cb62-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-147"><a href="#cb62-147" aria-hidden="true" tabindex="-1"></a><span class="co"># Test on Matching Pennies</span></span>
-<span id="cb62-148"><a href="#cb62-148" aria-hidden="true" tabindex="-1"></a>A_mp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="dv">2</span>, <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb62-149"><a href="#cb62-149" aria-hidden="true" tabindex="-1"></a>               <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>), <span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>)))</span>
-<span id="cb62-150"><a href="#cb62-150" aria-hidden="true" tabindex="-1"></a>B_mp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="dv">2</span>, <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb62-151"><a href="#cb62-151" aria-hidden="true" tabindex="-1"></a>               <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>), <span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>)))</span>
-<span id="cb62-152"><a href="#cb62-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-153"><a href="#cb62-153" aria-hidden="true" tabindex="-1"></a>lh_result <span class="ot">&lt;-</span> <span class="fu">lemke_howson_2x2</span>(A_mp, B_mp)</span>
-<span id="cb62-154"><a href="#cb62-154" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Lemke-Howson result for Matching Pennies:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-155"><a href="#cb62-155" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  p ="</span>, lh_result<span class="sc">$</span>p, <span class="st">"(type:"</span>, lh_result<span class="sc">$</span>type, <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-156"><a href="#cb62-156" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  q ="</span>, lh_result<span class="sc">$</span>q, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-157"><a href="#cb62-157" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.2f, %.2f)</span><span class="sc">\n</span><span class="st">"</span>, lh_result<span class="sc">$</span>payoff_1, lh_result<span class="sc">$</span>payoff_2))</span>
-<span id="cb62-158"><a href="#cb62-158" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-159"><a href="#cb62-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-160"><a href="#cb62-160" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fictitious play implementation</span></span>
-<span id="cb62-161"><a href="#cb62-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-164"><a href="#cb62-164" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-165"><a href="#cb62-165" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fictitious-play</span></span>
-<span id="cb62-166"><a href="#cb62-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-167"><a href="#cb62-167" aria-hidden="true" tabindex="-1"></a>fictitious_play <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, <span class="at">n_iter =</span> <span class="dv">1000</span>, <span class="at">seed =</span> <span class="dv">42</span>) {</span>
-<span id="cb62-168"><a href="#cb62-168" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(seed)</span>
-<span id="cb62-169"><a href="#cb62-169" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">nrow</span>(A)</span>
-<span id="cb62-170"><a href="#cb62-170" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">ncol</span>(A)</span>
-<span id="cb62-171"><a href="#cb62-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-172"><a href="#cb62-172" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Counts of each action played</span></span>
-<span id="cb62-173"><a href="#cb62-173" aria-hidden="true" tabindex="-1"></a>  row_counts <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, m)</span>
-<span id="cb62-174"><a href="#cb62-174" aria-hidden="true" tabindex="-1"></a>  col_counts <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, n)</span>
-<span id="cb62-175"><a href="#cb62-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-176"><a href="#cb62-176" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial actions (random)</span></span>
-<span id="cb62-177"><a href="#cb62-177" aria-hidden="true" tabindex="-1"></a>  row_action <span class="ot">&lt;-</span> <span class="fu">sample</span>(m, <span class="dv">1</span>)</span>
-<span id="cb62-178"><a href="#cb62-178" aria-hidden="true" tabindex="-1"></a>  col_action <span class="ot">&lt;-</span> <span class="fu">sample</span>(n, <span class="dv">1</span>)</span>
-<span id="cb62-179"><a href="#cb62-179" aria-hidden="true" tabindex="-1"></a>  row_counts[row_action] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb62-180"><a href="#cb62-180" aria-hidden="true" tabindex="-1"></a>  col_counts[col_action] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb62-181"><a href="#cb62-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-182"><a href="#cb62-182" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Storage for trajectory (subsample for efficiency)</span></span>
-<span id="cb62-183"><a href="#cb62-183" aria-hidden="true" tabindex="-1"></a>  record_iters <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">seq_len</span>(<span class="dv">50</span>), <span class="fu">seq</span>(<span class="dv">60</span>, <span class="fu">min</span>(n_iter, <span class="dv">500</span>), <span class="at">by =</span> <span class="dv">10</span>),</span>
-<span id="cb62-184"><a href="#cb62-184" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">seq</span>(<span class="dv">600</span>, n_iter, <span class="at">by =</span> <span class="dv">100</span>))</span>
-<span id="cb62-185"><a href="#cb62-185" aria-hidden="true" tabindex="-1"></a>  record_iters <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(record_iters[record_iters <span class="sc">&lt;=</span> n_iter]))</span>
-<span id="cb62-186"><a href="#cb62-186" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-187"><a href="#cb62-187" aria-hidden="true" tabindex="-1"></a>  history <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb62-188"><a href="#cb62-188" aria-hidden="true" tabindex="-1"></a>    <span class="at">iter =</span> <span class="fu">integer</span>(),</span>
-<span id="cb62-189"><a href="#cb62-189" aria-hidden="true" tabindex="-1"></a>    <span class="at">row_freq_1 =</span> <span class="fu">double</span>(),</span>
-<span id="cb62-190"><a href="#cb62-190" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_freq_1 =</span> <span class="fu">double</span>()</span>
-<span id="cb62-191"><a href="#cb62-191" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb62-192"><a href="#cb62-192" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-193"><a href="#cb62-193" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>n_iter) {</span>
-<span id="cb62-194"><a href="#cb62-194" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Row player best-responds to column player's empirical frequency</span></span>
-<span id="cb62-195"><a href="#cb62-195" aria-hidden="true" tabindex="-1"></a>    col_freq <span class="ot">&lt;-</span> col_counts <span class="sc">/</span> <span class="fu">sum</span>(col_counts)</span>
-<span id="cb62-196"><a href="#cb62-196" aria-hidden="true" tabindex="-1"></a>    row_expected <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(A <span class="sc">%*%</span> col_freq)</span>
-<span id="cb62-197"><a href="#cb62-197" aria-hidden="true" tabindex="-1"></a>    best_rows <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">abs</span>(row_expected <span class="sc">-</span> <span class="fu">max</span>(row_expected)) <span class="sc">&lt;</span> <span class="fl">1e-12</span>)</span>
-<span id="cb62-198"><a href="#cb62-198" aria-hidden="true" tabindex="-1"></a>    row_action <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">length</span>(best_rows) <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="fu">sample</span>(best_rows, <span class="dv">1</span>) <span class="cf">else</span> best_rows</span>
-<span id="cb62-199"><a href="#cb62-199" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-200"><a href="#cb62-200" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Column player best-responds to row player's empirical frequency</span></span>
-<span id="cb62-201"><a href="#cb62-201" aria-hidden="true" tabindex="-1"></a>    row_freq <span class="ot">&lt;-</span> row_counts <span class="sc">/</span> <span class="fu">sum</span>(row_counts)</span>
-<span id="cb62-202"><a href="#cb62-202" aria-hidden="true" tabindex="-1"></a>    col_expected <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">t</span>(B) <span class="sc">%*%</span> row_freq)</span>
-<span id="cb62-203"><a href="#cb62-203" aria-hidden="true" tabindex="-1"></a>    best_cols <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">abs</span>(col_expected <span class="sc">-</span> <span class="fu">max</span>(col_expected)) <span class="sc">&lt;</span> <span class="fl">1e-12</span>)</span>
-<span id="cb62-204"><a href="#cb62-204" aria-hidden="true" tabindex="-1"></a>    col_action <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">length</span>(best_cols) <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="fu">sample</span>(best_cols, <span class="dv">1</span>) <span class="cf">else</span> best_cols</span>
-<span id="cb62-205"><a href="#cb62-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-206"><a href="#cb62-206" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update counts</span></span>
-<span id="cb62-207"><a href="#cb62-207" aria-hidden="true" tabindex="-1"></a>    row_counts[row_action] <span class="ot">&lt;-</span> row_counts[row_action] <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb62-208"><a href="#cb62-208" aria-hidden="true" tabindex="-1"></a>    col_counts[col_action] <span class="ot">&lt;-</span> col_counts[col_action] <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb62-209"><a href="#cb62-209" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-210"><a href="#cb62-210" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Record at selected iterations</span></span>
-<span id="cb62-211"><a href="#cb62-211" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (t <span class="sc">%in%</span> record_iters) {</span>
-<span id="cb62-212"><a href="#cb62-212" aria-hidden="true" tabindex="-1"></a>      row_freq_now <span class="ot">&lt;-</span> row_counts <span class="sc">/</span> <span class="fu">sum</span>(row_counts)</span>
-<span id="cb62-213"><a href="#cb62-213" aria-hidden="true" tabindex="-1"></a>      col_freq_now <span class="ot">&lt;-</span> col_counts <span class="sc">/</span> <span class="fu">sum</span>(col_counts)</span>
-<span id="cb62-214"><a href="#cb62-214" aria-hidden="true" tabindex="-1"></a>      history <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(history, <span class="fu">tibble</span>(</span>
-<span id="cb62-215"><a href="#cb62-215" aria-hidden="true" tabindex="-1"></a>        <span class="at">iter =</span> t,</span>
-<span id="cb62-216"><a href="#cb62-216" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_freq_1 =</span> row_freq_now[<span class="dv">1</span>],</span>
-<span id="cb62-217"><a href="#cb62-217" aria-hidden="true" tabindex="-1"></a>        <span class="at">col_freq_1 =</span> col_freq_now[<span class="dv">1</span>]</span>
-<span id="cb62-218"><a href="#cb62-218" aria-hidden="true" tabindex="-1"></a>      ))</span>
-<span id="cb62-219"><a href="#cb62-219" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb62-220"><a href="#cb62-220" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb62-221"><a href="#cb62-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-222"><a href="#cb62-222" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Final empirical frequencies</span></span>
-<span id="cb62-223"><a href="#cb62-223" aria-hidden="true" tabindex="-1"></a>  final_row_freq <span class="ot">&lt;-</span> row_counts <span class="sc">/</span> <span class="fu">sum</span>(row_counts)</span>
-<span id="cb62-224"><a href="#cb62-224" aria-hidden="true" tabindex="-1"></a>  final_col_freq <span class="ot">&lt;-</span> col_counts <span class="sc">/</span> <span class="fu">sum</span>(col_counts)</span>
-<span id="cb62-225"><a href="#cb62-225" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-226"><a href="#cb62-226" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
-<span id="cb62-227"><a href="#cb62-227" aria-hidden="true" tabindex="-1"></a>    <span class="at">p =</span> final_row_freq,</span>
-<span id="cb62-228"><a href="#cb62-228" aria-hidden="true" tabindex="-1"></a>    <span class="at">q =</span> final_col_freq,</span>
-<span id="cb62-229"><a href="#cb62-229" aria-hidden="true" tabindex="-1"></a>    <span class="at">payoff_1 =</span> <span class="fu">as.numeric</span>(final_row_freq <span class="sc">%*%</span> A <span class="sc">%*%</span> final_col_freq),</span>
-<span id="cb62-230"><a href="#cb62-230" aria-hidden="true" tabindex="-1"></a>    <span class="at">payoff_2 =</span> <span class="fu">as.numeric</span>(final_row_freq <span class="sc">%*%</span> B <span class="sc">%*%</span> final_col_freq),</span>
-<span id="cb62-231"><a href="#cb62-231" aria-hidden="true" tabindex="-1"></a>    <span class="at">history =</span> history,</span>
-<span id="cb62-232"><a href="#cb62-232" aria-hidden="true" tabindex="-1"></a>    <span class="at">row_counts =</span> row_counts,</span>
-<span id="cb62-233"><a href="#cb62-233" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_counts =</span> col_counts</span>
-<span id="cb62-234"><a href="#cb62-234" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb62-235"><a href="#cb62-235" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb62-236"><a href="#cb62-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-237"><a href="#cb62-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-238"><a href="#cb62-238" aria-hidden="true" tabindex="-1"></a><span class="fu">### Testing on Matching Pennies</span></span>
-<span id="cb62-239"><a href="#cb62-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-242"><a href="#cb62-242" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-243"><a href="#cb62-243" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: test-fp-matching-pennies</span></span>
-<span id="cb62-244"><a href="#cb62-244" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-245"><a href="#cb62-245" aria-hidden="true" tabindex="-1"></a>fp_mp <span class="ot">&lt;-</span> <span class="fu">fictitious_play</span>(A_mp, B_mp, <span class="at">n_iter =</span> <span class="dv">2000</span>)</span>
-<span id="cb62-246"><a href="#cb62-246" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Fictitious play result for Matching Pennies (2000 iterations):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-247"><a href="#cb62-247" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical p ="</span>, <span class="fu">round</span>(fp_mp<span class="sc">$</span>p, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-248"><a href="#cb62-248" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical q ="</span>, <span class="fu">round</span>(fp_mp<span class="sc">$</span>q, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-249"><a href="#cb62-249" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  True NE: p = (0.5, 0.5), q = (0.5, 0.5)</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-250"><a href="#cb62-250" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.4f, %.4f)</span><span class="sc">\n</span><span class="st">"</span>, fp_mp<span class="sc">$</span>payoff_1, fp_mp<span class="sc">$</span>payoff_2))</span>
-<span id="cb62-251"><a href="#cb62-251" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-252"><a href="#cb62-252" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-253"><a href="#cb62-253" aria-hidden="true" tabindex="-1"></a>The empirical frequencies are close to the true mixed Nash equilibrium $(0.5, 0.5)$, demonstrating convergence. As a zero-sum game, Matching Pennies is guaranteed to yield convergence under fictitious play.</span>
-<span id="cb62-254"><a href="#cb62-254" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-255"><a href="#cb62-255" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
-<span id="cb62-256"><a href="#cb62-256" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-257"><a href="#cb62-257" aria-hidden="true" tabindex="-1"></a>We apply fictitious play to the **Battle of the Sexes** --- a game with two pure Nash equilibria and one mixed Nash equilibrium --- and visualize the convergence trajectory. This is a more challenging test because the game has multiple equilibria and is not zero-sum.</span>
-<span id="cb62-258"><a href="#cb62-258" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-259"><a href="#cb62-259" aria-hidden="true" tabindex="-1"></a><span class="fu">### Setting up the game</span></span>
-<span id="cb62-260"><a href="#cb62-260" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-263"><a href="#cb62-263" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-264"><a href="#cb62-264" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: bos-setup</span></span>
-<span id="cb62-265"><a href="#cb62-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-266"><a href="#cb62-266" aria-hidden="true" tabindex="-1"></a><span class="co"># Battle of the Sexes</span></span>
-<span id="cb62-267"><a href="#cb62-267" aria-hidden="true" tabindex="-1"></a>A_bos <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">2</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb62-268"><a href="#cb62-268" aria-hidden="true" tabindex="-1"></a>                <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>), <span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>)))</span>
-<span id="cb62-269"><a href="#cb62-269" aria-hidden="true" tabindex="-1"></a>B_bos <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb62-270"><a href="#cb62-270" aria-hidden="true" tabindex="-1"></a>                <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>), <span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>)))</span>
-<span id="cb62-271"><a href="#cb62-271" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-272"><a href="#cb62-272" aria-hidden="true" tabindex="-1"></a><span class="co"># True mixed NE: p = 3/5 (P1 plays Opera), q = 2/5 (P2 plays Opera)</span></span>
-<span id="cb62-273"><a href="#cb62-273" aria-hidden="true" tabindex="-1"></a>true_p <span class="ot">&lt;-</span> <span class="dv">3</span> <span class="sc">/</span> <span class="dv">5</span></span>
-<span id="cb62-274"><a href="#cb62-274" aria-hidden="true" tabindex="-1"></a>true_q <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">/</span> <span class="dv">5</span></span>
-<span id="cb62-275"><a href="#cb62-275" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-276"><a href="#cb62-276" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Battle of the Sexes payoffs:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-277"><a href="#cb62-277" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Player 1:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-278"><a href="#cb62-278" aria-hidden="true" tabindex="-1"></a>A_bos</span>
-<span id="cb62-279"><a href="#cb62-279" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Player 2:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-280"><a href="#cb62-280" aria-hidden="true" tabindex="-1"></a>B_bos</span>
-<span id="cb62-281"><a href="#cb62-281" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">True mixed NE: p(Opera) = %.2f, q(Opera) = %.2f</span><span class="sc">\n</span><span class="st">"</span>, true_p, true_q))</span>
-<span id="cb62-282"><a href="#cb62-282" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-283"><a href="#cb62-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-284"><a href="#cb62-284" aria-hidden="true" tabindex="-1"></a><span class="fu">### Running fictitious play</span></span>
-<span id="cb62-285"><a href="#cb62-285" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-288"><a href="#cb62-288" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-289"><a href="#cb62-289" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: bos-fictitious-play</span></span>
-<span id="cb62-290"><a href="#cb62-290" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-291"><a href="#cb62-291" aria-hidden="true" tabindex="-1"></a><span class="co"># Run fictitious play with many iterations</span></span>
-<span id="cb62-292"><a href="#cb62-292" aria-hidden="true" tabindex="-1"></a>fp_bos <span class="ot">&lt;-</span> <span class="fu">fictitious_play</span>(A_bos, B_bos, <span class="at">n_iter =</span> <span class="dv">5000</span>)</span>
+<span id="cb62-121"><a href="#cb62-121" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Step 2: Attempt mixed equilibrium via indifference</span></span>
+<span id="cb62-122"><a href="#cb62-122" aria-hidden="true" tabindex="-1"></a>  mixed <span class="ot">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span>(A, B)</span>
+<span id="cb62-123"><a href="#cb62-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-124"><a href="#cb62-124" aria-hidden="true" tabindex="-1"></a>  <span class="co"># In a full implementation, dropping label k=1 traces a path</span></span>
+<span id="cb62-125"><a href="#cb62-125" aria-hidden="true" tabindex="-1"></a>  <span class="co"># through the polytope vertices. For 2x2, this reduces to</span></span>
+<span id="cb62-126"><a href="#cb62-126" aria-hidden="true" tabindex="-1"></a>  <span class="co"># checking the indifference conditions directly.</span></span>
+<span id="cb62-127"><a href="#cb62-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-128"><a href="#cb62-128" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return the first equilibrium found</span></span>
+<span id="cb62-129"><a href="#cb62-129" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(pure) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb62-130"><a href="#cb62-130" aria-hidden="true" tabindex="-1"></a>    eq <span class="ot">&lt;-</span> pure[[<span class="dv">1</span>]]</span>
+<span id="cb62-131"><a href="#cb62-131" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">2</span>)</span>
+<span id="cb62-132"><a href="#cb62-132" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, <span class="dv">2</span>)</span>
+<span id="cb62-133"><a href="#cb62-133" aria-hidden="true" tabindex="-1"></a>    p[eq[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb62-134"><a href="#cb62-134" aria-hidden="true" tabindex="-1"></a>    q[eq[<span class="dv">2</span>]] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb62-135"><a href="#cb62-135" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">p =</span> p, <span class="at">q =</span> q, <span class="at">type =</span> <span class="st">"pure"</span>,</span>
+<span id="cb62-136"><a href="#cb62-136" aria-hidden="true" tabindex="-1"></a>                <span class="at">payoff_1 =</span> A[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]],</span>
+<span id="cb62-137"><a href="#cb62-137" aria-hidden="true" tabindex="-1"></a>                <span class="at">payoff_2 =</span> B[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]]))</span>
+<span id="cb62-138"><a href="#cb62-138" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb62-139"><a href="#cb62-139" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(mixed)) {</span>
+<span id="cb62-140"><a href="#cb62-140" aria-hidden="true" tabindex="-1"></a>    p <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed<span class="sc">$</span>p, <span class="dv">1</span> <span class="sc">-</span> mixed<span class="sc">$</span>p)</span>
+<span id="cb62-141"><a href="#cb62-141" aria-hidden="true" tabindex="-1"></a>    q <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed<span class="sc">$</span>q, <span class="dv">1</span> <span class="sc">-</span> mixed<span class="sc">$</span>q)</span>
+<span id="cb62-142"><a href="#cb62-142" aria-hidden="true" tabindex="-1"></a>    payoff_1 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p <span class="sc">%*%</span> A <span class="sc">%*%</span> q)</span>
+<span id="cb62-143"><a href="#cb62-143" aria-hidden="true" tabindex="-1"></a>    payoff_2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p <span class="sc">%*%</span> B <span class="sc">%*%</span> q)</span>
+<span id="cb62-144"><a href="#cb62-144" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">p =</span> p, <span class="at">q =</span> q, <span class="at">type =</span> <span class="st">"mixed"</span>,</span>
+<span id="cb62-145"><a href="#cb62-145" aria-hidden="true" tabindex="-1"></a>                <span class="at">payoff_1 =</span> payoff_1, <span class="at">payoff_2 =</span> payoff_2))</span>
+<span id="cb62-146"><a href="#cb62-146" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb62-147"><a href="#cb62-147" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NULL</span></span>
+<span id="cb62-148"><a href="#cb62-148" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-149"><a href="#cb62-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-150"><a href="#cb62-150" aria-hidden="true" tabindex="-1"></a><span class="co"># Test on Matching Pennies</span></span>
+<span id="cb62-151"><a href="#cb62-151" aria-hidden="true" tabindex="-1"></a>A_mp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>), <span class="dv">2</span>, <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb62-152"><a href="#cb62-152" aria-hidden="true" tabindex="-1"></a>               <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>), <span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>)))</span>
+<span id="cb62-153"><a href="#cb62-153" aria-hidden="true" tabindex="-1"></a>B_mp <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="sc">-</span><span class="dv">1</span>), <span class="dv">2</span>, <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb62-154"><a href="#cb62-154" aria-hidden="true" tabindex="-1"></a>               <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>), <span class="fu">c</span>(<span class="st">"H"</span>, <span class="st">"T"</span>)))</span>
+<span id="cb62-155"><a href="#cb62-155" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-156"><a href="#cb62-156" aria-hidden="true" tabindex="-1"></a>lh_result <span class="ot">&lt;-</span> <span class="fu">lemke_howson_2x2</span>(A_mp, B_mp)</span>
+<span id="cb62-157"><a href="#cb62-157" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Lemke-Howson result for Matching Pennies:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-158"><a href="#cb62-158" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  p ="</span>, lh_result<span class="sc">$</span>p, <span class="st">"(type:"</span>, lh_result<span class="sc">$</span>type, <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-159"><a href="#cb62-159" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  q ="</span>, lh_result<span class="sc">$</span>q, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-160"><a href="#cb62-160" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.2f, %.2f)</span><span class="sc">\n</span><span class="st">"</span>, lh_result<span class="sc">$</span>payoff_1, lh_result<span class="sc">$</span>payoff_2))</span>
+<span id="cb62-161"><a href="#cb62-161" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-162"><a href="#cb62-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-163"><a href="#cb62-163" aria-hidden="true" tabindex="-1"></a><span class="fu">### Fictitious play implementation</span></span>
+<span id="cb62-164"><a href="#cb62-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-167"><a href="#cb62-167" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-168"><a href="#cb62-168" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fictitious-play</span></span>
+<span id="cb62-169"><a href="#cb62-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-170"><a href="#cb62-170" aria-hidden="true" tabindex="-1"></a>fictitious_play <span class="ot">&lt;-</span> <span class="cf">function</span>(A, B, <span class="at">n_iter =</span> <span class="dv">1000</span>, <span class="at">seed =</span> <span class="dv">42</span>) {</span>
+<span id="cb62-171"><a href="#cb62-171" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(seed)</span>
+<span id="cb62-172"><a href="#cb62-172" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">nrow</span>(A)</span>
+<span id="cb62-173"><a href="#cb62-173" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">ncol</span>(A)</span>
+<span id="cb62-174"><a href="#cb62-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-175"><a href="#cb62-175" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Counts of each action played</span></span>
+<span id="cb62-176"><a href="#cb62-176" aria-hidden="true" tabindex="-1"></a>  row_counts <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, m)</span>
+<span id="cb62-177"><a href="#cb62-177" aria-hidden="true" tabindex="-1"></a>  col_counts <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">0</span>, n)</span>
+<span id="cb62-178"><a href="#cb62-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-179"><a href="#cb62-179" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Initial actions (random)</span></span>
+<span id="cb62-180"><a href="#cb62-180" aria-hidden="true" tabindex="-1"></a>  row_action <span class="ot">&lt;-</span> <span class="fu">sample</span>(m, <span class="dv">1</span>)</span>
+<span id="cb62-181"><a href="#cb62-181" aria-hidden="true" tabindex="-1"></a>  col_action <span class="ot">&lt;-</span> <span class="fu">sample</span>(n, <span class="dv">1</span>)</span>
+<span id="cb62-182"><a href="#cb62-182" aria-hidden="true" tabindex="-1"></a>  row_counts[row_action] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb62-183"><a href="#cb62-183" aria-hidden="true" tabindex="-1"></a>  col_counts[col_action] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb62-184"><a href="#cb62-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-185"><a href="#cb62-185" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Storage for trajectory (subsample for efficiency)</span></span>
+<span id="cb62-186"><a href="#cb62-186" aria-hidden="true" tabindex="-1"></a>  record_iters <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">seq_len</span>(<span class="dv">50</span>), <span class="fu">seq</span>(<span class="dv">60</span>, <span class="fu">min</span>(n_iter, <span class="dv">500</span>), <span class="at">by =</span> <span class="dv">10</span>),</span>
+<span id="cb62-187"><a href="#cb62-187" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">seq</span>(<span class="dv">600</span>, n_iter, <span class="at">by =</span> <span class="dv">100</span>))</span>
+<span id="cb62-188"><a href="#cb62-188" aria-hidden="true" tabindex="-1"></a>  record_iters <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">unique</span>(record_iters[record_iters <span class="sc">&lt;=</span> n_iter]))</span>
+<span id="cb62-189"><a href="#cb62-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-190"><a href="#cb62-190" aria-hidden="true" tabindex="-1"></a>  history <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb62-191"><a href="#cb62-191" aria-hidden="true" tabindex="-1"></a>    <span class="at">iter =</span> <span class="fu">integer</span>(),</span>
+<span id="cb62-192"><a href="#cb62-192" aria-hidden="true" tabindex="-1"></a>    <span class="at">row_freq_1 =</span> <span class="fu">double</span>(),</span>
+<span id="cb62-193"><a href="#cb62-193" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_freq_1 =</span> <span class="fu">double</span>()</span>
+<span id="cb62-194"><a href="#cb62-194" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb62-195"><a href="#cb62-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-196"><a href="#cb62-196" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>n_iter) {</span>
+<span id="cb62-197"><a href="#cb62-197" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Row player best-responds to column player's empirical frequency</span></span>
+<span id="cb62-198"><a href="#cb62-198" aria-hidden="true" tabindex="-1"></a>    col_freq <span class="ot">&lt;-</span> col_counts <span class="sc">/</span> <span class="fu">sum</span>(col_counts)</span>
+<span id="cb62-199"><a href="#cb62-199" aria-hidden="true" tabindex="-1"></a>    row_expected <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(A <span class="sc">%*%</span> col_freq)</span>
+<span id="cb62-200"><a href="#cb62-200" aria-hidden="true" tabindex="-1"></a>    best_rows <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">abs</span>(row_expected <span class="sc">-</span> <span class="fu">max</span>(row_expected)) <span class="sc">&lt;</span> <span class="fl">1e-12</span>)</span>
+<span id="cb62-201"><a href="#cb62-201" aria-hidden="true" tabindex="-1"></a>    row_action <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">length</span>(best_rows) <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="fu">sample</span>(best_rows, <span class="dv">1</span>) <span class="cf">else</span> best_rows</span>
+<span id="cb62-202"><a href="#cb62-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-203"><a href="#cb62-203" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Column player best-responds to row player's empirical frequency</span></span>
+<span id="cb62-204"><a href="#cb62-204" aria-hidden="true" tabindex="-1"></a>    row_freq <span class="ot">&lt;-</span> row_counts <span class="sc">/</span> <span class="fu">sum</span>(row_counts)</span>
+<span id="cb62-205"><a href="#cb62-205" aria-hidden="true" tabindex="-1"></a>    col_expected <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">t</span>(B) <span class="sc">%*%</span> row_freq)</span>
+<span id="cb62-206"><a href="#cb62-206" aria-hidden="true" tabindex="-1"></a>    best_cols <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">abs</span>(col_expected <span class="sc">-</span> <span class="fu">max</span>(col_expected)) <span class="sc">&lt;</span> <span class="fl">1e-12</span>)</span>
+<span id="cb62-207"><a href="#cb62-207" aria-hidden="true" tabindex="-1"></a>    col_action <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">length</span>(best_cols) <span class="sc">&gt;</span> <span class="dv">1</span>) <span class="fu">sample</span>(best_cols, <span class="dv">1</span>) <span class="cf">else</span> best_cols</span>
+<span id="cb62-208"><a href="#cb62-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-209"><a href="#cb62-209" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Update counts</span></span>
+<span id="cb62-210"><a href="#cb62-210" aria-hidden="true" tabindex="-1"></a>    row_counts[row_action] <span class="ot">&lt;-</span> row_counts[row_action] <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb62-211"><a href="#cb62-211" aria-hidden="true" tabindex="-1"></a>    col_counts[col_action] <span class="ot">&lt;-</span> col_counts[col_action] <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb62-212"><a href="#cb62-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-213"><a href="#cb62-213" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Record at selected iterations</span></span>
+<span id="cb62-214"><a href="#cb62-214" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (t <span class="sc">%in%</span> record_iters) {</span>
+<span id="cb62-215"><a href="#cb62-215" aria-hidden="true" tabindex="-1"></a>      row_freq_now <span class="ot">&lt;-</span> row_counts <span class="sc">/</span> <span class="fu">sum</span>(row_counts)</span>
+<span id="cb62-216"><a href="#cb62-216" aria-hidden="true" tabindex="-1"></a>      col_freq_now <span class="ot">&lt;-</span> col_counts <span class="sc">/</span> <span class="fu">sum</span>(col_counts)</span>
+<span id="cb62-217"><a href="#cb62-217" aria-hidden="true" tabindex="-1"></a>      history <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(history, <span class="fu">tibble</span>(</span>
+<span id="cb62-218"><a href="#cb62-218" aria-hidden="true" tabindex="-1"></a>        <span class="at">iter =</span> t,</span>
+<span id="cb62-219"><a href="#cb62-219" aria-hidden="true" tabindex="-1"></a>        <span class="at">row_freq_1 =</span> row_freq_now[<span class="dv">1</span>],</span>
+<span id="cb62-220"><a href="#cb62-220" aria-hidden="true" tabindex="-1"></a>        <span class="at">col_freq_1 =</span> col_freq_now[<span class="dv">1</span>]</span>
+<span id="cb62-221"><a href="#cb62-221" aria-hidden="true" tabindex="-1"></a>      ))</span>
+<span id="cb62-222"><a href="#cb62-222" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb62-223"><a href="#cb62-223" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb62-224"><a href="#cb62-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-225"><a href="#cb62-225" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Final empirical frequencies</span></span>
+<span id="cb62-226"><a href="#cb62-226" aria-hidden="true" tabindex="-1"></a>  final_row_freq <span class="ot">&lt;-</span> row_counts <span class="sc">/</span> <span class="fu">sum</span>(row_counts)</span>
+<span id="cb62-227"><a href="#cb62-227" aria-hidden="true" tabindex="-1"></a>  final_col_freq <span class="ot">&lt;-</span> col_counts <span class="sc">/</span> <span class="fu">sum</span>(col_counts)</span>
+<span id="cb62-228"><a href="#cb62-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-229"><a href="#cb62-229" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb62-230"><a href="#cb62-230" aria-hidden="true" tabindex="-1"></a>    <span class="at">p =</span> final_row_freq,</span>
+<span id="cb62-231"><a href="#cb62-231" aria-hidden="true" tabindex="-1"></a>    <span class="at">q =</span> final_col_freq,</span>
+<span id="cb62-232"><a href="#cb62-232" aria-hidden="true" tabindex="-1"></a>    <span class="at">payoff_1 =</span> <span class="fu">as.numeric</span>(final_row_freq <span class="sc">%*%</span> A <span class="sc">%*%</span> final_col_freq),</span>
+<span id="cb62-233"><a href="#cb62-233" aria-hidden="true" tabindex="-1"></a>    <span class="at">payoff_2 =</span> <span class="fu">as.numeric</span>(final_row_freq <span class="sc">%*%</span> B <span class="sc">%*%</span> final_col_freq),</span>
+<span id="cb62-234"><a href="#cb62-234" aria-hidden="true" tabindex="-1"></a>    <span class="at">history =</span> history,</span>
+<span id="cb62-235"><a href="#cb62-235" aria-hidden="true" tabindex="-1"></a>    <span class="at">row_counts =</span> row_counts,</span>
+<span id="cb62-236"><a href="#cb62-236" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_counts =</span> col_counts</span>
+<span id="cb62-237"><a href="#cb62-237" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb62-238"><a href="#cb62-238" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-239"><a href="#cb62-239" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-240"><a href="#cb62-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-241"><a href="#cb62-241" aria-hidden="true" tabindex="-1"></a><span class="fu">### Testing on Matching Pennies</span></span>
+<span id="cb62-242"><a href="#cb62-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-245"><a href="#cb62-245" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-246"><a href="#cb62-246" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: test-fp-matching-pennies</span></span>
+<span id="cb62-247"><a href="#cb62-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-248"><a href="#cb62-248" aria-hidden="true" tabindex="-1"></a>fp_mp <span class="ot">&lt;-</span> <span class="fu">fictitious_play</span>(A_mp, B_mp, <span class="at">n_iter =</span> <span class="dv">2000</span>)</span>
+<span id="cb62-249"><a href="#cb62-249" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Fictitious play result for Matching Pennies (2000 iterations):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-250"><a href="#cb62-250" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical p ="</span>, <span class="fu">round</span>(fp_mp<span class="sc">$</span>p, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-251"><a href="#cb62-251" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical q ="</span>, <span class="fu">round</span>(fp_mp<span class="sc">$</span>q, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-252"><a href="#cb62-252" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  True NE: p = (0.5, 0.5), q = (0.5, 0.5)</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-253"><a href="#cb62-253" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.4f, %.4f)</span><span class="sc">\n</span><span class="st">"</span>, fp_mp<span class="sc">$</span>payoff_1, fp_mp<span class="sc">$</span>payoff_2))</span>
+<span id="cb62-254"><a href="#cb62-254" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-255"><a href="#cb62-255" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-256"><a href="#cb62-256" aria-hidden="true" tabindex="-1"></a>The empirical frequencies are close to the true mixed Nash equilibrium $(0.5, 0.5)$, demonstrating convergence. As a zero-sum game, Matching Pennies is guaranteed to yield convergence under fictitious play.</span>
+<span id="cb62-257"><a href="#cb62-257" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-258"><a href="#cb62-258" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
+<span id="cb62-259"><a href="#cb62-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-260"><a href="#cb62-260" aria-hidden="true" tabindex="-1"></a>We apply fictitious play to the **Battle of the Sexes** --- a game with two pure Nash equilibria and one mixed Nash equilibrium --- and visualize the convergence trajectory. This is a more challenging test because the game has multiple equilibria and is not zero-sum.</span>
+<span id="cb62-261"><a href="#cb62-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-262"><a href="#cb62-262" aria-hidden="true" tabindex="-1"></a><span class="fu">### Setting up the game</span></span>
+<span id="cb62-263"><a href="#cb62-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-266"><a href="#cb62-266" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-267"><a href="#cb62-267" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: bos-setup</span></span>
+<span id="cb62-268"><a href="#cb62-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-269"><a href="#cb62-269" aria-hidden="true" tabindex="-1"></a><span class="co"># Battle of the Sexes</span></span>
+<span id="cb62-270"><a href="#cb62-270" aria-hidden="true" tabindex="-1"></a>A_bos <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">2</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb62-271"><a href="#cb62-271" aria-hidden="true" tabindex="-1"></a>                <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>), <span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>)))</span>
+<span id="cb62-272"><a href="#cb62-272" aria-hidden="true" tabindex="-1"></a>B_bos <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb62-273"><a href="#cb62-273" aria-hidden="true" tabindex="-1"></a>                <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>), <span class="fu">c</span>(<span class="st">"Opera"</span>, <span class="st">"Football"</span>)))</span>
+<span id="cb62-274"><a href="#cb62-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-275"><a href="#cb62-275" aria-hidden="true" tabindex="-1"></a><span class="co"># True mixed NE: p = 3/5 (P1 plays Opera), q = 2/5 (P2 plays Opera)</span></span>
+<span id="cb62-276"><a href="#cb62-276" aria-hidden="true" tabindex="-1"></a>true_p <span class="ot">&lt;-</span> <span class="dv">3</span> <span class="sc">/</span> <span class="dv">5</span></span>
+<span id="cb62-277"><a href="#cb62-277" aria-hidden="true" tabindex="-1"></a>true_q <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">/</span> <span class="dv">5</span></span>
+<span id="cb62-278"><a href="#cb62-278" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-279"><a href="#cb62-279" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Battle of the Sexes payoffs:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-280"><a href="#cb62-280" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Player 1:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-281"><a href="#cb62-281" aria-hidden="true" tabindex="-1"></a>A_bos</span>
+<span id="cb62-282"><a href="#cb62-282" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Player 2:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-283"><a href="#cb62-283" aria-hidden="true" tabindex="-1"></a>B_bos</span>
+<span id="cb62-284"><a href="#cb62-284" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">True mixed NE: p(Opera) = %.2f, q(Opera) = %.2f</span><span class="sc">\n</span><span class="st">"</span>, true_p, true_q))</span>
+<span id="cb62-285"><a href="#cb62-285" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-286"><a href="#cb62-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-287"><a href="#cb62-287" aria-hidden="true" tabindex="-1"></a><span class="fu">### Running fictitious play</span></span>
+<span id="cb62-288"><a href="#cb62-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-291"><a href="#cb62-291" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-292"><a href="#cb62-292" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: bos-fictitious-play</span></span>
 <span id="cb62-293"><a href="#cb62-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-294"><a href="#cb62-294" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Battle of the Sexes --- Fictitious Play Results:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-295"><a href="#cb62-295" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical p(Opera) ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>p[<span class="dv">1</span>], <span class="dv">4</span>),</span>
-<span id="cb62-296"><a href="#cb62-296" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  (true:"</span>, true_p, <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-297"><a href="#cb62-297" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical q(Opera) ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>q[<span class="dv">1</span>], <span class="dv">4</span>),</span>
-<span id="cb62-298"><a href="#cb62-298" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  (true:"</span>, true_q, <span class="st">")</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb62-299"><a href="#cb62-299" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-300"><a href="#cb62-300" aria-hidden="true" tabindex="-1"></a><span class="co"># Expected payoffs at the mixed NE</span></span>
-<span id="cb62-301"><a href="#cb62-301" aria-hidden="true" tabindex="-1"></a>mixed_payoff_1 <span class="ot">&lt;-</span> true_p <span class="sc">*</span> true_q <span class="sc">*</span> <span class="dv">3</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> true_p) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> true_q) <span class="sc">*</span> <span class="dv">2</span></span>
-<span id="cb62-302"><a href="#cb62-302" aria-hidden="true" tabindex="-1"></a>mixed_payoff_2 <span class="ot">&lt;-</span> true_p <span class="sc">*</span> true_q <span class="sc">*</span> <span class="dv">2</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> true_p) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> true_q) <span class="sc">*</span> <span class="dv">3</span></span>
-<span id="cb62-303"><a href="#cb62-303" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Mixed NE expected payoffs:"</span>, <span class="fu">round</span>(mixed_payoff_1, <span class="dv">3</span>), <span class="st">","</span>,</span>
-<span id="cb62-304"><a href="#cb62-304" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(mixed_payoff_2, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-305"><a href="#cb62-305" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Fictitious play payoffs:  "</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>payoff_1, <span class="dv">3</span>), <span class="st">","</span>,</span>
-<span id="cb62-306"><a href="#cb62-306" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(fp_bos<span class="sc">$</span>payoff_2, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-307"><a href="#cb62-307" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-308"><a href="#cb62-308" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-309"><a href="#cb62-309" aria-hidden="true" tabindex="-1"></a>The empirical frequencies approximate the mixed NE at $(p, q) = (0.6, 0.4)$. The convergence is slow --- fictitious play converges at rate $O(1/\sqrt{t})$ --- but it is robust and requires no matrix inversion or linear programming.</span>
-<span id="cb62-310"><a href="#cb62-310" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-311"><a href="#cb62-311" aria-hidden="true" tabindex="-1"></a><span class="fu">### Publication figure: convergence trajectory</span></span>
-<span id="cb62-312"><a href="#cb62-312" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-315"><a href="#cb62-315" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-316"><a href="#cb62-316" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fp-convergence</span></span>
-<span id="cb62-317"><a href="#cb62-317" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Fictitious play convergence in the Battle of the Sexes. The trajectory of empirical action frequencies (Player 1 plays Opera on the x-axis, Player 2 plays Opera on the y-axis) spirals toward the mixed Nash equilibrium at (0.6, 0.4). Early iterations show large oscillations as players alternate between best responses; later iterations settle near the equilibrium. The two pure Nash equilibria at (1, 1) and (0, 0) are shown as reference points."</span></span>
-<span id="cb62-318"><a href="#cb62-318" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb62-319"><a href="#cb62-319" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
-<span id="cb62-320"><a href="#cb62-320" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-321"><a href="#cb62-321" aria-hidden="true" tabindex="-1"></a><span class="co"># Build trajectory data for the plot</span></span>
-<span id="cb62-322"><a href="#cb62-322" aria-hidden="true" tabindex="-1"></a>trajectory <span class="ot">&lt;-</span> fp_bos<span class="sc">$</span>history <span class="sc">|&gt;</span></span>
-<span id="cb62-323"><a href="#cb62-323" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb62-324"><a href="#cb62-324" aria-hidden="true" tabindex="-1"></a>    <span class="at">phase =</span> <span class="fu">case_when</span>(</span>
-<span id="cb62-325"><a href="#cb62-325" aria-hidden="true" tabindex="-1"></a>      iter <span class="sc">&lt;=</span> <span class="dv">100</span>  <span class="sc">~</span> <span class="st">"Early (t &lt;= 100)"</span>,</span>
-<span id="cb62-326"><a href="#cb62-326" aria-hidden="true" tabindex="-1"></a>      iter <span class="sc">&lt;=</span> <span class="dv">1000</span> <span class="sc">~</span> <span class="st">"Middle (100 &lt; t &lt;= 1000)"</span>,</span>
-<span id="cb62-327"><a href="#cb62-327" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>         <span class="sc">~</span> <span class="st">"Late (t &gt; 1000)"</span></span>
-<span id="cb62-328"><a href="#cb62-328" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb62-329"><a href="#cb62-329" aria-hidden="true" tabindex="-1"></a>    <span class="at">phase =</span> <span class="fu">factor</span>(phase, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Early (t &lt;= 100)"</span>,</span>
-<span id="cb62-330"><a href="#cb62-330" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Middle (100 &lt; t &lt;= 1000)"</span>,</span>
-<span id="cb62-331"><a href="#cb62-331" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Late (t &gt; 1000)"</span>))</span>
-<span id="cb62-332"><a href="#cb62-332" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb62-333"><a href="#cb62-333" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-334"><a href="#cb62-334" aria-hidden="true" tabindex="-1"></a><span class="co"># Reference points: pure NE and mixed NE</span></span>
-<span id="cb62-335"><a href="#cb62-335" aria-hidden="true" tabindex="-1"></a>ref_points <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb62-336"><a href="#cb62-336" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, true_p),</span>
-<span id="cb62-337"><a href="#cb62-337" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, true_q),</span>
-<span id="cb62-338"><a href="#cb62-338" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"Pure NE: (Opera, Opera)"</span>, <span class="st">"Pure NE: (Football, Football)"</span>,</span>
-<span id="cb62-339"><a href="#cb62-339" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Mixed NE (0.6, 0.4)"</span>)</span>
-<span id="cb62-340"><a href="#cb62-340" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb62-341"><a href="#cb62-341" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-342"><a href="#cb62-342" aria-hidden="true" tabindex="-1"></a>p_fp <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb62-343"><a href="#cb62-343" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Trajectory coloured by phase</span></span>
-<span id="cb62-344"><a href="#cb62-344" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> trajectory,</span>
-<span id="cb62-345"><a href="#cb62-345" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">x =</span> row_freq_1, <span class="at">y =</span> col_freq_1, <span class="at">colour =</span> phase),</span>
-<span id="cb62-346"><a href="#cb62-346" aria-hidden="true" tabindex="-1"></a>            <span class="at">linewidth =</span> <span class="fl">0.5</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb62-347"><a href="#cb62-347" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Starting point</span></span>
-<span id="cb62-348"><a href="#cb62-348" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">slice_head</span>(trajectory, <span class="at">n =</span> <span class="dv">1</span>),</span>
-<span id="cb62-349"><a href="#cb62-349" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">x =</span> row_freq_1, <span class="at">y =</span> col_freq_1),</span>
-<span id="cb62-350"><a href="#cb62-350" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">4</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">stroke =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb62-351"><a href="#cb62-351" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Final point</span></span>
-<span id="cb62-352"><a href="#cb62-352" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">slice_tail</span>(trajectory, <span class="at">n =</span> <span class="dv">1</span>),</span>
-<span id="cb62-353"><a href="#cb62-353" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">x =</span> row_freq_1, <span class="at">y =</span> col_freq_1),</span>
-<span id="cb62-354"><a href="#cb62-354" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">8</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">stroke =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
-<span id="cb62-355"><a href="#cb62-355" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Reference equilibria</span></span>
-<span id="cb62-356"><a href="#cb62-356" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> ref_points, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
-<span id="cb62-357"><a href="#cb62-357" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">colour =</span> okabe_ito[<span class="dv">6</span>]) <span class="sc">+</span></span>
-<span id="cb62-358"><a href="#cb62-358" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> ref_points, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">label =</span> label),</span>
-<span id="cb62-359"><a href="#cb62-359" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">size =</span> <span class="fl">2.7</span>, <span class="at">colour =</span> okabe_ito[<span class="dv">6</span>]) <span class="sc">+</span></span>
-<span id="cb62-360"><a href="#cb62-360" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb62-361"><a href="#cb62-361" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(okabe_ito[<span class="dv">1</span>], okabe_ito[<span class="dv">2</span>], okabe_ito[<span class="dv">3</span>]),</span>
-<span id="cb62-362"><a href="#cb62-362" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Iteration phase"</span></span>
-<span id="cb62-363"><a href="#cb62-363" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb62-364"><a href="#cb62-364" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
-<span id="cb62-365"><a href="#cb62-365" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Player 1: empirical freq. of Opera"</span>,</span>
-<span id="cb62-366"><a href="#cb62-366" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.05</span>, <span class="fl">1.1</span>),</span>
-<span id="cb62-367"><a href="#cb62-367" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.2</span>)</span>
-<span id="cb62-368"><a href="#cb62-368" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb62-369"><a href="#cb62-369" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
-<span id="cb62-370"><a href="#cb62-370" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Player 2: empirical freq. of Opera"</span>,</span>
-<span id="cb62-371"><a href="#cb62-371" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.05</span>, <span class="fl">1.15</span>),</span>
-<span id="cb62-372"><a href="#cb62-372" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.2</span>)</span>
-<span id="cb62-373"><a href="#cb62-373" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb62-374"><a href="#cb62-374" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Fictitious Play Convergence: Battle of the Sexes"</span>) <span class="sc">+</span></span>
-<span id="cb62-375"><a href="#cb62-375" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>()</span>
-<span id="cb62-376"><a href="#cb62-376" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-377"><a href="#cb62-377" aria-hidden="true" tabindex="-1"></a>p_fp</span>
-<span id="cb62-378"><a href="#cb62-378" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_fp, <span class="st">"fictitious-play-convergence"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
-<span id="cb62-379"><a href="#cb62-379" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-380"><a href="#cb62-380" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-381"><a href="#cb62-381" aria-hidden="true" tabindex="-1"></a>The spiral pattern in the figure is characteristic of fictitious play in games with mixed equilibria. Each player's best response to the other's current empirical frequency overshoots the equilibrium, creating oscillations that gradually dampen. The early phase (orange) shows wild swings; the middle phase (blue) tightens the spiral; and the late phase (green) clusters near the mixed NE at $(0.6, 0.4)$.</span>
-<span id="cb62-382"><a href="#cb62-382" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-383"><a href="#cb62-383" aria-hidden="true" tabindex="-1"></a>This convergence pattern explains why fictitious play, despite its simplicity, is useful as both a computational tool and a model of bounded rationality. Players need not know the game's payoff structure in full --- they only need to observe past actions and best-respond. The path to equilibrium emerges from this simple learning rule, without any explicit computation of the indifference conditions from @sec-mixed-strategies.</span>
-<span id="cb62-384"><a href="#cb62-384" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-385"><a href="#cb62-385" aria-hidden="true" tabindex="-1"></a><span class="fu">### Comparing all three approaches</span></span>
-<span id="cb62-386"><a href="#cb62-386" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-387"><a href="#cb62-387" aria-hidden="true" tabindex="-1"></a>We now apply all three algorithms to Battle of the Sexes and compare their outputs.</span>
-<span id="cb62-388"><a href="#cb62-388" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-391"><a href="#cb62-391" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-392"><a href="#cb62-392" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: method-comparison</span></span>
-<span id="cb62-393"><a href="#cb62-393" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-394"><a href="#cb62-394" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Lemke-Howson sketch</span></span>
-<span id="cb62-395"><a href="#cb62-395" aria-hidden="true" tabindex="-1"></a>lh_bos <span class="ot">&lt;-</span> <span class="fu">lemke_howson_2x2</span>(A_bos, B_bos)</span>
-<span id="cb62-396"><a href="#cb62-396" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Lemke-Howson:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-397"><a href="#cb62-397" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  p ="</span>, <span class="fu">round</span>(lh_bos<span class="sc">$</span>p, <span class="dv">4</span>), <span class="st">" q ="</span>, <span class="fu">round</span>(lh_bos<span class="sc">$</span>q, <span class="dv">4</span>),</span>
-<span id="cb62-398"><a href="#cb62-398" aria-hidden="true" tabindex="-1"></a>    <span class="st">" type:"</span>, lh_bos<span class="sc">$</span>type, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-399"><a href="#cb62-399" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.2f, %.2f)</span><span class="sc">\n\n</span><span class="st">"</span>, lh_bos<span class="sc">$</span>payoff_1, lh_bos<span class="sc">$</span>payoff_2))</span>
-<span id="cb62-400"><a href="#cb62-400" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-401"><a href="#cb62-401" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Fictitious play (already computed above)</span></span>
-<span id="cb62-402"><a href="#cb62-402" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Fictitious play (5000 iterations):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-403"><a href="#cb62-403" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  p ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>p, <span class="dv">4</span>), <span class="st">" q ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>q, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-404"><a href="#cb62-404" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.2f, %.2f)</span><span class="sc">\n\n</span><span class="st">"</span>, fp_bos<span class="sc">$</span>payoff_1, fp_bos<span class="sc">$</span>payoff_2))</span>
-<span id="cb62-405"><a href="#cb62-405" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-406"><a href="#cb62-406" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Exact support enumeration (from @sec-nashpy-reticulate)</span></span>
-<span id="cb62-407"><a href="#cb62-407" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Exact solutions (for reference):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb62-408"><a href="#cb62-408" aria-hidden="true" tabindex="-1"></a>pure_ne <span class="ot">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span>(A_bos, B_bos)</span>
-<span id="cb62-409"><a href="#cb62-409" aria-hidden="true" tabindex="-1"></a>mixed_ne <span class="ot">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span>(A_bos, B_bos)</span>
-<span id="cb62-410"><a href="#cb62-410" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (eq <span class="cf">in</span> pure_ne) {</span>
-<span id="cb62-411"><a href="#cb62-411" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Pure NE: (%s, %s) -&gt; payoffs (%d, %d)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb62-412"><a href="#cb62-412" aria-hidden="true" tabindex="-1"></a>              <span class="fu">rownames</span>(A_bos)[eq[<span class="dv">1</span>]], <span class="fu">colnames</span>(A_bos)[eq[<span class="dv">2</span>]],</span>
-<span id="cb62-413"><a href="#cb62-413" aria-hidden="true" tabindex="-1"></a>              A_bos[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]], B_bos[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]]))</span>
-<span id="cb62-414"><a href="#cb62-414" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb62-415"><a href="#cb62-415" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(mixed_ne)) {</span>
-<span id="cb62-416"><a href="#cb62-416" aria-hidden="true" tabindex="-1"></a>  p_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed_ne<span class="sc">$</span>p, <span class="dv">1</span> <span class="sc">-</span> mixed_ne<span class="sc">$</span>p)</span>
-<span id="cb62-417"><a href="#cb62-417" aria-hidden="true" tabindex="-1"></a>  q_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed_ne<span class="sc">$</span>q, <span class="dv">1</span> <span class="sc">-</span> mixed_ne<span class="sc">$</span>q)</span>
-<span id="cb62-418"><a href="#cb62-418" aria-hidden="true" tabindex="-1"></a>  payoff_1_exact <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p_exact <span class="sc">%*%</span> A_bos <span class="sc">%*%</span> q_exact)</span>
-<span id="cb62-419"><a href="#cb62-419" aria-hidden="true" tabindex="-1"></a>  payoff_2_exact <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p_exact <span class="sc">%*%</span> B_bos <span class="sc">%*%</span> q_exact)</span>
-<span id="cb62-420"><a href="#cb62-420" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Mixed NE: p = (%.3f, %.3f), q = (%.3f, %.3f) -&gt; payoffs (%.2f, %.2f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb62-421"><a href="#cb62-421" aria-hidden="true" tabindex="-1"></a>              p_exact[<span class="dv">1</span>], p_exact[<span class="dv">2</span>], q_exact[<span class="dv">1</span>], q_exact[<span class="dv">2</span>],</span>
-<span id="cb62-422"><a href="#cb62-422" aria-hidden="true" tabindex="-1"></a>              payoff_1_exact, payoff_2_exact))</span>
-<span id="cb62-423"><a href="#cb62-423" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb62-424"><a href="#cb62-424" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-425"><a href="#cb62-425" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-426"><a href="#cb62-426" aria-hidden="true" tabindex="-1"></a>The comparison reveals a key distinction. Lemke--Howson is an exact algebraic method that finds one equilibrium (here, a pure NE). Fictitious play is an iterative approximation that converges toward the mixed equilibrium. Support enumeration is the only method that finds *all* equilibria. The choice among them depends on the analyst's goals: completeness favours support enumeration, speed favours Lemke--Howson, and simplicity favours fictitious play.</span>
-<span id="cb62-427"><a href="#cb62-427" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-428"><a href="#cb62-428" aria-hidden="true" tabindex="-1"></a><span class="fu">### Convergence speed across games</span></span>
-<span id="cb62-429"><a href="#cb62-429" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-432"><a href="#cb62-432" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb62-433"><a href="#cb62-433" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: convergence-speed</span></span>
-<span id="cb62-434"><a href="#cb62-434" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-435"><a href="#cb62-435" aria-hidden="true" tabindex="-1"></a><span class="co"># Run fictitious play on two games and track convergence</span></span>
-<span id="cb62-436"><a href="#cb62-436" aria-hidden="true" tabindex="-1"></a>games_for_fp <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb62-437"><a href="#cb62-437" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Matching Pennies"</span> <span class="ot">=</span> <span class="fu">list</span>(<span class="at">A =</span> A_mp, <span class="at">B =</span> B_mp, <span class="at">true_p =</span> <span class="fl">0.5</span>, <span class="at">true_q =</span> <span class="fl">0.5</span>),</span>
-<span id="cb62-438"><a href="#cb62-438" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Battle of Sexes"</span>  <span class="ot">=</span> <span class="fu">list</span>(<span class="at">A =</span> A_bos, <span class="at">B =</span> B_bos, <span class="at">true_p =</span> <span class="fl">0.6</span>, <span class="at">true_q =</span> <span class="fl">0.4</span>)</span>
-<span id="cb62-439"><a href="#cb62-439" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb62-440"><a href="#cb62-440" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-441"><a href="#cb62-441" aria-hidden="true" tabindex="-1"></a>convergence_data <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb62-442"><a href="#cb62-442" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (game_name <span class="cf">in</span> <span class="fu">names</span>(games_for_fp)) {</span>
-<span id="cb62-443"><a href="#cb62-443" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> games_for_fp[[game_name]]</span>
-<span id="cb62-444"><a href="#cb62-444" aria-hidden="true" tabindex="-1"></a>  fp <span class="ot">&lt;-</span> <span class="fu">fictitious_play</span>(g<span class="sc">$</span>A, g<span class="sc">$</span>B, <span class="at">n_iter =</span> <span class="dv">5000</span>)</span>
-<span id="cb62-445"><a href="#cb62-445" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-446"><a href="#cb62-446" aria-hidden="true" tabindex="-1"></a>  conv <span class="ot">&lt;-</span> fp<span class="sc">$</span>history <span class="sc">|&gt;</span></span>
-<span id="cb62-447"><a href="#cb62-447" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb62-448"><a href="#cb62-448" aria-hidden="true" tabindex="-1"></a>      <span class="at">error_p =</span> <span class="fu">abs</span>(row_freq_1 <span class="sc">-</span> g<span class="sc">$</span>true_p),</span>
-<span id="cb62-449"><a href="#cb62-449" aria-hidden="true" tabindex="-1"></a>      <span class="at">error_q =</span> <span class="fu">abs</span>(col_freq_1 <span class="sc">-</span> g<span class="sc">$</span>true_q),</span>
-<span id="cb62-450"><a href="#cb62-450" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_error =</span> error_p <span class="sc">+</span> error_q,</span>
-<span id="cb62-451"><a href="#cb62-451" aria-hidden="true" tabindex="-1"></a>      <span class="at">game =</span> game_name</span>
-<span id="cb62-452"><a href="#cb62-452" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb62-453"><a href="#cb62-453" aria-hidden="true" tabindex="-1"></a>  convergence_data <span class="ot">&lt;-</span> <span class="fu">c</span>(convergence_data, <span class="fu">list</span>(conv))</span>
-<span id="cb62-454"><a href="#cb62-454" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb62-455"><a href="#cb62-455" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-456"><a href="#cb62-456" aria-hidden="true" tabindex="-1"></a>conv_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(convergence_data)</span>
-<span id="cb62-457"><a href="#cb62-457" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-458"><a href="#cb62-458" aria-hidden="true" tabindex="-1"></a>conv_df <span class="sc">|&gt;</span></span>
-<span id="cb62-459"><a href="#cb62-459" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iter <span class="sc">&gt;=</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb62-460"><a href="#cb62-460" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> iter, <span class="at">y =</span> total_error, <span class="at">colour =</span> game)) <span class="sc">+</span></span>
-<span id="cb62-461"><a href="#cb62-461" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.6</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb62-462"><a href="#cb62-462" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> okabe_ito[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>)]) <span class="sc">+</span></span>
-<span id="cb62-463"><a href="#cb62-463" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>(<span class="at">name =</span> <span class="st">"Iteration"</span>, <span class="at">labels =</span> <span class="fu">label_comma</span>()) <span class="sc">+</span></span>
-<span id="cb62-464"><a href="#cb62-464" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">name =</span> <span class="st">"Total frequency error |p - p*| + |q - q*|"</span>) <span class="sc">+</span></span>
-<span id="cb62-465"><a href="#cb62-465" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb62-466"><a href="#cb62-466" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Fictitious Play Convergence Speed"</span>,</span>
-<span id="cb62-467"><a href="#cb62-467" aria-hidden="true" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">"Game"</span></span>
-<span id="cb62-468"><a href="#cb62-468" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb62-469"><a href="#cb62-469" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>()</span>
-<span id="cb62-470"><a href="#cb62-470" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb62-471"><a href="#cb62-471" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-472"><a href="#cb62-472" aria-hidden="true" tabindex="-1"></a>Both games show the expected $O(1/\sqrt{t})$ convergence rate (approximately linear on the log-log scale with slope around $-0.5$). Matching Pennies, being zero-sum, converges more smoothly. Battle of the Sexes shows more irregular convergence due to the coordination structure and the presence of multiple equilibria.</span>
-<span id="cb62-473"><a href="#cb62-473" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-474"><a href="#cb62-474" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
-<span id="cb62-475"><a href="#cb62-475" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-476"><a href="#cb62-476" aria-hidden="true" tabindex="-1"></a>The three algorithms in this chapter represent three broad families of equilibrium computation methods:</span>
-<span id="cb62-477"><a href="#cb62-477" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-478"><a href="#cb62-478" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Enumeration methods** (support enumeration, @sec-nashpy-reticulate) are exhaustive and exact but exponential. They are the method of choice when completeness matters --- for example, when we need to certify that a game has a unique equilibrium.</span>
-<span id="cb62-479"><a href="#cb62-479" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Path-following methods** (Lemke--Howson) are polynomial in the size of the output (they find one equilibrium in time proportional to the path length) and are the workhorses of practical computation. The full Lemke--Howson algorithm, with proper degeneracy handling, is implemented in Gambit and can be accessed from R via the gtree package (@sec-gtree-package).</span>
-<span id="cb62-480"><a href="#cb62-480" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Learning dynamics** (fictitious play) provide approximate solutions and connect equilibrium theory to the question of how equilibria might arise through repeated interaction. This connects to the evolutionary and repeated-game perspectives explored in @sec-repeated-games.</span>
-<span id="cb62-481"><a href="#cb62-481" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-482"><a href="#cb62-482" aria-hidden="true" tabindex="-1"></a>For the theoretical foundations of equilibrium computation, including the PPAD complexity class and the computational hardness of finding Nash equilibria, see @shoham2009 (Chapter 4) and @osborne2004 (Chapter 12). The connection between learning dynamics and equilibrium was a central theme in the work of @nash1950, who originally motivated his equilibrium concept partly through a "mass action" interpretation --- populations of players repeatedly interacting and adjusting their strategies.</span>
-<span id="cb62-483"><a href="#cb62-483" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-484"><a href="#cb62-484" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
-<span id="cb62-485"><a href="#cb62-485" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-486"><a href="#cb62-486" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Fictitious play on a 3x3 game.** Run fictitious play on the asymmetric Rock-Paper-Scissors game from @sec-nashpy-reticulate (with payoffs +2 for winning and -1 for losing). Use 10,000 iterations and plot the empirical frequencies of all three actions for Player 1 over time (you will need to extend the <span class="in">`fictitious_play()`</span> function to track all action frequencies, not just the first). Does fictitious play converge? Compare the final empirical frequencies to the exact Nash equilibrium found by support enumeration.</span>
-<span id="cb62-487"><a href="#cb62-487" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-488"><a href="#cb62-488" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Convergence rate analysis.** For the Battle of the Sexes, run fictitious play for $T \in <span class="sc">\{</span>100, 500, 1000, 5000, 10000<span class="sc">\}</span>$ iterations with 20 different random seeds for each $T$. Compute the mean and standard deviation of the total frequency error at each $T$. Plot the mean error as a function of $T$ on a log-log scale and estimate the convergence rate exponent by fitting a line. Is the empirical rate consistent with the theoretical prediction?</span>
-<span id="cb62-489"><a href="#cb62-489" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-490"><a href="#cb62-490" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Shapley's counterexample.** Implement the game with payoff matrices $A = \begin{pmatrix} 0 &amp; 1 &amp; 0 <span class="sc">\\</span> 0 &amp; 0 &amp; 1 <span class="sc">\\</span> 1 &amp; 0 &amp; 0 \end{pmatrix}$ and $B = \begin{pmatrix} 0 &amp; 0 &amp; 1 <span class="sc">\\</span> 1 &amp; 0 &amp; 0 <span class="sc">\\</span> 0 &amp; 1 &amp; 0 \end{pmatrix}$. Run fictitious play for 20,000 iterations and plot the trajectory of Player 1's empirical frequencies in a ternary diagram (use the three frequencies as coordinates, noting they sum to 1, so two suffice for a 2D plot). Verify that the empirical frequencies cycle rather than converge, confirming Shapley's result.</span>
-<span id="cb62-491"><a href="#cb62-491" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-492"><a href="#cb62-492" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Lemke--Howson by hand.** For the game with $A = \begin{pmatrix} 4 &amp; 1 <span class="sc">\\</span> 2 &amp; 3 \end{pmatrix}$ and $B = \begin{pmatrix} 3 &amp; 2 <span class="sc">\\</span> 1 &amp; 4 \end{pmatrix}$ (after shifting to ensure positivity), write out the best-response polytopes $P$ and $Q$, enumerate all vertices with their labels, and trace the Lemke--Howson path starting from label $k = 1$. Verify that the path arrives at a Nash equilibrium. You may present this as a table rather than code.</span>
-<span id="cb62-493"><a href="#cb62-493" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-494"><a href="#cb62-494" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Hybrid solver.** Write a function <span class="in">`hybrid_solver(A, B, exact_threshold = 5)`</span> that uses support enumeration (via the <span class="in">`support_enumeration_general()`</span> function from @sec-nashpy-reticulate) when both $m \leq$ <span class="in">`exact_threshold`</span> and $n \leq$ <span class="in">`exact_threshold`</span>, and falls back to fictitious play with 10,000 iterations otherwise. Test your function on random games of sizes 3x3, 5x5, and 10x10. Report timing results and comment on the quality of the fictitious play approximation relative to the exact solution.</span>
-<span id="cb62-495"><a href="#cb62-495" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb62-496"><a href="#cb62-496" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
+<span id="cb62-294"><a href="#cb62-294" aria-hidden="true" tabindex="-1"></a><span class="co"># Run fictitious play with many iterations</span></span>
+<span id="cb62-295"><a href="#cb62-295" aria-hidden="true" tabindex="-1"></a>fp_bos <span class="ot">&lt;-</span> <span class="fu">fictitious_play</span>(A_bos, B_bos, <span class="at">n_iter =</span> <span class="dv">5000</span>)</span>
+<span id="cb62-296"><a href="#cb62-296" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-297"><a href="#cb62-297" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Battle of the Sexes --- Fictitious Play Results:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-298"><a href="#cb62-298" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical p(Opera) ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>p[<span class="dv">1</span>], <span class="dv">4</span>),</span>
+<span id="cb62-299"><a href="#cb62-299" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  (true:"</span>, true_p, <span class="st">")</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-300"><a href="#cb62-300" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Empirical q(Opera) ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>q[<span class="dv">1</span>], <span class="dv">4</span>),</span>
+<span id="cb62-301"><a href="#cb62-301" aria-hidden="true" tabindex="-1"></a>    <span class="st">"  (true:"</span>, true_q, <span class="st">")</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb62-302"><a href="#cb62-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-303"><a href="#cb62-303" aria-hidden="true" tabindex="-1"></a><span class="co"># Expected payoffs at the mixed NE</span></span>
+<span id="cb62-304"><a href="#cb62-304" aria-hidden="true" tabindex="-1"></a>mixed_payoff_1 <span class="ot">&lt;-</span> true_p <span class="sc">*</span> true_q <span class="sc">*</span> <span class="dv">3</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> true_p) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> true_q) <span class="sc">*</span> <span class="dv">2</span></span>
+<span id="cb62-305"><a href="#cb62-305" aria-hidden="true" tabindex="-1"></a>mixed_payoff_2 <span class="ot">&lt;-</span> true_p <span class="sc">*</span> true_q <span class="sc">*</span> <span class="dv">2</span> <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> true_p) <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> true_q) <span class="sc">*</span> <span class="dv">3</span></span>
+<span id="cb62-306"><a href="#cb62-306" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Mixed NE expected payoffs:"</span>, <span class="fu">round</span>(mixed_payoff_1, <span class="dv">3</span>), <span class="st">","</span>,</span>
+<span id="cb62-307"><a href="#cb62-307" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(mixed_payoff_2, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-308"><a href="#cb62-308" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Fictitious play payoffs:  "</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>payoff_1, <span class="dv">3</span>), <span class="st">","</span>,</span>
+<span id="cb62-309"><a href="#cb62-309" aria-hidden="true" tabindex="-1"></a>    <span class="fu">round</span>(fp_bos<span class="sc">$</span>payoff_2, <span class="dv">3</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-310"><a href="#cb62-310" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-311"><a href="#cb62-311" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-312"><a href="#cb62-312" aria-hidden="true" tabindex="-1"></a>The empirical frequencies approximate the mixed NE at $(p, q) = (0.6, 0.4)$. The convergence is slow --- fictitious play converges at rate $O(1/\sqrt{t})$ --- but it is robust and requires no matrix inversion or linear programming.</span>
+<span id="cb62-313"><a href="#cb62-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-314"><a href="#cb62-314" aria-hidden="true" tabindex="-1"></a><span class="fu">### Publication figure: convergence trajectory</span></span>
+<span id="cb62-315"><a href="#cb62-315" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-318"><a href="#cb62-318" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-319"><a href="#cb62-319" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-fp-convergence</span></span>
+<span id="cb62-320"><a href="#cb62-320" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Fictitious play convergence in the Battle of the Sexes. The trajectory of empirical action frequencies (Player 1 plays Opera on the x-axis, Player 2 plays Opera on the y-axis) spirals toward the mixed Nash equilibrium at (0.6, 0.4). Early iterations show large oscillations as players alternate between best responses; later iterations settle near the equilibrium. The two pure Nash equilibria at (1, 1) and (0, 0) are shown as reference points."</span></span>
+<span id="cb62-321"><a href="#cb62-321" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb62-322"><a href="#cb62-322" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb62-323"><a href="#cb62-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-324"><a href="#cb62-324" aria-hidden="true" tabindex="-1"></a><span class="co"># Build trajectory data for the plot</span></span>
+<span id="cb62-325"><a href="#cb62-325" aria-hidden="true" tabindex="-1"></a>trajectory <span class="ot">&lt;-</span> fp_bos<span class="sc">$</span>history <span class="sc">|&gt;</span></span>
+<span id="cb62-326"><a href="#cb62-326" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb62-327"><a href="#cb62-327" aria-hidden="true" tabindex="-1"></a>    <span class="at">phase =</span> <span class="fu">case_when</span>(</span>
+<span id="cb62-328"><a href="#cb62-328" aria-hidden="true" tabindex="-1"></a>      iter <span class="sc">&lt;=</span> <span class="dv">100</span>  <span class="sc">~</span> <span class="st">"Early (t &lt;= 100)"</span>,</span>
+<span id="cb62-329"><a href="#cb62-329" aria-hidden="true" tabindex="-1"></a>      iter <span class="sc">&lt;=</span> <span class="dv">1000</span> <span class="sc">~</span> <span class="st">"Middle (100 &lt; t &lt;= 1000)"</span>,</span>
+<span id="cb62-330"><a href="#cb62-330" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>         <span class="sc">~</span> <span class="st">"Late (t &gt; 1000)"</span></span>
+<span id="cb62-331"><a href="#cb62-331" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb62-332"><a href="#cb62-332" aria-hidden="true" tabindex="-1"></a>    <span class="at">phase =</span> <span class="fu">factor</span>(phase, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Early (t &lt;= 100)"</span>,</span>
+<span id="cb62-333"><a href="#cb62-333" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Middle (100 &lt; t &lt;= 1000)"</span>,</span>
+<span id="cb62-334"><a href="#cb62-334" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"Late (t &gt; 1000)"</span>))</span>
+<span id="cb62-335"><a href="#cb62-335" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb62-336"><a href="#cb62-336" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-337"><a href="#cb62-337" aria-hidden="true" tabindex="-1"></a><span class="co"># Reference points: pure NE and mixed NE</span></span>
+<span id="cb62-338"><a href="#cb62-338" aria-hidden="true" tabindex="-1"></a>ref_points <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb62-339"><a href="#cb62-339" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, true_p),</span>
+<span id="cb62-340"><a href="#cb62-340" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, true_q),</span>
+<span id="cb62-341"><a href="#cb62-341" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"Pure NE: (Opera, Opera)"</span>, <span class="st">"Pure NE: (Football, Football)"</span>,</span>
+<span id="cb62-342"><a href="#cb62-342" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Mixed NE (0.6, 0.4)"</span>)</span>
+<span id="cb62-343"><a href="#cb62-343" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb62-344"><a href="#cb62-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-345"><a href="#cb62-345" aria-hidden="true" tabindex="-1"></a>p_fp <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb62-346"><a href="#cb62-346" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Trajectory coloured by phase</span></span>
+<span id="cb62-347"><a href="#cb62-347" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> trajectory,</span>
+<span id="cb62-348"><a href="#cb62-348" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">x =</span> row_freq_1, <span class="at">y =</span> col_freq_1, <span class="at">colour =</span> phase),</span>
+<span id="cb62-349"><a href="#cb62-349" aria-hidden="true" tabindex="-1"></a>            <span class="at">linewidth =</span> <span class="fl">0.5</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb62-350"><a href="#cb62-350" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Starting point</span></span>
+<span id="cb62-351"><a href="#cb62-351" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">slice_head</span>(trajectory, <span class="at">n =</span> <span class="dv">1</span>),</span>
+<span id="cb62-352"><a href="#cb62-352" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">x =</span> row_freq_1, <span class="at">y =</span> col_freq_1),</span>
+<span id="cb62-353"><a href="#cb62-353" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">4</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">stroke =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb62-354"><a href="#cb62-354" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Final point</span></span>
+<span id="cb62-355"><a href="#cb62-355" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> <span class="fu">slice_tail</span>(trajectory, <span class="at">n =</span> <span class="dv">1</span>),</span>
+<span id="cb62-356"><a href="#cb62-356" aria-hidden="true" tabindex="-1"></a>             <span class="fu">aes</span>(<span class="at">x =</span> row_freq_1, <span class="at">y =</span> col_freq_1),</span>
+<span id="cb62-357"><a href="#cb62-357" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">8</span>, <span class="at">size =</span> <span class="dv">3</span>, <span class="at">stroke =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb62-358"><a href="#cb62-358" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Reference equilibria</span></span>
+<span id="cb62-359"><a href="#cb62-359" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> ref_points, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y),</span>
+<span id="cb62-360"><a href="#cb62-360" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">18</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">colour =</span> okabe_ito[<span class="dv">6</span>]) <span class="sc">+</span></span>
+<span id="cb62-361"><a href="#cb62-361" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> ref_points, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">label =</span> label),</span>
+<span id="cb62-362"><a href="#cb62-362" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="dv">1</span>, <span class="at">size =</span> <span class="fl">2.7</span>, <span class="at">colour =</span> okabe_ito[<span class="dv">6</span>]) <span class="sc">+</span></span>
+<span id="cb62-363"><a href="#cb62-363" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb62-364"><a href="#cb62-364" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(okabe_ito[<span class="dv">1</span>], okabe_ito[<span class="dv">2</span>], okabe_ito[<span class="dv">3</span>]),</span>
+<span id="cb62-365"><a href="#cb62-365" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Iteration phase"</span></span>
+<span id="cb62-366"><a href="#cb62-366" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb62-367"><a href="#cb62-367" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(</span>
+<span id="cb62-368"><a href="#cb62-368" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Player 1: empirical freq. of Opera"</span>,</span>
+<span id="cb62-369"><a href="#cb62-369" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.05</span>, <span class="fl">1.1</span>),</span>
+<span id="cb62-370"><a href="#cb62-370" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.2</span>)</span>
+<span id="cb62-371"><a href="#cb62-371" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb62-372"><a href="#cb62-372" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
+<span id="cb62-373"><a href="#cb62-373" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Player 2: empirical freq. of Opera"</span>,</span>
+<span id="cb62-374"><a href="#cb62-374" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.05</span>, <span class="fl">1.15</span>),</span>
+<span id="cb62-375"><a href="#cb62-375" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.2</span>)</span>
+<span id="cb62-376"><a href="#cb62-376" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb62-377"><a href="#cb62-377" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Fictitious Play Convergence: Battle of the Sexes"</span>) <span class="sc">+</span></span>
+<span id="cb62-378"><a href="#cb62-378" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>()</span>
+<span id="cb62-379"><a href="#cb62-379" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-380"><a href="#cb62-380" aria-hidden="true" tabindex="-1"></a>p_fp</span>
+<span id="cb62-381"><a href="#cb62-381" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_fp, <span class="st">"fictitious-play-convergence"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
+<span id="cb62-382"><a href="#cb62-382" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-383"><a href="#cb62-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-384"><a href="#cb62-384" aria-hidden="true" tabindex="-1"></a>The spiral pattern in the figure is characteristic of fictitious play in games with mixed equilibria. Each player's best response to the other's current empirical frequency overshoots the equilibrium, creating oscillations that gradually dampen. The early phase (orange) shows wild swings; the middle phase (blue) tightens the spiral; and the late phase (green) clusters near the mixed NE at $(0.6, 0.4)$.</span>
+<span id="cb62-385"><a href="#cb62-385" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-386"><a href="#cb62-386" aria-hidden="true" tabindex="-1"></a>This convergence pattern explains why fictitious play, despite its simplicity, is useful as both a computational tool and a model of bounded rationality. Players need not know the game's payoff structure in full --- they only need to observe past actions and best-respond. The path to equilibrium emerges from this simple learning rule, without any explicit computation of the indifference conditions from @sec-mixed-strategies.</span>
+<span id="cb62-387"><a href="#cb62-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-388"><a href="#cb62-388" aria-hidden="true" tabindex="-1"></a><span class="fu">### Comparing all three approaches</span></span>
+<span id="cb62-389"><a href="#cb62-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-390"><a href="#cb62-390" aria-hidden="true" tabindex="-1"></a>We now apply all three algorithms to Battle of the Sexes and compare their outputs.</span>
+<span id="cb62-391"><a href="#cb62-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-394"><a href="#cb62-394" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-395"><a href="#cb62-395" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: method-comparison</span></span>
+<span id="cb62-396"><a href="#cb62-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-397"><a href="#cb62-397" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Lemke-Howson sketch</span></span>
+<span id="cb62-398"><a href="#cb62-398" aria-hidden="true" tabindex="-1"></a>lh_bos <span class="ot">&lt;-</span> <span class="fu">lemke_howson_2x2</span>(A_bos, B_bos)</span>
+<span id="cb62-399"><a href="#cb62-399" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Lemke-Howson:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-400"><a href="#cb62-400" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  p ="</span>, <span class="fu">round</span>(lh_bos<span class="sc">$</span>p, <span class="dv">4</span>), <span class="st">" q ="</span>, <span class="fu">round</span>(lh_bos<span class="sc">$</span>q, <span class="dv">4</span>),</span>
+<span id="cb62-401"><a href="#cb62-401" aria-hidden="true" tabindex="-1"></a>    <span class="st">" type:"</span>, lh_bos<span class="sc">$</span>type, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-402"><a href="#cb62-402" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.2f, %.2f)</span><span class="sc">\n\n</span><span class="st">"</span>, lh_bos<span class="sc">$</span>payoff_1, lh_bos<span class="sc">$</span>payoff_2))</span>
+<span id="cb62-403"><a href="#cb62-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-404"><a href="#cb62-404" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Fictitious play (already computed above)</span></span>
+<span id="cb62-405"><a href="#cb62-405" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Fictitious play (5000 iterations):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-406"><a href="#cb62-406" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  p ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>p, <span class="dv">4</span>), <span class="st">" q ="</span>, <span class="fu">round</span>(fp_bos<span class="sc">$</span>q, <span class="dv">4</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-407"><a href="#cb62-407" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Payoffs: (%.2f, %.2f)</span><span class="sc">\n\n</span><span class="st">"</span>, fp_bos<span class="sc">$</span>payoff_1, fp_bos<span class="sc">$</span>payoff_2))</span>
+<span id="cb62-408"><a href="#cb62-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-409"><a href="#cb62-409" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. Exact support enumeration (from @sec-nashpy-reticulate)</span></span>
+<span id="cb62-410"><a href="#cb62-410" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Exact solutions (for reference):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb62-411"><a href="#cb62-411" aria-hidden="true" tabindex="-1"></a>pure_ne <span class="ot">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span>(A_bos, B_bos)</span>
+<span id="cb62-412"><a href="#cb62-412" aria-hidden="true" tabindex="-1"></a>mixed_ne <span class="ot">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span>(A_bos, B_bos)</span>
+<span id="cb62-413"><a href="#cb62-413" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (eq <span class="cf">in</span> pure_ne) {</span>
+<span id="cb62-414"><a href="#cb62-414" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Pure NE: (%s, %s) -&gt; payoffs (%d, %d)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb62-415"><a href="#cb62-415" aria-hidden="true" tabindex="-1"></a>              <span class="fu">rownames</span>(A_bos)[eq[<span class="dv">1</span>]], <span class="fu">colnames</span>(A_bos)[eq[<span class="dv">2</span>]],</span>
+<span id="cb62-416"><a href="#cb62-416" aria-hidden="true" tabindex="-1"></a>              A_bos[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]], B_bos[eq[<span class="dv">1</span>], eq[<span class="dv">2</span>]]))</span>
+<span id="cb62-417"><a href="#cb62-417" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-418"><a href="#cb62-418" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(mixed_ne)) {</span>
+<span id="cb62-419"><a href="#cb62-419" aria-hidden="true" tabindex="-1"></a>  p_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed_ne<span class="sc">$</span>p, <span class="dv">1</span> <span class="sc">-</span> mixed_ne<span class="sc">$</span>p)</span>
+<span id="cb62-420"><a href="#cb62-420" aria-hidden="true" tabindex="-1"></a>  q_exact <span class="ot">&lt;-</span> <span class="fu">c</span>(mixed_ne<span class="sc">$</span>q, <span class="dv">1</span> <span class="sc">-</span> mixed_ne<span class="sc">$</span>q)</span>
+<span id="cb62-421"><a href="#cb62-421" aria-hidden="true" tabindex="-1"></a>  payoff_1_exact <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p_exact <span class="sc">%*%</span> A_bos <span class="sc">%*%</span> q_exact)</span>
+<span id="cb62-422"><a href="#cb62-422" aria-hidden="true" tabindex="-1"></a>  payoff_2_exact <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(p_exact <span class="sc">%*%</span> B_bos <span class="sc">%*%</span> q_exact)</span>
+<span id="cb62-423"><a href="#cb62-423" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Mixed NE: p = (%.3f, %.3f), q = (%.3f, %.3f) -&gt; payoffs (%.2f, %.2f)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb62-424"><a href="#cb62-424" aria-hidden="true" tabindex="-1"></a>              p_exact[<span class="dv">1</span>], p_exact[<span class="dv">2</span>], q_exact[<span class="dv">1</span>], q_exact[<span class="dv">2</span>],</span>
+<span id="cb62-425"><a href="#cb62-425" aria-hidden="true" tabindex="-1"></a>              payoff_1_exact, payoff_2_exact))</span>
+<span id="cb62-426"><a href="#cb62-426" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-427"><a href="#cb62-427" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-428"><a href="#cb62-428" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-429"><a href="#cb62-429" aria-hidden="true" tabindex="-1"></a>The comparison reveals a key distinction. Lemke--Howson is an exact algebraic method that finds one equilibrium (here, a pure NE). Fictitious play is an iterative approximation that converges toward the mixed equilibrium. Support enumeration is the only method that finds *all* equilibria. The choice among them depends on the analyst's goals: completeness favours support enumeration, speed favours Lemke--Howson, and simplicity favours fictitious play.</span>
+<span id="cb62-430"><a href="#cb62-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-431"><a href="#cb62-431" aria-hidden="true" tabindex="-1"></a><span class="fu">### Convergence speed across games</span></span>
+<span id="cb62-432"><a href="#cb62-432" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-435"><a href="#cb62-435" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb62-436"><a href="#cb62-436" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: convergence-speed</span></span>
+<span id="cb62-437"><a href="#cb62-437" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-438"><a href="#cb62-438" aria-hidden="true" tabindex="-1"></a><span class="co"># Run fictitious play on two games and track convergence</span></span>
+<span id="cb62-439"><a href="#cb62-439" aria-hidden="true" tabindex="-1"></a>games_for_fp <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb62-440"><a href="#cb62-440" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Matching Pennies"</span> <span class="ot">=</span> <span class="fu">list</span>(<span class="at">A =</span> A_mp, <span class="at">B =</span> B_mp, <span class="at">true_p =</span> <span class="fl">0.5</span>, <span class="at">true_q =</span> <span class="fl">0.5</span>),</span>
+<span id="cb62-441"><a href="#cb62-441" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Battle of Sexes"</span>  <span class="ot">=</span> <span class="fu">list</span>(<span class="at">A =</span> A_bos, <span class="at">B =</span> B_bos, <span class="at">true_p =</span> <span class="fl">0.6</span>, <span class="at">true_q =</span> <span class="fl">0.4</span>)</span>
+<span id="cb62-442"><a href="#cb62-442" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb62-443"><a href="#cb62-443" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-444"><a href="#cb62-444" aria-hidden="true" tabindex="-1"></a>convergence_data <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb62-445"><a href="#cb62-445" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (game_name <span class="cf">in</span> <span class="fu">names</span>(games_for_fp)) {</span>
+<span id="cb62-446"><a href="#cb62-446" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> games_for_fp[[game_name]]</span>
+<span id="cb62-447"><a href="#cb62-447" aria-hidden="true" tabindex="-1"></a>  fp <span class="ot">&lt;-</span> <span class="fu">fictitious_play</span>(g<span class="sc">$</span>A, g<span class="sc">$</span>B, <span class="at">n_iter =</span> <span class="dv">5000</span>)</span>
+<span id="cb62-448"><a href="#cb62-448" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-449"><a href="#cb62-449" aria-hidden="true" tabindex="-1"></a>  conv <span class="ot">&lt;-</span> fp<span class="sc">$</span>history <span class="sc">|&gt;</span></span>
+<span id="cb62-450"><a href="#cb62-450" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb62-451"><a href="#cb62-451" aria-hidden="true" tabindex="-1"></a>      <span class="at">error_p =</span> <span class="fu">abs</span>(row_freq_1 <span class="sc">-</span> g<span class="sc">$</span>true_p),</span>
+<span id="cb62-452"><a href="#cb62-452" aria-hidden="true" tabindex="-1"></a>      <span class="at">error_q =</span> <span class="fu">abs</span>(col_freq_1 <span class="sc">-</span> g<span class="sc">$</span>true_q),</span>
+<span id="cb62-453"><a href="#cb62-453" aria-hidden="true" tabindex="-1"></a>      <span class="at">total_error =</span> error_p <span class="sc">+</span> error_q,</span>
+<span id="cb62-454"><a href="#cb62-454" aria-hidden="true" tabindex="-1"></a>      <span class="at">game =</span> game_name</span>
+<span id="cb62-455"><a href="#cb62-455" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb62-456"><a href="#cb62-456" aria-hidden="true" tabindex="-1"></a>  convergence_data <span class="ot">&lt;-</span> <span class="fu">c</span>(convergence_data, <span class="fu">list</span>(conv))</span>
+<span id="cb62-457"><a href="#cb62-457" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-458"><a href="#cb62-458" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-459"><a href="#cb62-459" aria-hidden="true" tabindex="-1"></a>conv_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(convergence_data)</span>
+<span id="cb62-460"><a href="#cb62-460" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-461"><a href="#cb62-461" aria-hidden="true" tabindex="-1"></a>conv_df <span class="sc">|&gt;</span></span>
+<span id="cb62-462"><a href="#cb62-462" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(iter <span class="sc">&gt;=</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb62-463"><a href="#cb62-463" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> iter, <span class="at">y =</span> total_error, <span class="at">colour =</span> game)) <span class="sc">+</span></span>
+<span id="cb62-464"><a href="#cb62-464" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.6</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb62-465"><a href="#cb62-465" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> okabe_ito[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>)]) <span class="sc">+</span></span>
+<span id="cb62-466"><a href="#cb62-466" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>(<span class="at">name =</span> <span class="st">"Iteration"</span>, <span class="at">labels =</span> <span class="fu">label_comma</span>()) <span class="sc">+</span></span>
+<span id="cb62-467"><a href="#cb62-467" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">name =</span> <span class="st">"Total frequency error |p - p*| + |q - q*|"</span>) <span class="sc">+</span></span>
+<span id="cb62-468"><a href="#cb62-468" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb62-469"><a href="#cb62-469" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Fictitious Play Convergence Speed"</span>,</span>
+<span id="cb62-470"><a href="#cb62-470" aria-hidden="true" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">"Game"</span></span>
+<span id="cb62-471"><a href="#cb62-471" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb62-472"><a href="#cb62-472" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>()</span>
+<span id="cb62-473"><a href="#cb62-473" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb62-474"><a href="#cb62-474" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-475"><a href="#cb62-475" aria-hidden="true" tabindex="-1"></a>Both games show the expected $O(1/\sqrt{t})$ convergence rate (approximately linear on the log-log scale with slope around $-0.5$). Matching Pennies, being zero-sum, converges more smoothly. Battle of the Sexes shows more irregular convergence due to the coordination structure and the presence of multiple equilibria.</span>
+<span id="cb62-476"><a href="#cb62-476" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-477"><a href="#cb62-477" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
+<span id="cb62-478"><a href="#cb62-478" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-479"><a href="#cb62-479" aria-hidden="true" tabindex="-1"></a>The three algorithms in this chapter represent three broad families of equilibrium computation methods:</span>
+<span id="cb62-480"><a href="#cb62-480" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-481"><a href="#cb62-481" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Enumeration methods** (support enumeration, @sec-nashpy-reticulate) are exhaustive and exact but exponential. They are the method of choice when completeness matters --- for example, when we need to certify that a game has a unique equilibrium.</span>
+<span id="cb62-482"><a href="#cb62-482" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Path-following methods** (Lemke--Howson) are polynomial in the size of the output (they find one equilibrium in time proportional to the path length) and are the workhorses of practical computation. The full Lemke--Howson algorithm, with proper degeneracy handling, is implemented in Gambit and can be accessed from R via the gtree package (@sec-gtree-package).</span>
+<span id="cb62-483"><a href="#cb62-483" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Learning dynamics** (fictitious play) provide approximate solutions and connect equilibrium theory to the question of how equilibria might arise through repeated interaction. This connects to the evolutionary and repeated-game perspectives explored in @sec-repeated-games.</span>
+<span id="cb62-484"><a href="#cb62-484" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-485"><a href="#cb62-485" aria-hidden="true" tabindex="-1"></a>For the theoretical foundations of equilibrium computation, including the PPAD complexity class and the computational hardness of finding Nash equilibria, see @shoham2009 (Chapter 4) and @osborne2004 (Chapter 12). The connection between learning dynamics and equilibrium was a central theme in the work of @nash1950, who originally motivated his equilibrium concept partly through a "mass action" interpretation --- populations of players repeatedly interacting and adjusting their strategies.</span>
+<span id="cb62-486"><a href="#cb62-486" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-487"><a href="#cb62-487" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
+<span id="cb62-488"><a href="#cb62-488" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-489"><a href="#cb62-489" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Fictitious play on a 3x3 game.** Run fictitious play on the asymmetric Rock-Paper-Scissors game from @sec-nashpy-reticulate (with payoffs +2 for winning and -1 for losing). Use 10,000 iterations and plot the empirical frequencies of all three actions for Player 1 over time (you will need to extend the <span class="in">`fictitious_play()`</span> function to track all action frequencies, not just the first). Does fictitious play converge? Compare the final empirical frequencies to the exact Nash equilibrium found by support enumeration.</span>
+<span id="cb62-490"><a href="#cb62-490" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-491"><a href="#cb62-491" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Convergence rate analysis.** For the Battle of the Sexes, run fictitious play for $T \in <span class="sc">\{</span>100, 500, 1000, 5000, 10000<span class="sc">\}</span>$ iterations with 20 different random seeds for each $T$. Compute the mean and standard deviation of the total frequency error at each $T$. Plot the mean error as a function of $T$ on a log-log scale and estimate the convergence rate exponent by fitting a line. Is the empirical rate consistent with the theoretical prediction?</span>
+<span id="cb62-492"><a href="#cb62-492" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-493"><a href="#cb62-493" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Shapley's counterexample.** Implement the game with payoff matrices $A = \begin{pmatrix} 0 &amp; 1 &amp; 0 <span class="sc">\\</span> 0 &amp; 0 &amp; 1 <span class="sc">\\</span> 1 &amp; 0 &amp; 0 \end{pmatrix}$ and $B = \begin{pmatrix} 0 &amp; 0 &amp; 1 <span class="sc">\\</span> 1 &amp; 0 &amp; 0 <span class="sc">\\</span> 0 &amp; 1 &amp; 0 \end{pmatrix}$. Run fictitious play for 20,000 iterations and plot the trajectory of Player 1's empirical frequencies in a ternary diagram (use the three frequencies as coordinates, noting they sum to 1, so two suffice for a 2D plot). Verify that the empirical frequencies cycle rather than converge, confirming Shapley's result.</span>
+<span id="cb62-494"><a href="#cb62-494" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-495"><a href="#cb62-495" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Lemke--Howson by hand.** For the game with $A = \begin{pmatrix} 4 &amp; 1 <span class="sc">\\</span> 2 &amp; 3 \end{pmatrix}$ and $B = \begin{pmatrix} 3 &amp; 2 <span class="sc">\\</span> 1 &amp; 4 \end{pmatrix}$ (after shifting to ensure positivity), write out the best-response polytopes $P$ and $Q$, enumerate all vertices with their labels, and trace the Lemke--Howson path starting from label $k = 1$. Verify that the path arrives at a Nash equilibrium. You may present this as a table rather than code.</span>
+<span id="cb62-496"><a href="#cb62-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-497"><a href="#cb62-497" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>**Hybrid solver.** Write a function <span class="in">`hybrid_solver(A, B, exact_threshold = 5)`</span> that uses support enumeration (via the <span class="in">`support_enumeration_general()`</span> function from @sec-nashpy-reticulate) when both $m \leq$ <span class="in">`exact_threshold`</span> and $n \leq$ <span class="in">`exact_threshold`</span>, and falls back to fictitious play with 10,000 iterations otherwise. Test your function on random games of sizes 3x3, 5x5, and 10x10. Report timing results and comment on the quality of the fictitious play approximation relative to the exact solution.</span>
+<span id="cb62-498"><a href="#cb62-498" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-499"><a href="#cb62-499" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

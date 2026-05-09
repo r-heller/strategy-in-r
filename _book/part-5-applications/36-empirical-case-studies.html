@@ -767,7 +767,7 @@ window.Quarto = {
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-5-applications/36-empirical-case-studies.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-5-applications/36-empirical-case-studies.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-5-applications/36-empirical-case-studies.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-5-applications/36-empirical-case-studies.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="../downloads/empirical-case-studies.pdf"><i class="bi bi-file-pdf"></i>Download Chapter PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1766,389 +1766,392 @@ Roughgarden, T., &amp; Tardos, É. (2002). How bad is selfish routing? <em>Journ
 <span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
 <span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "Real-world applications of game theory analyzed with R — spectrum auctions, kidney exchange, and Braess's paradox in traffic routing."</span></span>
 <span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["case studies", "spectrum auction", "kidney exchange", "Braess paradox", "traffic routing", "Wardrop equilibrium"]</span></span>
-<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Empirical Case Studies {#sec-case-studies}</span></span>
-<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
-<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
-<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
-<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Model an FCC-style spectrum auction as a multi-unit sealed-bid simulation and analyze revenue outcomes.</span>
-<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Formulate kidney exchange as a matching problem on a compatibility graph and compute maximal matchings.</span>
-<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Explain Braess's paradox and compute Wardrop equilibria for simple traffic networks in R.</span>
-<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visualize network structures and compare equilibrium outcomes with socially optimal flows.</span>
-<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
-<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a>Game theory is not merely an abstract discipline — it has reshaped multi-billion-dollar markets and saved thousands of lives. The FCC's spectrum auctions raised over \$200 billion by applying auction theory. Kidney exchange programs, designed using matching theory, enable thousands of transplants annually that would otherwise be impossible. And traffic engineers have discovered, counterintuitively, that adding roads can *increase* total travel time — a phenomenon predicted by game-theoretic models.</span>
-<span id="cb45-30"><a href="#cb45-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-31"><a href="#cb45-31" aria-hidden="true" tabindex="-1"></a>This chapter applies computational game theory to three landmark case studies, demonstrating how the tools developed throughout this book operate in practice.</span>
-<span id="cb45-32"><a href="#cb45-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-33"><a href="#cb45-33" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
-<span id="cb45-34"><a href="#cb45-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-35"><a href="#cb45-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### Spectrum auctions</span></span>
-<span id="cb45-36"><a href="#cb45-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-37"><a href="#cb45-37" aria-hidden="true" tabindex="-1"></a>The FCC allocates wireless spectrum licenses through **simultaneous ascending auctions**. Multiple licenses are sold concurrently; bidders submit bids in rounds, prices rise, and bidders can switch across licenses. The design aims to achieve an **efficient allocation** — licenses go to firms that value them most — while generating revenue for the government.</span>
-<span id="cb45-38"><a href="#cb45-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-39"><a href="#cb45-39" aria-hidden="true" tabindex="-1"></a>We simplify this to a **multi-unit sealed-bid auction** where $n$ bidders submit bids for $k$ identical licenses, and the $k$ highest bidders win at the $(k+1)$-th highest bid (a Vickrey-style rule that incentivizes truthful bidding).</span>
-<span id="cb45-40"><a href="#cb45-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-41"><a href="#cb45-41" aria-hidden="true" tabindex="-1"></a><span class="fu">### Kidney exchange</span></span>
-<span id="cb45-42"><a href="#cb45-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-43"><a href="#cb45-43" aria-hidden="true" tabindex="-1"></a>A patient needing a kidney often has a willing but biologically incompatible donor. **Kidney exchange** matches incompatible patient-donor pairs: if Patient A's donor is compatible with Patient B, and Patient B's donor is compatible with Patient A, a **pairwise exchange** can save both lives.</span>
-<span id="cb45-44"><a href="#cb45-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-45"><a href="#cb45-45" aria-hidden="true" tabindex="-1"></a>The problem maps to a **directed graph** where nodes are patient-donor pairs and edges indicate compatibility. A matching is a set of disjoint cycles (typically of length 2 or 3) that maximizes the number of transplants. This is equivalent to a **maximum weight matching** problem.</span>
-<span id="cb45-46"><a href="#cb45-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-47"><a href="#cb45-47" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox</span></span>
-<span id="cb45-48"><a href="#cb45-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-49"><a href="#cb45-49" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
-<span id="cb45-50"><a href="#cb45-50" aria-hidden="true" tabindex="-1"></a><span class="fu">## Definition: Braess's Paradox</span></span>
-<span id="cb45-51"><a href="#cb45-51" aria-hidden="true" tabindex="-1"></a>**Braess's paradox** occurs when adding a new road to a traffic network *increases* the total travel time for all users at the Wardrop equilibrium.</span>
-<span id="cb45-52"><a href="#cb45-52" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb45-53"><a href="#cb45-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-54"><a href="#cb45-54" aria-hidden="true" tabindex="-1"></a>In a **Wardrop equilibrium** (the traffic analog of Nash equilibrium), every used route has equal travel time, and no driver can reduce their travel time by unilaterally switching routes. The paradox arises because selfish routing ignores congestion externalities — each driver's route choice increases travel times for others.</span>
-<span id="cb45-55"><a href="#cb45-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-56"><a href="#cb45-56" aria-hidden="true" tabindex="-1"></a>Consider a 4-node network from origin $O$ to destination $D$ with two intermediate nodes $A$ and $B$:</span>
-<span id="cb45-57"><a href="#cb45-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-58"><a href="#cb45-58" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Route 1: $O \to A \to D$ with costs $c_{OA}(x) = x/100$ and $c_{AD} = 45$.</span>
-<span id="cb45-59"><a href="#cb45-59" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Route 2: $O \to B \to D$ with costs $c_{OB} = 45$ and $c_{BD}(x) = x/100$.</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="an">other-links:</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="co">  - text: Download Chapter PDF</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="co">    href: ../downloads/empirical-case-studies.pdf</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a><span class="co">    icon: file-pdf</span></span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># Empirical Case Studies {#sec-case-studies}</span></span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Model an FCC-style spectrum auction as a multi-unit sealed-bid simulation and analyze revenue outcomes.</span>
+<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Formulate kidney exchange as a matching problem on a compatibility graph and compute maximal matchings.</span>
+<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Explain Braess's paradox and compute Wardrop equilibria for simple traffic networks in R.</span>
+<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Visualize network structures and compare equilibrium outcomes with socially optimal flows.</span>
+<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-30"><a href="#cb45-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
+<span id="cb45-31"><a href="#cb45-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-32"><a href="#cb45-32" aria-hidden="true" tabindex="-1"></a>Game theory is not merely an abstract discipline — it has reshaped multi-billion-dollar markets and saved thousands of lives. The FCC's spectrum auctions raised over \$200 billion by applying auction theory. Kidney exchange programs, designed using matching theory, enable thousands of transplants annually that would otherwise be impossible. And traffic engineers have discovered, counterintuitively, that adding roads can *increase* total travel time — a phenomenon predicted by game-theoretic models.</span>
+<span id="cb45-33"><a href="#cb45-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-34"><a href="#cb45-34" aria-hidden="true" tabindex="-1"></a>This chapter applies computational game theory to three landmark case studies, demonstrating how the tools developed throughout this book operate in practice.</span>
+<span id="cb45-35"><a href="#cb45-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-36"><a href="#cb45-36" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
+<span id="cb45-37"><a href="#cb45-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-38"><a href="#cb45-38" aria-hidden="true" tabindex="-1"></a><span class="fu">### Spectrum auctions</span></span>
+<span id="cb45-39"><a href="#cb45-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-40"><a href="#cb45-40" aria-hidden="true" tabindex="-1"></a>The FCC allocates wireless spectrum licenses through **simultaneous ascending auctions**. Multiple licenses are sold concurrently; bidders submit bids in rounds, prices rise, and bidders can switch across licenses. The design aims to achieve an **efficient allocation** — licenses go to firms that value them most — while generating revenue for the government.</span>
+<span id="cb45-41"><a href="#cb45-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-42"><a href="#cb45-42" aria-hidden="true" tabindex="-1"></a>We simplify this to a **multi-unit sealed-bid auction** where $n$ bidders submit bids for $k$ identical licenses, and the $k$ highest bidders win at the $(k+1)$-th highest bid (a Vickrey-style rule that incentivizes truthful bidding).</span>
+<span id="cb45-43"><a href="#cb45-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-44"><a href="#cb45-44" aria-hidden="true" tabindex="-1"></a><span class="fu">### Kidney exchange</span></span>
+<span id="cb45-45"><a href="#cb45-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-46"><a href="#cb45-46" aria-hidden="true" tabindex="-1"></a>A patient needing a kidney often has a willing but biologically incompatible donor. **Kidney exchange** matches incompatible patient-donor pairs: if Patient A's donor is compatible with Patient B, and Patient B's donor is compatible with Patient A, a **pairwise exchange** can save both lives.</span>
+<span id="cb45-47"><a href="#cb45-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-48"><a href="#cb45-48" aria-hidden="true" tabindex="-1"></a>The problem maps to a **directed graph** where nodes are patient-donor pairs and edges indicate compatibility. A matching is a set of disjoint cycles (typically of length 2 or 3) that maximizes the number of transplants. This is equivalent to a **maximum weight matching** problem.</span>
+<span id="cb45-49"><a href="#cb45-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-50"><a href="#cb45-50" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox</span></span>
+<span id="cb45-51"><a href="#cb45-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-52"><a href="#cb45-52" aria-hidden="true" tabindex="-1"></a>::: {.callout-note}</span>
+<span id="cb45-53"><a href="#cb45-53" aria-hidden="true" tabindex="-1"></a><span class="fu">## Definition: Braess's Paradox</span></span>
+<span id="cb45-54"><a href="#cb45-54" aria-hidden="true" tabindex="-1"></a>**Braess's paradox** occurs when adding a new road to a traffic network *increases* the total travel time for all users at the Wardrop equilibrium.</span>
+<span id="cb45-55"><a href="#cb45-55" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb45-56"><a href="#cb45-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-57"><a href="#cb45-57" aria-hidden="true" tabindex="-1"></a>In a **Wardrop equilibrium** (the traffic analog of Nash equilibrium), every used route has equal travel time, and no driver can reduce their travel time by unilaterally switching routes. The paradox arises because selfish routing ignores congestion externalities — each driver's route choice increases travel times for others.</span>
+<span id="cb45-58"><a href="#cb45-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-59"><a href="#cb45-59" aria-hidden="true" tabindex="-1"></a>Consider a 4-node network from origin $O$ to destination $D$ with two intermediate nodes $A$ and $B$:</span>
 <span id="cb45-60"><a href="#cb45-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-61"><a href="#cb45-61" aria-hidden="true" tabindex="-1"></a>With 4,000 drivers, the Wardrop equilibrium splits traffic equally: 2,000 on each route, total time 65 per driver. Now add a zero-cost road $A \to B$. A third route $O \to A \to B \to D$ becomes available, and the new equilibrium has all 4,000 drivers using this route — total time 80. The added road made everyone worse off.</span>
-<span id="cb45-62"><a href="#cb45-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-63"><a href="#cb45-63" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R {#sec-cases-implementation}</span></span>
-<span id="cb45-64"><a href="#cb45-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-65"><a href="#cb45-65" aria-hidden="true" tabindex="-1"></a><span class="fu">### Spectrum auction simulation</span></span>
-<span id="cb45-66"><a href="#cb45-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-69"><a href="#cb45-69" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb45-70"><a href="#cb45-70" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: spectrum-auction</span></span>
-<span id="cb45-71"><a href="#cb45-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-72"><a href="#cb45-72" aria-hidden="true" tabindex="-1"></a>simulate_spectrum_auction <span class="ot">&lt;-</span> <span class="cf">function</span>(n_bidders, n_licenses, <span class="at">n_sims =</span> <span class="dv">1000</span>) {</span>
-<span id="cb45-73"><a href="#cb45-73" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Each bidder's value drawn from Uniform(0, 100)</span></span>
-<span id="cb45-74"><a href="#cb45-74" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Vickrey rule: k highest bidders win, pay (k+1)-th bid</span></span>
-<span id="cb45-75"><a href="#cb45-75" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq_len</span>(n_sims), <span class="cf">function</span>(sim) {</span>
-<span id="cb45-76"><a href="#cb45-76" aria-hidden="true" tabindex="-1"></a>    values <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">runif</span>(n_bidders, <span class="dv">0</span>, <span class="dv">100</span>), <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb45-77"><a href="#cb45-77" aria-hidden="true" tabindex="-1"></a>    winners <span class="ot">&lt;-</span> values[<span class="fu">seq_len</span>(n_licenses)]</span>
-<span id="cb45-78"><a href="#cb45-78" aria-hidden="true" tabindex="-1"></a>    price <span class="ot">&lt;-</span> values[n_licenses <span class="sc">+</span> <span class="dv">1</span>]  <span class="co"># (k+1)-th highest bid</span></span>
-<span id="cb45-79"><a href="#cb45-79" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">sim =</span> sim, <span class="at">revenue =</span> n_licenses <span class="sc">*</span> price,</span>
-<span id="cb45-80"><a href="#cb45-80" aria-hidden="true" tabindex="-1"></a>           <span class="at">avg_winner_surplus =</span> <span class="fu">mean</span>(winners <span class="sc">-</span> price),</span>
-<span id="cb45-81"><a href="#cb45-81" aria-hidden="true" tabindex="-1"></a>           <span class="at">price =</span> price)</span>
-<span id="cb45-82"><a href="#cb45-82" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb45-83"><a href="#cb45-83" aria-hidden="true" tabindex="-1"></a>  results</span>
-<span id="cb45-84"><a href="#cb45-84" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb45-85"><a href="#cb45-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-86"><a href="#cb45-86" aria-hidden="true" tabindex="-1"></a>auction_results <span class="ot">&lt;-</span> <span class="fu">simulate_spectrum_auction</span>(<span class="at">n_bidders =</span> <span class="dv">10</span>, <span class="at">n_licenses =</span> <span class="dv">3</span>)</span>
-<span id="cb45-87"><a href="#cb45-87" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Mean revenue (10 bidders, 3 licenses): $%.1f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-88"><a href="#cb45-88" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(auction_results<span class="sc">$</span>revenue)))</span>
-<span id="cb45-89"><a href="#cb45-89" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Mean winner surplus: $%.1f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-90"><a href="#cb45-90" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(auction_results<span class="sc">$</span>avg_winner_surplus)))</span>
-<span id="cb45-91"><a href="#cb45-91" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Mean clearing price: $%.1f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-92"><a href="#cb45-92" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(auction_results<span class="sc">$</span>price)))</span>
-<span id="cb45-93"><a href="#cb45-93" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb45-94"><a href="#cb45-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-95"><a href="#cb45-95" aria-hidden="true" tabindex="-1"></a><span class="fu">### Kidney exchange matching</span></span>
-<span id="cb45-96"><a href="#cb45-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-99"><a href="#cb45-99" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb45-100"><a href="#cb45-100" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: kidney-exchange</span></span>
-<span id="cb45-101"><a href="#cb45-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-102"><a href="#cb45-102" aria-hidden="true" tabindex="-1"></a>build_compatibility_graph <span class="ot">&lt;-</span> <span class="cf">function</span>(n_pairs, <span class="at">compatibility_prob =</span> <span class="fl">0.15</span>,</span>
-<span id="cb45-103"><a href="#cb45-103" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) {</span>
-<span id="cb45-104"><a href="#cb45-104" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(seed)</span>
-<span id="cb45-105"><a href="#cb45-105" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Each pair has a patient blood type and donor blood type</span></span>
-<span id="cb45-106"><a href="#cb45-106" aria-hidden="true" tabindex="-1"></a>  blood_types <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"O"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"AB"</span>)</span>
-<span id="cb45-107"><a href="#cb45-107" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Simplified compatibility: O donates to all, AB receives from all</span></span>
-<span id="cb45-108"><a href="#cb45-108" aria-hidden="true" tabindex="-1"></a>  can_donate <span class="ot">&lt;-</span> <span class="cf">function</span>(donor_bt, patient_bt) {</span>
-<span id="cb45-109"><a href="#cb45-109" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (donor_bt <span class="sc">==</span> <span class="st">"O"</span>) <span class="fu">return</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb45-110"><a href="#cb45-110" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (donor_bt <span class="sc">==</span> patient_bt) <span class="fu">return</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb45-111"><a href="#cb45-111" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (patient_bt <span class="sc">==</span> <span class="st">"AB"</span>) <span class="fu">return</span>(<span class="cn">TRUE</span>)</span>
-<span id="cb45-112"><a href="#cb45-112" aria-hidden="true" tabindex="-1"></a>    <span class="cn">FALSE</span></span>
-<span id="cb45-113"><a href="#cb45-113" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb45-114"><a href="#cb45-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-115"><a href="#cb45-115" aria-hidden="true" tabindex="-1"></a>  pairs <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb45-116"><a href="#cb45-116" aria-hidden="true" tabindex="-1"></a>    <span class="at">pair_id =</span> <span class="fu">seq_len</span>(n_pairs),</span>
-<span id="cb45-117"><a href="#cb45-117" aria-hidden="true" tabindex="-1"></a>    <span class="at">patient_bt =</span> <span class="fu">sample</span>(blood_types, n_pairs, <span class="at">replace =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb45-118"><a href="#cb45-118" aria-hidden="true" tabindex="-1"></a>                        <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.44</span>, <span class="fl">0.42</span>, <span class="fl">0.10</span>, <span class="fl">0.04</span>)),</span>
-<span id="cb45-119"><a href="#cb45-119" aria-hidden="true" tabindex="-1"></a>    <span class="at">donor_bt =</span> <span class="fu">sample</span>(blood_types, n_pairs, <span class="at">replace =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb45-120"><a href="#cb45-120" aria-hidden="true" tabindex="-1"></a>                      <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.44</span>, <span class="fl">0.42</span>, <span class="fl">0.10</span>, <span class="fl">0.04</span>))</span>
-<span id="cb45-121"><a href="#cb45-121" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb45-122"><a href="#cb45-122" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Exclude already-compatible pairs (they don't need exchange)</span></span>
-<span id="cb45-123"><a href="#cb45-123" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">map2_lgl</span>(donor_bt, patient_bt, can_donate))</span>
-<span id="cb45-124"><a href="#cb45-124" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-125"><a href="#cb45-125" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(pairs)</span>
-<span id="cb45-126"><a href="#cb45-126" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Build adjacency: edge from i to j if i's donor is compatible with j's patient</span></span>
-<span id="cb45-127"><a href="#cb45-127" aria-hidden="true" tabindex="-1"></a>  edges <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">from =</span> <span class="fu">seq_len</span>(n), <span class="at">to =</span> <span class="fu">seq_len</span>(n)) <span class="sc">|&gt;</span></span>
-<span id="cb45-128"><a href="#cb45-128" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(from <span class="sc">!=</span> to) <span class="sc">|&gt;</span></span>
-<span id="cb45-129"><a href="#cb45-129" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb45-130"><a href="#cb45-130" aria-hidden="true" tabindex="-1"></a>      <span class="at">compatible =</span> <span class="fu">map2_lgl</span>(from, to, <span class="cf">function</span>(i, j) {</span>
-<span id="cb45-131"><a href="#cb45-131" aria-hidden="true" tabindex="-1"></a>        <span class="fu">can_donate</span>(pairs<span class="sc">$</span>donor_bt[i], pairs<span class="sc">$</span>patient_bt[j]) <span class="sc">&amp;</span></span>
-<span id="cb45-132"><a href="#cb45-132" aria-hidden="true" tabindex="-1"></a>          <span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&lt;</span> (<span class="dv">1</span> <span class="sc">+</span> compatibility_prob)  <span class="co"># crossmatch factor</span></span>
-<span id="cb45-133"><a href="#cb45-133" aria-hidden="true" tabindex="-1"></a>      })</span>
-<span id="cb45-134"><a href="#cb45-134" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
-<span id="cb45-135"><a href="#cb45-135" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(compatible)</span>
-<span id="cb45-136"><a href="#cb45-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-137"><a href="#cb45-137" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">pairs =</span> pairs, <span class="at">edges =</span> edges, <span class="at">n =</span> n)</span>
-<span id="cb45-138"><a href="#cb45-138" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-61"><a href="#cb45-61" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Route 1: $O \to A \to D$ with costs $c_{OA}(x) = x/100$ and $c_{AD} = 45$.</span>
+<span id="cb45-62"><a href="#cb45-62" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Route 2: $O \to B \to D$ with costs $c_{OB} = 45$ and $c_{BD}(x) = x/100$.</span>
+<span id="cb45-63"><a href="#cb45-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-64"><a href="#cb45-64" aria-hidden="true" tabindex="-1"></a>With 4,000 drivers, the Wardrop equilibrium splits traffic equally: 2,000 on each route, total time 65 per driver. Now add a zero-cost road $A \to B$. A third route $O \to A \to B \to D$ becomes available, and the new equilibrium has all 4,000 drivers using this route — total time 80. The added road made everyone worse off.</span>
+<span id="cb45-65"><a href="#cb45-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-66"><a href="#cb45-66" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R {#sec-cases-implementation}</span></span>
+<span id="cb45-67"><a href="#cb45-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-68"><a href="#cb45-68" aria-hidden="true" tabindex="-1"></a><span class="fu">### Spectrum auction simulation</span></span>
+<span id="cb45-69"><a href="#cb45-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-72"><a href="#cb45-72" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-73"><a href="#cb45-73" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: spectrum-auction</span></span>
+<span id="cb45-74"><a href="#cb45-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-75"><a href="#cb45-75" aria-hidden="true" tabindex="-1"></a>simulate_spectrum_auction <span class="ot">&lt;-</span> <span class="cf">function</span>(n_bidders, n_licenses, <span class="at">n_sims =</span> <span class="dv">1000</span>) {</span>
+<span id="cb45-76"><a href="#cb45-76" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Each bidder's value drawn from Uniform(0, 100)</span></span>
+<span id="cb45-77"><a href="#cb45-77" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Vickrey rule: k highest bidders win, pay (k+1)-th bid</span></span>
+<span id="cb45-78"><a href="#cb45-78" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq_len</span>(n_sims), <span class="cf">function</span>(sim) {</span>
+<span id="cb45-79"><a href="#cb45-79" aria-hidden="true" tabindex="-1"></a>    values <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">runif</span>(n_bidders, <span class="dv">0</span>, <span class="dv">100</span>), <span class="at">decreasing =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb45-80"><a href="#cb45-80" aria-hidden="true" tabindex="-1"></a>    winners <span class="ot">&lt;-</span> values[<span class="fu">seq_len</span>(n_licenses)]</span>
+<span id="cb45-81"><a href="#cb45-81" aria-hidden="true" tabindex="-1"></a>    price <span class="ot">&lt;-</span> values[n_licenses <span class="sc">+</span> <span class="dv">1</span>]  <span class="co"># (k+1)-th highest bid</span></span>
+<span id="cb45-82"><a href="#cb45-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">sim =</span> sim, <span class="at">revenue =</span> n_licenses <span class="sc">*</span> price,</span>
+<span id="cb45-83"><a href="#cb45-83" aria-hidden="true" tabindex="-1"></a>           <span class="at">avg_winner_surplus =</span> <span class="fu">mean</span>(winners <span class="sc">-</span> price),</span>
+<span id="cb45-84"><a href="#cb45-84" aria-hidden="true" tabindex="-1"></a>           <span class="at">price =</span> price)</span>
+<span id="cb45-85"><a href="#cb45-85" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb45-86"><a href="#cb45-86" aria-hidden="true" tabindex="-1"></a>  results</span>
+<span id="cb45-87"><a href="#cb45-87" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-88"><a href="#cb45-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-89"><a href="#cb45-89" aria-hidden="true" tabindex="-1"></a>auction_results <span class="ot">&lt;-</span> <span class="fu">simulate_spectrum_auction</span>(<span class="at">n_bidders =</span> <span class="dv">10</span>, <span class="at">n_licenses =</span> <span class="dv">3</span>)</span>
+<span id="cb45-90"><a href="#cb45-90" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Mean revenue (10 bidders, 3 licenses): $%.1f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-91"><a href="#cb45-91" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(auction_results<span class="sc">$</span>revenue)))</span>
+<span id="cb45-92"><a href="#cb45-92" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Mean winner surplus: $%.1f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-93"><a href="#cb45-93" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(auction_results<span class="sc">$</span>avg_winner_surplus)))</span>
+<span id="cb45-94"><a href="#cb45-94" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Mean clearing price: $%.1f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-95"><a href="#cb45-95" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mean</span>(auction_results<span class="sc">$</span>price)))</span>
+<span id="cb45-96"><a href="#cb45-96" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-97"><a href="#cb45-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-98"><a href="#cb45-98" aria-hidden="true" tabindex="-1"></a><span class="fu">### Kidney exchange matching</span></span>
+<span id="cb45-99"><a href="#cb45-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-102"><a href="#cb45-102" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-103"><a href="#cb45-103" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: kidney-exchange</span></span>
+<span id="cb45-104"><a href="#cb45-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-105"><a href="#cb45-105" aria-hidden="true" tabindex="-1"></a>build_compatibility_graph <span class="ot">&lt;-</span> <span class="cf">function</span>(n_pairs, <span class="at">compatibility_prob =</span> <span class="fl">0.15</span>,</span>
+<span id="cb45-106"><a href="#cb45-106" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) {</span>
+<span id="cb45-107"><a href="#cb45-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(seed)</span>
+<span id="cb45-108"><a href="#cb45-108" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Each pair has a patient blood type and donor blood type</span></span>
+<span id="cb45-109"><a href="#cb45-109" aria-hidden="true" tabindex="-1"></a>  blood_types <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"O"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"AB"</span>)</span>
+<span id="cb45-110"><a href="#cb45-110" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Simplified compatibility: O donates to all, AB receives from all</span></span>
+<span id="cb45-111"><a href="#cb45-111" aria-hidden="true" tabindex="-1"></a>  can_donate <span class="ot">&lt;-</span> <span class="cf">function</span>(donor_bt, patient_bt) {</span>
+<span id="cb45-112"><a href="#cb45-112" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (donor_bt <span class="sc">==</span> <span class="st">"O"</span>) <span class="fu">return</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb45-113"><a href="#cb45-113" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (donor_bt <span class="sc">==</span> patient_bt) <span class="fu">return</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb45-114"><a href="#cb45-114" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (patient_bt <span class="sc">==</span> <span class="st">"AB"</span>) <span class="fu">return</span>(<span class="cn">TRUE</span>)</span>
+<span id="cb45-115"><a href="#cb45-115" aria-hidden="true" tabindex="-1"></a>    <span class="cn">FALSE</span></span>
+<span id="cb45-116"><a href="#cb45-116" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb45-117"><a href="#cb45-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-118"><a href="#cb45-118" aria-hidden="true" tabindex="-1"></a>  pairs <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb45-119"><a href="#cb45-119" aria-hidden="true" tabindex="-1"></a>    <span class="at">pair_id =</span> <span class="fu">seq_len</span>(n_pairs),</span>
+<span id="cb45-120"><a href="#cb45-120" aria-hidden="true" tabindex="-1"></a>    <span class="at">patient_bt =</span> <span class="fu">sample</span>(blood_types, n_pairs, <span class="at">replace =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb45-121"><a href="#cb45-121" aria-hidden="true" tabindex="-1"></a>                        <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.44</span>, <span class="fl">0.42</span>, <span class="fl">0.10</span>, <span class="fl">0.04</span>)),</span>
+<span id="cb45-122"><a href="#cb45-122" aria-hidden="true" tabindex="-1"></a>    <span class="at">donor_bt =</span> <span class="fu">sample</span>(blood_types, n_pairs, <span class="at">replace =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb45-123"><a href="#cb45-123" aria-hidden="true" tabindex="-1"></a>                      <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.44</span>, <span class="fl">0.42</span>, <span class="fl">0.10</span>, <span class="fl">0.04</span>))</span>
+<span id="cb45-124"><a href="#cb45-124" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb45-125"><a href="#cb45-125" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Exclude already-compatible pairs (they don't need exchange)</span></span>
+<span id="cb45-126"><a href="#cb45-126" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">map2_lgl</span>(donor_bt, patient_bt, can_donate))</span>
+<span id="cb45-127"><a href="#cb45-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-128"><a href="#cb45-128" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(pairs)</span>
+<span id="cb45-129"><a href="#cb45-129" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Build adjacency: edge from i to j if i's donor is compatible with j's patient</span></span>
+<span id="cb45-130"><a href="#cb45-130" aria-hidden="true" tabindex="-1"></a>  edges <span class="ot">&lt;-</span> <span class="fu">expand_grid</span>(<span class="at">from =</span> <span class="fu">seq_len</span>(n), <span class="at">to =</span> <span class="fu">seq_len</span>(n)) <span class="sc">|&gt;</span></span>
+<span id="cb45-131"><a href="#cb45-131" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(from <span class="sc">!=</span> to) <span class="sc">|&gt;</span></span>
+<span id="cb45-132"><a href="#cb45-132" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb45-133"><a href="#cb45-133" aria-hidden="true" tabindex="-1"></a>      <span class="at">compatible =</span> <span class="fu">map2_lgl</span>(from, to, <span class="cf">function</span>(i, j) {</span>
+<span id="cb45-134"><a href="#cb45-134" aria-hidden="true" tabindex="-1"></a>        <span class="fu">can_donate</span>(pairs<span class="sc">$</span>donor_bt[i], pairs<span class="sc">$</span>patient_bt[j]) <span class="sc">&amp;</span></span>
+<span id="cb45-135"><a href="#cb45-135" aria-hidden="true" tabindex="-1"></a>          <span class="fu">runif</span>(<span class="dv">1</span>) <span class="sc">&lt;</span> (<span class="dv">1</span> <span class="sc">+</span> compatibility_prob)  <span class="co"># crossmatch factor</span></span>
+<span id="cb45-136"><a href="#cb45-136" aria-hidden="true" tabindex="-1"></a>      })</span>
+<span id="cb45-137"><a href="#cb45-137" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb45-138"><a href="#cb45-138" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(compatible)</span>
 <span id="cb45-139"><a href="#cb45-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-140"><a href="#cb45-140" aria-hidden="true" tabindex="-1"></a>find_pairwise_matches <span class="ot">&lt;-</span> <span class="cf">function</span>(graph) {</span>
-<span id="cb45-141"><a href="#cb45-141" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Greedy maximal matching on pairwise exchanges (2-cycles)</span></span>
-<span id="cb45-142"><a href="#cb45-142" aria-hidden="true" tabindex="-1"></a>  edges <span class="ot">&lt;-</span> graph<span class="sc">$</span>edges</span>
-<span id="cb45-143"><a href="#cb45-143" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> graph<span class="sc">$</span>n</span>
-<span id="cb45-144"><a href="#cb45-144" aria-hidden="true" tabindex="-1"></a>  matched <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">FALSE</span>, n)</span>
-<span id="cb45-145"><a href="#cb45-145" aria-hidden="true" tabindex="-1"></a>  matches <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb45-146"><a href="#cb45-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-147"><a href="#cb45-147" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Find all 2-cycles: i-&gt;j and j-&gt;i both exist</span></span>
-<span id="cb45-148"><a href="#cb45-148" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (idx <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(edges))) {</span>
-<span id="cb45-149"><a href="#cb45-149" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> edges<span class="sc">$</span>from[idx]</span>
-<span id="cb45-150"><a href="#cb45-150" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> edges<span class="sc">$</span>to[idx]</span>
-<span id="cb45-151"><a href="#cb45-151" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (matched[i] <span class="sc">||</span> matched[j]) <span class="cf">next</span></span>
-<span id="cb45-152"><a href="#cb45-152" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check reverse edge exists</span></span>
-<span id="cb45-153"><a href="#cb45-153" aria-hidden="true" tabindex="-1"></a>    reverse <span class="ot">&lt;-</span> edges <span class="sc">|&gt;</span> <span class="fu">filter</span>(from <span class="sc">==</span> j, to <span class="sc">==</span> i)</span>
-<span id="cb45-154"><a href="#cb45-154" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">nrow</span>(reverse) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb45-155"><a href="#cb45-155" aria-hidden="true" tabindex="-1"></a>      matched[i] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
-<span id="cb45-156"><a href="#cb45-156" aria-hidden="true" tabindex="-1"></a>      matched[j] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
-<span id="cb45-157"><a href="#cb45-157" aria-hidden="true" tabindex="-1"></a>      matches <span class="ot">&lt;-</span> <span class="fu">c</span>(matches, <span class="fu">list</span>(<span class="fu">c</span>(i, j)))</span>
-<span id="cb45-158"><a href="#cb45-158" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb45-159"><a href="#cb45-159" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb45-160"><a href="#cb45-160" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">matches =</span> matches, <span class="at">n_matched =</span> <span class="fu">sum</span>(matched), <span class="at">n_total =</span> n)</span>
-<span id="cb45-161"><a href="#cb45-161" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb45-162"><a href="#cb45-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-163"><a href="#cb45-163" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> <span class="fu">build_compatibility_graph</span>(<span class="at">n_pairs =</span> <span class="dv">50</span>)</span>
-<span id="cb45-164"><a href="#cb45-164" aria-hidden="true" tabindex="-1"></a>matching <span class="ot">&lt;-</span> <span class="fu">find_pairwise_matches</span>(graph)</span>
-<span id="cb45-165"><a href="#cb45-165" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Pairs in pool: %d</span><span class="sc">\n</span><span class="st">"</span>, matching<span class="sc">$</span>n_total))</span>
-<span id="cb45-166"><a href="#cb45-166" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Pairwise exchanges found: %d (saving %d patients)</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-167"><a href="#cb45-167" aria-hidden="true" tabindex="-1"></a>            <span class="fu">length</span>(matching<span class="sc">$</span>matches), matching<span class="sc">$</span>n_matched))</span>
-<span id="cb45-168"><a href="#cb45-168" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb45-169"><a href="#cb45-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-170"><a href="#cb45-170" aria-hidden="true" tabindex="-1"></a><span class="fu">### Kidney exchange network visualization</span></span>
-<span id="cb45-171"><a href="#cb45-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-174"><a href="#cb45-174" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb45-175"><a href="#cb45-175" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-kidney-exchange</span></span>
-<span id="cb45-176"><a href="#cb45-176" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Kidney exchange compatibility network. Nodes represent incompatible patient-donor pairs (coloured by patient blood type). Edges show potential donations. Highlighted thick edges are matched pairwise exchanges."</span></span>
-<span id="cb45-177"><a href="#cb45-177" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb45-178"><a href="#cb45-178" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
-<span id="cb45-179"><a href="#cb45-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-180"><a href="#cb45-180" aria-hidden="true" tabindex="-1"></a><span class="co"># Layout nodes in a circle</span></span>
-<span id="cb45-181"><a href="#cb45-181" aria-hidden="true" tabindex="-1"></a>n_nodes <span class="ot">&lt;-</span> graph<span class="sc">$</span>n</span>
-<span id="cb45-182"><a href="#cb45-182" aria-hidden="true" tabindex="-1"></a>angles <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> n_nodes <span class="sc">+</span> <span class="dv">1</span>)[<span class="sc">-</span>(n_nodes <span class="sc">+</span> <span class="dv">1</span>)]</span>
-<span id="cb45-183"><a href="#cb45-183" aria-hidden="true" tabindex="-1"></a>node_data <span class="ot">&lt;-</span> graph<span class="sc">$</span>pairs <span class="sc">|&gt;</span></span>
-<span id="cb45-184"><a href="#cb45-184" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">x =</span> <span class="fu">cos</span>(angles), <span class="at">y =</span> <span class="fu">sin</span>(angles),</span>
-<span id="cb45-185"><a href="#cb45-185" aria-hidden="true" tabindex="-1"></a>         <span class="at">node_id =</span> <span class="fu">row_number</span>())</span>
-<span id="cb45-186"><a href="#cb45-186" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-187"><a href="#cb45-187" aria-hidden="true" tabindex="-1"></a><span class="co"># Edge data</span></span>
-<span id="cb45-188"><a href="#cb45-188" aria-hidden="true" tabindex="-1"></a>edge_data <span class="ot">&lt;-</span> graph<span class="sc">$</span>edges <span class="sc">|&gt;</span></span>
-<span id="cb45-189"><a href="#cb45-189" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(node_data <span class="sc">|&gt;</span> <span class="fu">select</span>(node_id, x, y), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"from"</span> <span class="ot">=</span> <span class="st">"node_id"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb45-190"><a href="#cb45-190" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">x_from =</span> x, <span class="at">y_from =</span> y) <span class="sc">|&gt;</span></span>
-<span id="cb45-191"><a href="#cb45-191" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(node_data <span class="sc">|&gt;</span> <span class="fu">select</span>(node_id, x, y), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"to"</span> <span class="ot">=</span> <span class="st">"node_id"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb45-192"><a href="#cb45-192" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">x_to =</span> x, <span class="at">y_to =</span> y)</span>
-<span id="cb45-193"><a href="#cb45-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-194"><a href="#cb45-194" aria-hidden="true" tabindex="-1"></a><span class="co"># Matched edges</span></span>
-<span id="cb45-195"><a href="#cb45-195" aria-hidden="true" tabindex="-1"></a>matched_pairs <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, matching<span class="sc">$</span>matches)</span>
-<span id="cb45-196"><a href="#cb45-196" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(matched_pairs)) {</span>
-<span id="cb45-197"><a href="#cb45-197" aria-hidden="true" tabindex="-1"></a>  matched_edge_data <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(matched_pairs)), <span class="cf">function</span>(r) {</span>
-<span id="cb45-198"><a href="#cb45-198" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> matched_pairs[r, <span class="dv">1</span>]</span>
-<span id="cb45-199"><a href="#cb45-199" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> matched_pairs[r, <span class="dv">2</span>]</span>
-<span id="cb45-200"><a href="#cb45-200" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>(</span>
-<span id="cb45-201"><a href="#cb45-201" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tibble</span>(<span class="at">x_from =</span> node_data<span class="sc">$</span>x[i], <span class="at">y_from =</span> node_data<span class="sc">$</span>y[i],</span>
-<span id="cb45-202"><a href="#cb45-202" aria-hidden="true" tabindex="-1"></a>             <span class="at">x_to =</span> node_data<span class="sc">$</span>x[j], <span class="at">y_to =</span> node_data<span class="sc">$</span>y[j]),</span>
-<span id="cb45-203"><a href="#cb45-203" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tibble</span>(<span class="at">x_from =</span> node_data<span class="sc">$</span>x[j], <span class="at">y_from =</span> node_data<span class="sc">$</span>y[j],</span>
-<span id="cb45-204"><a href="#cb45-204" aria-hidden="true" tabindex="-1"></a>             <span class="at">x_to =</span> node_data<span class="sc">$</span>x[i], <span class="at">y_to =</span> node_data<span class="sc">$</span>y[i])</span>
-<span id="cb45-205"><a href="#cb45-205" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb45-206"><a href="#cb45-206" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb45-207"><a href="#cb45-207" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb45-208"><a href="#cb45-208" aria-hidden="true" tabindex="-1"></a>  matched_edge_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x_from =</span> <span class="fu">numeric</span>(), <span class="at">y_from =</span> <span class="fu">numeric</span>(),</span>
-<span id="cb45-209"><a href="#cb45-209" aria-hidden="true" tabindex="-1"></a>                              <span class="at">x_to =</span> <span class="fu">numeric</span>(), <span class="at">y_to =</span> <span class="fu">numeric</span>())</span>
-<span id="cb45-210"><a href="#cb45-210" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb45-211"><a href="#cb45-211" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-212"><a href="#cb45-212" aria-hidden="true" tabindex="-1"></a><span class="co"># Colour by blood type</span></span>
-<span id="cb45-213"><a href="#cb45-213" aria-hidden="true" tabindex="-1"></a>bt_colours <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"O"</span> <span class="ot">=</span> okabe_ito[<span class="dv">1</span>], <span class="st">"A"</span> <span class="ot">=</span> okabe_ito[<span class="dv">2</span>],</span>
-<span id="cb45-214"><a href="#cb45-214" aria-hidden="true" tabindex="-1"></a>                <span class="st">"B"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>], <span class="st">"AB"</span> <span class="ot">=</span> okabe_ito[<span class="dv">5</span>])</span>
-<span id="cb45-215"><a href="#cb45-215" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-216"><a href="#cb45-216" aria-hidden="true" tabindex="-1"></a>p_kidney <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb45-217"><a href="#cb45-217" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> edge_data, <span class="fu">aes</span>(<span class="at">x =</span> x_from, <span class="at">y =</span> y_from,</span>
-<span id="cb45-218"><a href="#cb45-218" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">xend =</span> x_to, <span class="at">yend =</span> y_to),</span>
-<span id="cb45-219"><a href="#cb45-219" aria-hidden="true" tabindex="-1"></a>               <span class="at">colour =</span> <span class="st">"grey80"</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb45-220"><a href="#cb45-220" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> matched_edge_data,</span>
-<span id="cb45-221"><a href="#cb45-221" aria-hidden="true" tabindex="-1"></a>               <span class="fu">aes</span>(<span class="at">x =</span> x_from, <span class="at">y =</span> y_from, <span class="at">xend =</span> x_to, <span class="at">yend =</span> y_to),</span>
-<span id="cb45-222"><a href="#cb45-222" aria-hidden="true" tabindex="-1"></a>               <span class="at">colour =</span> okabe_ito[<span class="dv">6</span>], <span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
-<span id="cb45-223"><a href="#cb45-223" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> node_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">fill =</span> patient_bt),</span>
-<span id="cb45-224"><a href="#cb45-224" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">21</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">stroke =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb45-225"><a href="#cb45-225" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> bt_colours, <span class="at">name =</span> <span class="st">"Patient</span><span class="sc">\n</span><span class="st">blood type"</span>) <span class="sc">+</span></span>
-<span id="cb45-226"><a href="#cb45-226" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
-<span id="cb45-227"><a href="#cb45-227" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
-<span id="cb45-228"><a href="#cb45-228" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text =</span> <span class="fu">element_blank</span>(), <span class="at">axis.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb45-229"><a href="#cb45-229" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks =</span> <span class="fu">element_blank</span>(), <span class="at">panel.grid =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
-<span id="cb45-230"><a href="#cb45-230" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Kidney Exchange Compatibility Network"</span>)</span>
-<span id="cb45-231"><a href="#cb45-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-232"><a href="#cb45-232" aria-hidden="true" tabindex="-1"></a>p_kidney</span>
-<span id="cb45-233"><a href="#cb45-233" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_kidney, <span class="st">"kidney-exchange-network"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
-<span id="cb45-234"><a href="#cb45-234" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb45-235"><a href="#cb45-235" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-236"><a href="#cb45-236" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox</span></span>
-<span id="cb45-237"><a href="#cb45-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-240"><a href="#cb45-240" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb45-241"><a href="#cb45-241" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: braess-paradox</span></span>
-<span id="cb45-242"><a href="#cb45-242" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-243"><a href="#cb45-243" aria-hidden="true" tabindex="-1"></a>braess_network <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_drivers =</span> <span class="dv">4000</span>, <span class="at">has_shortcut =</span> <span class="cn">FALSE</span>) {</span>
-<span id="cb45-244"><a href="#cb45-244" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Routes in 4-node network: O -&gt; A -&gt; D, O -&gt; B -&gt; D, and optionally O -&gt; A -&gt; B -&gt; D</span></span>
-<span id="cb45-245"><a href="#cb45-245" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Cost functions: c_OA(x) = x/100, c_AD = 45, c_OB = 45, c_BD(x) = x/100</span></span>
-<span id="cb45-246"><a href="#cb45-246" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Shortcut A -&gt; B costs 0</span></span>
-<span id="cb45-247"><a href="#cb45-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-248"><a href="#cb45-248" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>has_shortcut) {</span>
-<span id="cb45-249"><a href="#cb45-249" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Without shortcut: two routes, symmetric =&gt; equilibrium splits equally</span></span>
-<span id="cb45-250"><a href="#cb45-250" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> n_drivers <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb45-251"><a href="#cb45-251" aria-hidden="true" tabindex="-1"></a>    time_r1 <span class="ot">&lt;-</span> x <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">45</span>       <span class="co"># O-&gt;A-&gt;D</span></span>
-<span id="cb45-252"><a href="#cb45-252" aria-hidden="true" tabindex="-1"></a>    time_r2 <span class="ot">&lt;-</span> <span class="dv">45</span> <span class="sc">+</span> x <span class="sc">/</span> <span class="dv">100</span>       <span class="co"># O-&gt;B-&gt;D</span></span>
-<span id="cb45-253"><a href="#cb45-253" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">routes =</span> <span class="fu">c</span>(<span class="st">"O-A-D"</span>, <span class="st">"O-B-D"</span>),</span>
-<span id="cb45-254"><a href="#cb45-254" aria-hidden="true" tabindex="-1"></a>                <span class="at">flows =</span> <span class="fu">c</span>(x, x),</span>
-<span id="cb45-255"><a href="#cb45-255" aria-hidden="true" tabindex="-1"></a>                <span class="at">times =</span> <span class="fu">c</span>(time_r1, time_r2),</span>
-<span id="cb45-256"><a href="#cb45-256" aria-hidden="true" tabindex="-1"></a>                <span class="at">total_time =</span> n_drivers <span class="sc">*</span> time_r1))</span>
-<span id="cb45-257"><a href="#cb45-257" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb45-258"><a href="#cb45-258" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-259"><a href="#cb45-259" aria-hidden="true" tabindex="-1"></a>  <span class="co"># With shortcut: Wardrop equilibrium</span></span>
-<span id="cb45-260"><a href="#cb45-260" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-261"><a href="#cb45-261" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Route 3: O-&gt;A-&gt;B-&gt;D has cost x_OA/100 + 0 + x_BD/100</span></span>
-<span id="cb45-262"><a href="#cb45-262" aria-hidden="true" tabindex="-1"></a>  <span class="co"># At equilibrium, all used routes have equal cost</span></span>
-<span id="cb45-263"><a href="#cb45-263" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Solving: all drivers use O-&gt;A-&gt;B-&gt;D, each segment carries 4000</span></span>
-<span id="cb45-264"><a href="#cb45-264" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Time = 4000/100 + 0 + 4000/100 = 80</span></span>
-<span id="cb45-265"><a href="#cb45-265" aria-hidden="true" tabindex="-1"></a>  x_all <span class="ot">&lt;-</span> n_drivers</span>
-<span id="cb45-266"><a href="#cb45-266" aria-hidden="true" tabindex="-1"></a>  time_shortcut <span class="ot">&lt;-</span> x_all <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">0</span> <span class="sc">+</span> x_all <span class="sc">/</span> <span class="dv">100</span></span>
-<span id="cb45-267"><a href="#cb45-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-268"><a href="#cb45-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">routes =</span> <span class="fu">c</span>(<span class="st">"O-A-D"</span>, <span class="st">"O-B-D"</span>, <span class="st">"O-A-B-D"</span>),</span>
-<span id="cb45-269"><a href="#cb45-269" aria-hidden="true" tabindex="-1"></a>              <span class="at">flows =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, x_all),</span>
-<span id="cb45-270"><a href="#cb45-270" aria-hidden="true" tabindex="-1"></a>              <span class="at">times =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, time_shortcut),</span>
-<span id="cb45-271"><a href="#cb45-271" aria-hidden="true" tabindex="-1"></a>              <span class="at">total_time =</span> n_drivers <span class="sc">*</span> time_shortcut))</span>
-<span id="cb45-272"><a href="#cb45-272" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb45-273"><a href="#cb45-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-274"><a href="#cb45-274" aria-hidden="true" tabindex="-1"></a><span class="co"># Social optimum with shortcut: solve by splitting traffic</span></span>
-<span id="cb45-275"><a href="#cb45-275" aria-hidden="true" tabindex="-1"></a>social_optimum_shortcut <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_drivers =</span> <span class="dv">4000</span>) {</span>
-<span id="cb45-276"><a href="#cb45-276" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Optimize over flow split: x on O-A-D, y on O-B-D, z on O-A-B-D</span></span>
-<span id="cb45-277"><a href="#cb45-277" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x + y + z = n_drivers</span></span>
-<span id="cb45-278"><a href="#cb45-278" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Minimize total travel time</span></span>
-<span id="cb45-279"><a href="#cb45-279" aria-hidden="true" tabindex="-1"></a>  best <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">total =</span> <span class="cn">Inf</span>)</span>
-<span id="cb45-280"><a href="#cb45-280" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_drivers, <span class="at">by =</span> <span class="dv">100</span>)) {</span>
-<span id="cb45-281"><a href="#cb45-281" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (y <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_drivers <span class="sc">-</span> x, <span class="at">by =</span> <span class="dv">100</span>)) {</span>
-<span id="cb45-282"><a href="#cb45-282" aria-hidden="true" tabindex="-1"></a>      z <span class="ot">&lt;-</span> n_drivers <span class="sc">-</span> x <span class="sc">-</span> y</span>
-<span id="cb45-283"><a href="#cb45-283" aria-hidden="true" tabindex="-1"></a>      flow_OA <span class="ot">&lt;-</span> x <span class="sc">+</span> z</span>
-<span id="cb45-284"><a href="#cb45-284" aria-hidden="true" tabindex="-1"></a>      flow_BD <span class="ot">&lt;-</span> y <span class="sc">+</span> z</span>
-<span id="cb45-285"><a href="#cb45-285" aria-hidden="true" tabindex="-1"></a>      time_r1 <span class="ot">&lt;-</span> flow_OA <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">45</span></span>
-<span id="cb45-286"><a href="#cb45-286" aria-hidden="true" tabindex="-1"></a>      time_r2 <span class="ot">&lt;-</span> <span class="dv">45</span> <span class="sc">+</span> flow_BD <span class="sc">/</span> <span class="dv">100</span></span>
-<span id="cb45-287"><a href="#cb45-287" aria-hidden="true" tabindex="-1"></a>      time_r3 <span class="ot">&lt;-</span> flow_OA <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">0</span> <span class="sc">+</span> flow_BD <span class="sc">/</span> <span class="dv">100</span></span>
-<span id="cb45-288"><a href="#cb45-288" aria-hidden="true" tabindex="-1"></a>      total <span class="ot">&lt;-</span> x <span class="sc">*</span> time_r1 <span class="sc">+</span> y <span class="sc">*</span> time_r2 <span class="sc">+</span> z <span class="sc">*</span> time_r3</span>
-<span id="cb45-289"><a href="#cb45-289" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (total <span class="sc">&lt;</span> best<span class="sc">$</span>total) {</span>
-<span id="cb45-290"><a href="#cb45-290" aria-hidden="true" tabindex="-1"></a>        best <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">z =</span> z, <span class="at">total =</span> total,</span>
-<span id="cb45-291"><a href="#cb45-291" aria-hidden="true" tabindex="-1"></a>                     <span class="at">times =</span> <span class="fu">c</span>(time_r1, time_r2, time_r3))</span>
-<span id="cb45-292"><a href="#cb45-292" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb45-293"><a href="#cb45-293" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb45-294"><a href="#cb45-294" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb45-295"><a href="#cb45-295" aria-hidden="true" tabindex="-1"></a>  best</span>
-<span id="cb45-296"><a href="#cb45-296" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb45-297"><a href="#cb45-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-298"><a href="#cb45-298" aria-hidden="true" tabindex="-1"></a>no_shortcut <span class="ot">&lt;-</span> <span class="fu">braess_network</span>(<span class="dv">4000</span>, <span class="at">has_shortcut =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb45-299"><a href="#cb45-299" aria-hidden="true" tabindex="-1"></a>with_shortcut <span class="ot">&lt;-</span> <span class="fu">braess_network</span>(<span class="dv">4000</span>, <span class="at">has_shortcut =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb45-300"><a href="#cb45-300" aria-hidden="true" tabindex="-1"></a>social_opt <span class="ot">&lt;-</span> <span class="fu">social_optimum_shortcut</span>(<span class="dv">4000</span>)</span>
-<span id="cb45-301"><a href="#cb45-301" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-302"><a href="#cb45-302" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== Without shortcut ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb45-303"><a href="#cb45-303" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Each route: %d drivers, travel time: %.0f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-304"><a href="#cb45-304" aria-hidden="true" tabindex="-1"></a>            no_shortcut<span class="sc">$</span>flows[<span class="dv">1</span>], no_shortcut<span class="sc">$</span>times[<span class="dv">1</span>]))</span>
-<span id="cb45-305"><a href="#cb45-305" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total travel time: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">format</span>(no_shortcut<span class="sc">$</span>total_time, <span class="at">big.mark =</span> <span class="st">","</span>)))</span>
-<span id="cb45-306"><a href="#cb45-306" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-307"><a href="#cb45-307" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== With shortcut (Wardrop equilibrium) ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb45-308"><a href="#cb45-308" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  All %d drivers use O-A-B-D, travel time: %.0f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-309"><a href="#cb45-309" aria-hidden="true" tabindex="-1"></a>            with_shortcut<span class="sc">$</span>flows[<span class="dv">3</span>], with_shortcut<span class="sc">$</span>times[<span class="dv">3</span>]))</span>
-<span id="cb45-310"><a href="#cb45-310" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total travel time: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">format</span>(with_shortcut<span class="sc">$</span>total_time, <span class="at">big.mark =</span> <span class="st">","</span>)))</span>
-<span id="cb45-311"><a href="#cb45-311" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-312"><a href="#cb45-312" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== With shortcut (social optimum) ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb45-313"><a href="#cb45-313" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  O-A-D: %d, O-B-D: %d, O-A-B-D: %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-314"><a href="#cb45-314" aria-hidden="true" tabindex="-1"></a>            social_opt<span class="sc">$</span>x, social_opt<span class="sc">$</span>y, social_opt<span class="sc">$</span>z))</span>
-<span id="cb45-315"><a href="#cb45-315" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total travel time: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">format</span>(social_opt<span class="sc">$</span>total, <span class="at">big.mark =</span> <span class="st">","</span>)))</span>
-<span id="cb45-316"><a href="#cb45-316" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Braess's paradox: adding the shortcut increased travel time by %.0f%%</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-317"><a href="#cb45-317" aria-hidden="true" tabindex="-1"></a>            <span class="dv">100</span> <span class="sc">*</span> (with_shortcut<span class="sc">$</span>total_time <span class="sc">-</span> no_shortcut<span class="sc">$</span>total_time) <span class="sc">/</span></span>
-<span id="cb45-318"><a href="#cb45-318" aria-hidden="true" tabindex="-1"></a>              no_shortcut<span class="sc">$</span>total_time))</span>
-<span id="cb45-319"><a href="#cb45-319" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb45-320"><a href="#cb45-320" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-321"><a href="#cb45-321" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox visualization</span></span>
-<span id="cb45-322"><a href="#cb45-322" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-325"><a href="#cb45-325" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb45-326"><a href="#cb45-326" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-braess-paradox</span></span>
-<span id="cb45-327"><a href="#cb45-327" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Total travel time in the 4-node network under three scenarios. Adding a shortcut road increases total travel time at the selfish (Wardrop) equilibrium compared to the original network — Braess's paradox. A social planner can do better by controlling route assignments."</span></span>
-<span id="cb45-328"><a href="#cb45-328" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
-<span id="cb45-329"><a href="#cb45-329" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4.5</span></span>
-<span id="cb45-330"><a href="#cb45-330" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-331"><a href="#cb45-331" aria-hidden="true" tabindex="-1"></a>braess_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb45-332"><a href="#cb45-332" aria-hidden="true" tabindex="-1"></a>  <span class="at">scenario =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"No shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
-<span id="cb45-333"><a href="#cb45-333" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
-<span id="cb45-334"><a href="#cb45-334" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Social optimum)"</span>),</span>
-<span id="cb45-335"><a href="#cb45-335" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"No shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
-<span id="cb45-336"><a href="#cb45-336" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
-<span id="cb45-337"><a href="#cb45-337" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Social optimum)"</span>)),</span>
-<span id="cb45-338"><a href="#cb45-338" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_time =</span> <span class="fu">c</span>(no_shortcut<span class="sc">$</span>total_time,</span>
-<span id="cb45-339"><a href="#cb45-339" aria-hidden="true" tabindex="-1"></a>                 with_shortcut<span class="sc">$</span>total_time,</span>
-<span id="cb45-340"><a href="#cb45-340" aria-hidden="true" tabindex="-1"></a>                 social_opt<span class="sc">$</span>total),</span>
-<span id="cb45-341"><a href="#cb45-341" aria-hidden="true" tabindex="-1"></a>  <span class="at">per_driver =</span> total_time <span class="sc">/</span> <span class="dv">4000</span></span>
-<span id="cb45-342"><a href="#cb45-342" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb45-343"><a href="#cb45-343" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-344"><a href="#cb45-344" aria-hidden="true" tabindex="-1"></a>p_braess <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(braess_data, <span class="fu">aes</span>(<span class="at">x =</span> scenario, <span class="at">y =</span> per_driver,</span>
-<span id="cb45-345"><a href="#cb45-345" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">fill =</span> scenario)) <span class="sc">+</span></span>
-<span id="cb45-346"><a href="#cb45-346" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.6</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb45-347"><a href="#cb45-347" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.0f min"</span>, per_driver)),</span>
-<span id="cb45-348"><a href="#cb45-348" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
-<span id="cb45-349"><a href="#cb45-349" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> okabe_ito[<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">3</span>)]) <span class="sc">+</span></span>
-<span id="cb45-350"><a href="#cb45-350" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">name =</span> <span class="st">"Travel time per driver (minutes)"</span>,</span>
-<span id="cb45-351"><a href="#cb45-351" aria-hidden="true" tabindex="-1"></a>                     <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">95</span>), <span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="sc">+</span></span>
-<span id="cb45-352"><a href="#cb45-352" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb45-353"><a href="#cb45-353" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
-<span id="cb45-354"><a href="#cb45-354" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Braess's Paradox: Adding a Road Increases Congestion"</span>)</span>
-<span id="cb45-355"><a href="#cb45-355" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-356"><a href="#cb45-356" aria-hidden="true" tabindex="-1"></a>p_braess</span>
-<span id="cb45-357"><a href="#cb45-357" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_braess, <span class="st">"braess-paradox"</span>, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="fl">4.5</span>)</span>
-<span id="cb45-358"><a href="#cb45-358" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb45-359"><a href="#cb45-359" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-360"><a href="#cb45-360" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
-<span id="cb45-361"><a href="#cb45-361" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-362"><a href="#cb45-362" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox with a 4-node network</span></span>
-<span id="cb45-363"><a href="#cb45-363" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-364"><a href="#cb45-364" aria-hidden="true" tabindex="-1"></a>Consider 4,000 commuters traveling from $O$ to $D$ through nodes $A$ and $B$. Edge costs: $c_{OA}(x) = x/100$, $c_{AD} = 45$, $c_{OB} = 45$, $c_{BD}(x) = x/100$.</span>
-<span id="cb45-365"><a href="#cb45-365" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-368"><a href="#cb45-368" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb45-369"><a href="#cb45-369" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-braess-steps</span></span>
-<span id="cb45-370"><a href="#cb45-370" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-371"><a href="#cb45-371" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Without shortcut — symmetric equilibrium splits traffic equally</span></span>
-<span id="cb45-372"><a href="#cb45-372" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Without shortcut: 2000 on each route, time = 2000/100 + 45 = 65 min</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-140"><a href="#cb45-140" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">pairs =</span> pairs, <span class="at">edges =</span> edges, <span class="at">n =</span> n)</span>
+<span id="cb45-141"><a href="#cb45-141" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-142"><a href="#cb45-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-143"><a href="#cb45-143" aria-hidden="true" tabindex="-1"></a>find_pairwise_matches <span class="ot">&lt;-</span> <span class="cf">function</span>(graph) {</span>
+<span id="cb45-144"><a href="#cb45-144" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Greedy maximal matching on pairwise exchanges (2-cycles)</span></span>
+<span id="cb45-145"><a href="#cb45-145" aria-hidden="true" tabindex="-1"></a>  edges <span class="ot">&lt;-</span> graph<span class="sc">$</span>edges</span>
+<span id="cb45-146"><a href="#cb45-146" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> graph<span class="sc">$</span>n</span>
+<span id="cb45-147"><a href="#cb45-147" aria-hidden="true" tabindex="-1"></a>  matched <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">FALSE</span>, n)</span>
+<span id="cb45-148"><a href="#cb45-148" aria-hidden="true" tabindex="-1"></a>  matches <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb45-149"><a href="#cb45-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-150"><a href="#cb45-150" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Find all 2-cycles: i-&gt;j and j-&gt;i both exist</span></span>
+<span id="cb45-151"><a href="#cb45-151" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (idx <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(edges))) {</span>
+<span id="cb45-152"><a href="#cb45-152" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> edges<span class="sc">$</span>from[idx]</span>
+<span id="cb45-153"><a href="#cb45-153" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> edges<span class="sc">$</span>to[idx]</span>
+<span id="cb45-154"><a href="#cb45-154" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (matched[i] <span class="sc">||</span> matched[j]) <span class="cf">next</span></span>
+<span id="cb45-155"><a href="#cb45-155" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check reverse edge exists</span></span>
+<span id="cb45-156"><a href="#cb45-156" aria-hidden="true" tabindex="-1"></a>    reverse <span class="ot">&lt;-</span> edges <span class="sc">|&gt;</span> <span class="fu">filter</span>(from <span class="sc">==</span> j, to <span class="sc">==</span> i)</span>
+<span id="cb45-157"><a href="#cb45-157" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">nrow</span>(reverse) <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb45-158"><a href="#cb45-158" aria-hidden="true" tabindex="-1"></a>      matched[i] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb45-159"><a href="#cb45-159" aria-hidden="true" tabindex="-1"></a>      matched[j] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb45-160"><a href="#cb45-160" aria-hidden="true" tabindex="-1"></a>      matches <span class="ot">&lt;-</span> <span class="fu">c</span>(matches, <span class="fu">list</span>(<span class="fu">c</span>(i, j)))</span>
+<span id="cb45-161"><a href="#cb45-161" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb45-162"><a href="#cb45-162" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb45-163"><a href="#cb45-163" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">matches =</span> matches, <span class="at">n_matched =</span> <span class="fu">sum</span>(matched), <span class="at">n_total =</span> n)</span>
+<span id="cb45-164"><a href="#cb45-164" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-165"><a href="#cb45-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-166"><a href="#cb45-166" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> <span class="fu">build_compatibility_graph</span>(<span class="at">n_pairs =</span> <span class="dv">50</span>)</span>
+<span id="cb45-167"><a href="#cb45-167" aria-hidden="true" tabindex="-1"></a>matching <span class="ot">&lt;-</span> <span class="fu">find_pairwise_matches</span>(graph)</span>
+<span id="cb45-168"><a href="#cb45-168" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Pairs in pool: %d</span><span class="sc">\n</span><span class="st">"</span>, matching<span class="sc">$</span>n_total))</span>
+<span id="cb45-169"><a href="#cb45-169" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Pairwise exchanges found: %d (saving %d patients)</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-170"><a href="#cb45-170" aria-hidden="true" tabindex="-1"></a>            <span class="fu">length</span>(matching<span class="sc">$</span>matches), matching<span class="sc">$</span>n_matched))</span>
+<span id="cb45-171"><a href="#cb45-171" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-172"><a href="#cb45-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-173"><a href="#cb45-173" aria-hidden="true" tabindex="-1"></a><span class="fu">### Kidney exchange network visualization</span></span>
+<span id="cb45-174"><a href="#cb45-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-177"><a href="#cb45-177" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-178"><a href="#cb45-178" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-kidney-exchange</span></span>
+<span id="cb45-179"><a href="#cb45-179" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Kidney exchange compatibility network. Nodes represent incompatible patient-donor pairs (coloured by patient blood type). Edges show potential donations. Highlighted thick edges are matched pairwise exchanges."</span></span>
+<span id="cb45-180"><a href="#cb45-180" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb45-181"><a href="#cb45-181" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb45-182"><a href="#cb45-182" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-183"><a href="#cb45-183" aria-hidden="true" tabindex="-1"></a><span class="co"># Layout nodes in a circle</span></span>
+<span id="cb45-184"><a href="#cb45-184" aria-hidden="true" tabindex="-1"></a>n_nodes <span class="ot">&lt;-</span> graph<span class="sc">$</span>n</span>
+<span id="cb45-185"><a href="#cb45-185" aria-hidden="true" tabindex="-1"></a>angles <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span> <span class="sc">*</span> pi, <span class="at">length.out =</span> n_nodes <span class="sc">+</span> <span class="dv">1</span>)[<span class="sc">-</span>(n_nodes <span class="sc">+</span> <span class="dv">1</span>)]</span>
+<span id="cb45-186"><a href="#cb45-186" aria-hidden="true" tabindex="-1"></a>node_data <span class="ot">&lt;-</span> graph<span class="sc">$</span>pairs <span class="sc">|&gt;</span></span>
+<span id="cb45-187"><a href="#cb45-187" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">x =</span> <span class="fu">cos</span>(angles), <span class="at">y =</span> <span class="fu">sin</span>(angles),</span>
+<span id="cb45-188"><a href="#cb45-188" aria-hidden="true" tabindex="-1"></a>         <span class="at">node_id =</span> <span class="fu">row_number</span>())</span>
+<span id="cb45-189"><a href="#cb45-189" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-190"><a href="#cb45-190" aria-hidden="true" tabindex="-1"></a><span class="co"># Edge data</span></span>
+<span id="cb45-191"><a href="#cb45-191" aria-hidden="true" tabindex="-1"></a>edge_data <span class="ot">&lt;-</span> graph<span class="sc">$</span>edges <span class="sc">|&gt;</span></span>
+<span id="cb45-192"><a href="#cb45-192" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(node_data <span class="sc">|&gt;</span> <span class="fu">select</span>(node_id, x, y), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"from"</span> <span class="ot">=</span> <span class="st">"node_id"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb45-193"><a href="#cb45-193" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">x_from =</span> x, <span class="at">y_from =</span> y) <span class="sc">|&gt;</span></span>
+<span id="cb45-194"><a href="#cb45-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(node_data <span class="sc">|&gt;</span> <span class="fu">select</span>(node_id, x, y), <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"to"</span> <span class="ot">=</span> <span class="st">"node_id"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb45-195"><a href="#cb45-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">x_to =</span> x, <span class="at">y_to =</span> y)</span>
+<span id="cb45-196"><a href="#cb45-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-197"><a href="#cb45-197" aria-hidden="true" tabindex="-1"></a><span class="co"># Matched edges</span></span>
+<span id="cb45-198"><a href="#cb45-198" aria-hidden="true" tabindex="-1"></a>matched_pairs <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, matching<span class="sc">$</span>matches)</span>
+<span id="cb45-199"><a href="#cb45-199" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(matched_pairs)) {</span>
+<span id="cb45-200"><a href="#cb45-200" aria-hidden="true" tabindex="-1"></a>  matched_edge_data <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(matched_pairs)), <span class="cf">function</span>(r) {</span>
+<span id="cb45-201"><a href="#cb45-201" aria-hidden="true" tabindex="-1"></a>    i <span class="ot">&lt;-</span> matched_pairs[r, <span class="dv">1</span>]</span>
+<span id="cb45-202"><a href="#cb45-202" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> matched_pairs[r, <span class="dv">2</span>]</span>
+<span id="cb45-203"><a href="#cb45-203" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>(</span>
+<span id="cb45-204"><a href="#cb45-204" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tibble</span>(<span class="at">x_from =</span> node_data<span class="sc">$</span>x[i], <span class="at">y_from =</span> node_data<span class="sc">$</span>y[i],</span>
+<span id="cb45-205"><a href="#cb45-205" aria-hidden="true" tabindex="-1"></a>             <span class="at">x_to =</span> node_data<span class="sc">$</span>x[j], <span class="at">y_to =</span> node_data<span class="sc">$</span>y[j]),</span>
+<span id="cb45-206"><a href="#cb45-206" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tibble</span>(<span class="at">x_from =</span> node_data<span class="sc">$</span>x[j], <span class="at">y_from =</span> node_data<span class="sc">$</span>y[j],</span>
+<span id="cb45-207"><a href="#cb45-207" aria-hidden="true" tabindex="-1"></a>             <span class="at">x_to =</span> node_data<span class="sc">$</span>x[i], <span class="at">y_to =</span> node_data<span class="sc">$</span>y[i])</span>
+<span id="cb45-208"><a href="#cb45-208" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb45-209"><a href="#cb45-209" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb45-210"><a href="#cb45-210" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb45-211"><a href="#cb45-211" aria-hidden="true" tabindex="-1"></a>  matched_edge_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">x_from =</span> <span class="fu">numeric</span>(), <span class="at">y_from =</span> <span class="fu">numeric</span>(),</span>
+<span id="cb45-212"><a href="#cb45-212" aria-hidden="true" tabindex="-1"></a>                              <span class="at">x_to =</span> <span class="fu">numeric</span>(), <span class="at">y_to =</span> <span class="fu">numeric</span>())</span>
+<span id="cb45-213"><a href="#cb45-213" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-214"><a href="#cb45-214" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-215"><a href="#cb45-215" aria-hidden="true" tabindex="-1"></a><span class="co"># Colour by blood type</span></span>
+<span id="cb45-216"><a href="#cb45-216" aria-hidden="true" tabindex="-1"></a>bt_colours <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"O"</span> <span class="ot">=</span> okabe_ito[<span class="dv">1</span>], <span class="st">"A"</span> <span class="ot">=</span> okabe_ito[<span class="dv">2</span>],</span>
+<span id="cb45-217"><a href="#cb45-217" aria-hidden="true" tabindex="-1"></a>                <span class="st">"B"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>], <span class="st">"AB"</span> <span class="ot">=</span> okabe_ito[<span class="dv">5</span>])</span>
+<span id="cb45-218"><a href="#cb45-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-219"><a href="#cb45-219" aria-hidden="true" tabindex="-1"></a>p_kidney <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb45-220"><a href="#cb45-220" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> edge_data, <span class="fu">aes</span>(<span class="at">x =</span> x_from, <span class="at">y =</span> y_from,</span>
+<span id="cb45-221"><a href="#cb45-221" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">xend =</span> x_to, <span class="at">yend =</span> y_to),</span>
+<span id="cb45-222"><a href="#cb45-222" aria-hidden="true" tabindex="-1"></a>               <span class="at">colour =</span> <span class="st">"grey80"</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb45-223"><a href="#cb45-223" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="at">data =</span> matched_edge_data,</span>
+<span id="cb45-224"><a href="#cb45-224" aria-hidden="true" tabindex="-1"></a>               <span class="fu">aes</span>(<span class="at">x =</span> x_from, <span class="at">y =</span> y_from, <span class="at">xend =</span> x_to, <span class="at">yend =</span> y_to),</span>
+<span id="cb45-225"><a href="#cb45-225" aria-hidden="true" tabindex="-1"></a>               <span class="at">colour =</span> okabe_ito[<span class="dv">6</span>], <span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="cb45-226"><a href="#cb45-226" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> node_data, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">fill =</span> patient_bt),</span>
+<span id="cb45-227"><a href="#cb45-227" aria-hidden="true" tabindex="-1"></a>             <span class="at">shape =</span> <span class="dv">21</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">stroke =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb45-228"><a href="#cb45-228" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> bt_colours, <span class="at">name =</span> <span class="st">"Patient</span><span class="sc">\n</span><span class="st">blood type"</span>) <span class="sc">+</span></span>
+<span id="cb45-229"><a href="#cb45-229" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>() <span class="sc">+</span></span>
+<span id="cb45-230"><a href="#cb45-230" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb45-231"><a href="#cb45-231" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text =</span> <span class="fu">element_blank</span>(), <span class="at">axis.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb45-232"><a href="#cb45-232" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks =</span> <span class="fu">element_blank</span>(), <span class="at">panel.grid =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb45-233"><a href="#cb45-233" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Kidney Exchange Compatibility Network"</span>)</span>
+<span id="cb45-234"><a href="#cb45-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-235"><a href="#cb45-235" aria-hidden="true" tabindex="-1"></a>p_kidney</span>
+<span id="cb45-236"><a href="#cb45-236" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_kidney, <span class="st">"kidney-exchange-network"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
+<span id="cb45-237"><a href="#cb45-237" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-238"><a href="#cb45-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-239"><a href="#cb45-239" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox</span></span>
+<span id="cb45-240"><a href="#cb45-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-243"><a href="#cb45-243" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-244"><a href="#cb45-244" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: braess-paradox</span></span>
+<span id="cb45-245"><a href="#cb45-245" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-246"><a href="#cb45-246" aria-hidden="true" tabindex="-1"></a>braess_network <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_drivers =</span> <span class="dv">4000</span>, <span class="at">has_shortcut =</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb45-247"><a href="#cb45-247" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Routes in 4-node network: O -&gt; A -&gt; D, O -&gt; B -&gt; D, and optionally O -&gt; A -&gt; B -&gt; D</span></span>
+<span id="cb45-248"><a href="#cb45-248" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Cost functions: c_OA(x) = x/100, c_AD = 45, c_OB = 45, c_BD(x) = x/100</span></span>
+<span id="cb45-249"><a href="#cb45-249" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Shortcut A -&gt; B costs 0</span></span>
+<span id="cb45-250"><a href="#cb45-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-251"><a href="#cb45-251" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>has_shortcut) {</span>
+<span id="cb45-252"><a href="#cb45-252" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Without shortcut: two routes, symmetric =&gt; equilibrium splits equally</span></span>
+<span id="cb45-253"><a href="#cb45-253" aria-hidden="true" tabindex="-1"></a>    x <span class="ot">&lt;-</span> n_drivers <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb45-254"><a href="#cb45-254" aria-hidden="true" tabindex="-1"></a>    time_r1 <span class="ot">&lt;-</span> x <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">45</span>       <span class="co"># O-&gt;A-&gt;D</span></span>
+<span id="cb45-255"><a href="#cb45-255" aria-hidden="true" tabindex="-1"></a>    time_r2 <span class="ot">&lt;-</span> <span class="dv">45</span> <span class="sc">+</span> x <span class="sc">/</span> <span class="dv">100</span>       <span class="co"># O-&gt;B-&gt;D</span></span>
+<span id="cb45-256"><a href="#cb45-256" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">routes =</span> <span class="fu">c</span>(<span class="st">"O-A-D"</span>, <span class="st">"O-B-D"</span>),</span>
+<span id="cb45-257"><a href="#cb45-257" aria-hidden="true" tabindex="-1"></a>                <span class="at">flows =</span> <span class="fu">c</span>(x, x),</span>
+<span id="cb45-258"><a href="#cb45-258" aria-hidden="true" tabindex="-1"></a>                <span class="at">times =</span> <span class="fu">c</span>(time_r1, time_r2),</span>
+<span id="cb45-259"><a href="#cb45-259" aria-hidden="true" tabindex="-1"></a>                <span class="at">total_time =</span> n_drivers <span class="sc">*</span> time_r1))</span>
+<span id="cb45-260"><a href="#cb45-260" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb45-261"><a href="#cb45-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-262"><a href="#cb45-262" aria-hidden="true" tabindex="-1"></a>  <span class="co"># With shortcut: Wardrop equilibrium</span></span>
+<span id="cb45-263"><a href="#cb45-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-264"><a href="#cb45-264" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Route 3: O-&gt;A-&gt;B-&gt;D has cost x_OA/100 + 0 + x_BD/100</span></span>
+<span id="cb45-265"><a href="#cb45-265" aria-hidden="true" tabindex="-1"></a>  <span class="co"># At equilibrium, all used routes have equal cost</span></span>
+<span id="cb45-266"><a href="#cb45-266" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Solving: all drivers use O-&gt;A-&gt;B-&gt;D, each segment carries 4000</span></span>
+<span id="cb45-267"><a href="#cb45-267" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Time = 4000/100 + 0 + 4000/100 = 80</span></span>
+<span id="cb45-268"><a href="#cb45-268" aria-hidden="true" tabindex="-1"></a>  x_all <span class="ot">&lt;-</span> n_drivers</span>
+<span id="cb45-269"><a href="#cb45-269" aria-hidden="true" tabindex="-1"></a>  time_shortcut <span class="ot">&lt;-</span> x_all <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">0</span> <span class="sc">+</span> x_all <span class="sc">/</span> <span class="dv">100</span></span>
+<span id="cb45-270"><a href="#cb45-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-271"><a href="#cb45-271" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">routes =</span> <span class="fu">c</span>(<span class="st">"O-A-D"</span>, <span class="st">"O-B-D"</span>, <span class="st">"O-A-B-D"</span>),</span>
+<span id="cb45-272"><a href="#cb45-272" aria-hidden="true" tabindex="-1"></a>              <span class="at">flows =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, x_all),</span>
+<span id="cb45-273"><a href="#cb45-273" aria-hidden="true" tabindex="-1"></a>              <span class="at">times =</span> <span class="fu">c</span>(<span class="cn">NA</span>, <span class="cn">NA</span>, time_shortcut),</span>
+<span id="cb45-274"><a href="#cb45-274" aria-hidden="true" tabindex="-1"></a>              <span class="at">total_time =</span> n_drivers <span class="sc">*</span> time_shortcut))</span>
+<span id="cb45-275"><a href="#cb45-275" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-276"><a href="#cb45-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-277"><a href="#cb45-277" aria-hidden="true" tabindex="-1"></a><span class="co"># Social optimum with shortcut: solve by splitting traffic</span></span>
+<span id="cb45-278"><a href="#cb45-278" aria-hidden="true" tabindex="-1"></a>social_optimum_shortcut <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_drivers =</span> <span class="dv">4000</span>) {</span>
+<span id="cb45-279"><a href="#cb45-279" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Optimize over flow split: x on O-A-D, y on O-B-D, z on O-A-B-D</span></span>
+<span id="cb45-280"><a href="#cb45-280" aria-hidden="true" tabindex="-1"></a>  <span class="co"># x + y + z = n_drivers</span></span>
+<span id="cb45-281"><a href="#cb45-281" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Minimize total travel time</span></span>
+<span id="cb45-282"><a href="#cb45-282" aria-hidden="true" tabindex="-1"></a>  best <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">total =</span> <span class="cn">Inf</span>)</span>
+<span id="cb45-283"><a href="#cb45-283" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (x <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_drivers, <span class="at">by =</span> <span class="dv">100</span>)) {</span>
+<span id="cb45-284"><a href="#cb45-284" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (y <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_drivers <span class="sc">-</span> x, <span class="at">by =</span> <span class="dv">100</span>)) {</span>
+<span id="cb45-285"><a href="#cb45-285" aria-hidden="true" tabindex="-1"></a>      z <span class="ot">&lt;-</span> n_drivers <span class="sc">-</span> x <span class="sc">-</span> y</span>
+<span id="cb45-286"><a href="#cb45-286" aria-hidden="true" tabindex="-1"></a>      flow_OA <span class="ot">&lt;-</span> x <span class="sc">+</span> z</span>
+<span id="cb45-287"><a href="#cb45-287" aria-hidden="true" tabindex="-1"></a>      flow_BD <span class="ot">&lt;-</span> y <span class="sc">+</span> z</span>
+<span id="cb45-288"><a href="#cb45-288" aria-hidden="true" tabindex="-1"></a>      time_r1 <span class="ot">&lt;-</span> flow_OA <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">45</span></span>
+<span id="cb45-289"><a href="#cb45-289" aria-hidden="true" tabindex="-1"></a>      time_r2 <span class="ot">&lt;-</span> <span class="dv">45</span> <span class="sc">+</span> flow_BD <span class="sc">/</span> <span class="dv">100</span></span>
+<span id="cb45-290"><a href="#cb45-290" aria-hidden="true" tabindex="-1"></a>      time_r3 <span class="ot">&lt;-</span> flow_OA <span class="sc">/</span> <span class="dv">100</span> <span class="sc">+</span> <span class="dv">0</span> <span class="sc">+</span> flow_BD <span class="sc">/</span> <span class="dv">100</span></span>
+<span id="cb45-291"><a href="#cb45-291" aria-hidden="true" tabindex="-1"></a>      total <span class="ot">&lt;-</span> x <span class="sc">*</span> time_r1 <span class="sc">+</span> y <span class="sc">*</span> time_r2 <span class="sc">+</span> z <span class="sc">*</span> time_r3</span>
+<span id="cb45-292"><a href="#cb45-292" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (total <span class="sc">&lt;</span> best<span class="sc">$</span>total) {</span>
+<span id="cb45-293"><a href="#cb45-293" aria-hidden="true" tabindex="-1"></a>        best <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">z =</span> z, <span class="at">total =</span> total,</span>
+<span id="cb45-294"><a href="#cb45-294" aria-hidden="true" tabindex="-1"></a>                     <span class="at">times =</span> <span class="fu">c</span>(time_r1, time_r2, time_r3))</span>
+<span id="cb45-295"><a href="#cb45-295" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb45-296"><a href="#cb45-296" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb45-297"><a href="#cb45-297" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb45-298"><a href="#cb45-298" aria-hidden="true" tabindex="-1"></a>  best</span>
+<span id="cb45-299"><a href="#cb45-299" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-300"><a href="#cb45-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-301"><a href="#cb45-301" aria-hidden="true" tabindex="-1"></a>no_shortcut <span class="ot">&lt;-</span> <span class="fu">braess_network</span>(<span class="dv">4000</span>, <span class="at">has_shortcut =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb45-302"><a href="#cb45-302" aria-hidden="true" tabindex="-1"></a>with_shortcut <span class="ot">&lt;-</span> <span class="fu">braess_network</span>(<span class="dv">4000</span>, <span class="at">has_shortcut =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb45-303"><a href="#cb45-303" aria-hidden="true" tabindex="-1"></a>social_opt <span class="ot">&lt;-</span> <span class="fu">social_optimum_shortcut</span>(<span class="dv">4000</span>)</span>
+<span id="cb45-304"><a href="#cb45-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-305"><a href="#cb45-305" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"=== Without shortcut ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-306"><a href="#cb45-306" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Each route: %d drivers, travel time: %.0f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-307"><a href="#cb45-307" aria-hidden="true" tabindex="-1"></a>            no_shortcut<span class="sc">$</span>flows[<span class="dv">1</span>], no_shortcut<span class="sc">$</span>times[<span class="dv">1</span>]))</span>
+<span id="cb45-308"><a href="#cb45-308" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total travel time: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">format</span>(no_shortcut<span class="sc">$</span>total_time, <span class="at">big.mark =</span> <span class="st">","</span>)))</span>
+<span id="cb45-309"><a href="#cb45-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-310"><a href="#cb45-310" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== With shortcut (Wardrop equilibrium) ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-311"><a href="#cb45-311" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  All %d drivers use O-A-B-D, travel time: %.0f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-312"><a href="#cb45-312" aria-hidden="true" tabindex="-1"></a>            with_shortcut<span class="sc">$</span>flows[<span class="dv">3</span>], with_shortcut<span class="sc">$</span>times[<span class="dv">3</span>]))</span>
+<span id="cb45-313"><a href="#cb45-313" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total travel time: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">format</span>(with_shortcut<span class="sc">$</span>total_time, <span class="at">big.mark =</span> <span class="st">","</span>)))</span>
+<span id="cb45-314"><a href="#cb45-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-315"><a href="#cb45-315" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">=== With shortcut (social optimum) ===</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-316"><a href="#cb45-316" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  O-A-D: %d, O-B-D: %d, O-A-B-D: %d</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-317"><a href="#cb45-317" aria-hidden="true" tabindex="-1"></a>            social_opt<span class="sc">$</span>x, social_opt<span class="sc">$</span>y, social_opt<span class="sc">$</span>z))</span>
+<span id="cb45-318"><a href="#cb45-318" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total travel time: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">format</span>(social_opt<span class="sc">$</span>total, <span class="at">big.mark =</span> <span class="st">","</span>)))</span>
+<span id="cb45-319"><a href="#cb45-319" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Braess's paradox: adding the shortcut increased travel time by %.0f%%</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-320"><a href="#cb45-320" aria-hidden="true" tabindex="-1"></a>            <span class="dv">100</span> <span class="sc">*</span> (with_shortcut<span class="sc">$</span>total_time <span class="sc">-</span> no_shortcut<span class="sc">$</span>total_time) <span class="sc">/</span></span>
+<span id="cb45-321"><a href="#cb45-321" aria-hidden="true" tabindex="-1"></a>              no_shortcut<span class="sc">$</span>total_time))</span>
+<span id="cb45-322"><a href="#cb45-322" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-323"><a href="#cb45-323" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-324"><a href="#cb45-324" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox visualization</span></span>
+<span id="cb45-325"><a href="#cb45-325" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-328"><a href="#cb45-328" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-329"><a href="#cb45-329" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-braess-paradox</span></span>
+<span id="cb45-330"><a href="#cb45-330" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Total travel time in the 4-node network under three scenarios. Adding a shortcut road increases total travel time at the selfish (Wardrop) equilibrium compared to the original network — Braess's paradox. A social planner can do better by controlling route assignments."</span></span>
+<span id="cb45-331"><a href="#cb45-331" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb45-332"><a href="#cb45-332" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4.5</span></span>
+<span id="cb45-333"><a href="#cb45-333" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-334"><a href="#cb45-334" aria-hidden="true" tabindex="-1"></a>braess_data <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb45-335"><a href="#cb45-335" aria-hidden="true" tabindex="-1"></a>  <span class="at">scenario =</span> <span class="fu">factor</span>(<span class="fu">c</span>(<span class="st">"No shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
+<span id="cb45-336"><a href="#cb45-336" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
+<span id="cb45-337"><a href="#cb45-337" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Social optimum)"</span>),</span>
+<span id="cb45-338"><a href="#cb45-338" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"No shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
+<span id="cb45-339"><a href="#cb45-339" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Wardrop eq.)"</span>,</span>
+<span id="cb45-340"><a href="#cb45-340" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"With shortcut</span><span class="sc">\n</span><span class="st">(Social optimum)"</span>)),</span>
+<span id="cb45-341"><a href="#cb45-341" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_time =</span> <span class="fu">c</span>(no_shortcut<span class="sc">$</span>total_time,</span>
+<span id="cb45-342"><a href="#cb45-342" aria-hidden="true" tabindex="-1"></a>                 with_shortcut<span class="sc">$</span>total_time,</span>
+<span id="cb45-343"><a href="#cb45-343" aria-hidden="true" tabindex="-1"></a>                 social_opt<span class="sc">$</span>total),</span>
+<span id="cb45-344"><a href="#cb45-344" aria-hidden="true" tabindex="-1"></a>  <span class="at">per_driver =</span> total_time <span class="sc">/</span> <span class="dv">4000</span></span>
+<span id="cb45-345"><a href="#cb45-345" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-346"><a href="#cb45-346" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-347"><a href="#cb45-347" aria-hidden="true" tabindex="-1"></a>p_braess <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(braess_data, <span class="fu">aes</span>(<span class="at">x =</span> scenario, <span class="at">y =</span> per_driver,</span>
+<span id="cb45-348"><a href="#cb45-348" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">fill =</span> scenario)) <span class="sc">+</span></span>
+<span id="cb45-349"><a href="#cb45-349" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.6</span>, <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb45-350"><a href="#cb45-350" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.0f min"</span>, per_driver)),</span>
+<span id="cb45-351"><a href="#cb45-351" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">4</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb45-352"><a href="#cb45-352" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> okabe_ito[<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">6</span>, <span class="dv">3</span>)]) <span class="sc">+</span></span>
+<span id="cb45-353"><a href="#cb45-353" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">name =</span> <span class="st">"Travel time per driver (minutes)"</span>,</span>
+<span id="cb45-354"><a href="#cb45-354" aria-hidden="true" tabindex="-1"></a>                     <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">95</span>), <span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb45-355"><a href="#cb45-355" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">name =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb45-356"><a href="#cb45-356" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb45-357"><a href="#cb45-357" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Braess's Paradox: Adding a Road Increases Congestion"</span>)</span>
+<span id="cb45-358"><a href="#cb45-358" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-359"><a href="#cb45-359" aria-hidden="true" tabindex="-1"></a>p_braess</span>
+<span id="cb45-360"><a href="#cb45-360" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_braess, <span class="st">"braess-paradox"</span>, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="fl">4.5</span>)</span>
+<span id="cb45-361"><a href="#cb45-361" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-362"><a href="#cb45-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-363"><a href="#cb45-363" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
+<span id="cb45-364"><a href="#cb45-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-365"><a href="#cb45-365" aria-hidden="true" tabindex="-1"></a><span class="fu">### Braess's paradox with a 4-node network</span></span>
+<span id="cb45-366"><a href="#cb45-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-367"><a href="#cb45-367" aria-hidden="true" tabindex="-1"></a>Consider 4,000 commuters traveling from $O$ to $D$ through nodes $A$ and $B$. Edge costs: $c_{OA}(x) = x/100$, $c_{AD} = 45$, $c_{OB} = 45$, $c_{BD}(x) = x/100$.</span>
+<span id="cb45-368"><a href="#cb45-368" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-371"><a href="#cb45-371" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb45-372"><a href="#cb45-372" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-braess-steps</span></span>
 <span id="cb45-373"><a href="#cb45-373" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-374"><a href="#cb45-374" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Add shortcut A-&gt;B (cost 0). New route O-&gt;A-&gt;B-&gt;D dominates.</span></span>
-<span id="cb45-375"><a href="#cb45-375" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"With shortcut: all 4000 use O-A-B-D, time = 40 + 0 + 40 = 80 min</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb45-376"><a href="#cb45-376" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Increase: 65 -&gt; 80 minutes (+%.1f%%)</span><span class="sc">\n</span><span class="st">"</span>, <span class="dv">100</span> <span class="sc">*</span> <span class="dv">15</span> <span class="sc">/</span> <span class="dv">65</span>))</span>
-<span id="cb45-377"><a href="#cb45-377" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-378"><a href="#cb45-378" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Social optimum</span></span>
-<span id="cb45-379"><a href="#cb45-379" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Social optimum: O-A-D=%d, O-B-D=%d, O-A-B-D=%d</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-380"><a href="#cb45-380" aria-hidden="true" tabindex="-1"></a>            social_opt<span class="sc">$</span>x, social_opt<span class="sc">$</span>y, social_opt<span class="sc">$</span>z))</span>
-<span id="cb45-381"><a href="#cb45-381" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Social optimum time: %.0f min/driver</span><span class="sc">\n</span><span class="st">"</span>, social_opt<span class="sc">$</span>total <span class="sc">/</span> <span class="dv">4000</span>))</span>
-<span id="cb45-382"><a href="#cb45-382" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Price of anarchy = %.0f / %.0f = %.2f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb45-383"><a href="#cb45-383" aria-hidden="true" tabindex="-1"></a>            with_shortcut<span class="sc">$</span>total_time, social_opt<span class="sc">$</span>total,</span>
-<span id="cb45-384"><a href="#cb45-384" aria-hidden="true" tabindex="-1"></a>            with_shortcut<span class="sc">$</span>total_time <span class="sc">/</span> social_opt<span class="sc">$</span>total))</span>
-<span id="cb45-385"><a href="#cb45-385" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb45-386"><a href="#cb45-386" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-387"><a href="#cb45-387" aria-hidden="true" tabindex="-1"></a>The gap between the Wardrop equilibrium and the social optimum is the **price of anarchy**. Cities can close this gap using congestion pricing, or by removing the paradox-inducing road -- as Seoul did when it demolished the Cheonggyecheon Expressway in 2003 and traffic improved.</span>
-<span id="cb45-388"><a href="#cb45-388" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-389"><a href="#cb45-389" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
-<span id="cb45-390"><a href="#cb45-390" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-391"><a href="#cb45-391" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Combinatorial auctions** extend spectrum auctions to bundled items, requiring more sophisticated bidding languages and winner-determination algorithms.</span>
-<span id="cb45-392"><a href="#cb45-392" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Kidney exchange chains** initiated by altruistic donors allow longer exchange cycles, dramatically increasing the number of feasible transplants. See @roth2004 for the foundational design.</span>
-<span id="cb45-393"><a href="#cb45-393" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Algorithmic game theory** provides bounds on the price of anarchy for general network routing games — see @roughgarden2005 for the definitive treatment.</span>
-<span id="cb45-394"><a href="#cb45-394" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Mechanism design** (@sec-mechanism-design) provides the theoretical foundation for designing auctions and matching markets that achieve desired social outcomes.</span>
-<span id="cb45-395"><a href="#cb45-395" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-396"><a href="#cb45-396" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
-<span id="cb45-397"><a href="#cb45-397" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-398"><a href="#cb45-398" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Auction revenue and competition.** Using <span class="in">`simulate_spectrum_auction()`</span>, plot mean revenue as a function of the number of bidders (from 5 to 30) for $k = 3$ licenses. How does revenue scale? Derive the expected revenue analytically for the Vickrey auction with uniform valuations and compare.</span>
-<span id="cb45-399"><a href="#cb45-399" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-400"><a href="#cb45-400" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Kidney exchange pool size.** Run <span class="in">`build_compatibility_graph()`</span> and <span class="in">`find_pairwise_matches()`</span> for pool sizes of 20, 50, 100, and 200 pairs. Plot the fraction of pairs matched as a function of pool size. Explain why larger pools yield disproportionately more matches (the "thick market" effect).</span>
-<span id="cb45-401"><a href="#cb45-401" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-402"><a href="#cb45-402" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Braess with tolls.** Suppose a social planner can impose a toll $\tau$ on the shortcut road $A \to B$. Find the value of $\tau$ that makes the Wardrop equilibrium coincide with the social optimum (i.e., the Pigouvian toll). Implement the computation in R and verify that the resulting travel times equal the social optimum from the worked example.</span>
-<span id="cb45-403"><a href="#cb45-403" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-404"><a href="#cb45-404" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
+<span id="cb45-374"><a href="#cb45-374" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 1: Without shortcut — symmetric equilibrium splits traffic equally</span></span>
+<span id="cb45-375"><a href="#cb45-375" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Without shortcut: 2000 on each route, time = 2000/100 + 45 = 65 min</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-376"><a href="#cb45-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-377"><a href="#cb45-377" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 2: Add shortcut A-&gt;B (cost 0). New route O-&gt;A-&gt;B-&gt;D dominates.</span></span>
+<span id="cb45-378"><a href="#cb45-378" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"With shortcut: all 4000 use O-A-B-D, time = 40 + 0 + 40 = 80 min</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb45-379"><a href="#cb45-379" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Increase: 65 -&gt; 80 minutes (+%.1f%%)</span><span class="sc">\n</span><span class="st">"</span>, <span class="dv">100</span> <span class="sc">*</span> <span class="dv">15</span> <span class="sc">/</span> <span class="dv">65</span>))</span>
+<span id="cb45-380"><a href="#cb45-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-381"><a href="#cb45-381" aria-hidden="true" tabindex="-1"></a><span class="co"># Step 3: Social optimum</span></span>
+<span id="cb45-382"><a href="#cb45-382" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">Social optimum: O-A-D=%d, O-B-D=%d, O-A-B-D=%d</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-383"><a href="#cb45-383" aria-hidden="true" tabindex="-1"></a>            social_opt<span class="sc">$</span>x, social_opt<span class="sc">$</span>y, social_opt<span class="sc">$</span>z))</span>
+<span id="cb45-384"><a href="#cb45-384" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Social optimum time: %.0f min/driver</span><span class="sc">\n</span><span class="st">"</span>, social_opt<span class="sc">$</span>total <span class="sc">/</span> <span class="dv">4000</span>))</span>
+<span id="cb45-385"><a href="#cb45-385" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"Price of anarchy = %.0f / %.0f = %.2f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb45-386"><a href="#cb45-386" aria-hidden="true" tabindex="-1"></a>            with_shortcut<span class="sc">$</span>total_time, social_opt<span class="sc">$</span>total,</span>
+<span id="cb45-387"><a href="#cb45-387" aria-hidden="true" tabindex="-1"></a>            with_shortcut<span class="sc">$</span>total_time <span class="sc">/</span> social_opt<span class="sc">$</span>total))</span>
+<span id="cb45-388"><a href="#cb45-388" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb45-389"><a href="#cb45-389" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-390"><a href="#cb45-390" aria-hidden="true" tabindex="-1"></a>The gap between the Wardrop equilibrium and the social optimum is the **price of anarchy**. Cities can close this gap using congestion pricing, or by removing the paradox-inducing road -- as Seoul did when it demolished the Cheonggyecheon Expressway in 2003 and traffic improved.</span>
+<span id="cb45-391"><a href="#cb45-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-392"><a href="#cb45-392" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
+<span id="cb45-393"><a href="#cb45-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-394"><a href="#cb45-394" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Combinatorial auctions** extend spectrum auctions to bundled items, requiring more sophisticated bidding languages and winner-determination algorithms.</span>
+<span id="cb45-395"><a href="#cb45-395" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Kidney exchange chains** initiated by altruistic donors allow longer exchange cycles, dramatically increasing the number of feasible transplants. See @roth2004 for the foundational design.</span>
+<span id="cb45-396"><a href="#cb45-396" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Algorithmic game theory** provides bounds on the price of anarchy for general network routing games — see @roughgarden2005 for the definitive treatment.</span>
+<span id="cb45-397"><a href="#cb45-397" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Mechanism design** (@sec-mechanism-design) provides the theoretical foundation for designing auctions and matching markets that achieve desired social outcomes.</span>
+<span id="cb45-398"><a href="#cb45-398" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-399"><a href="#cb45-399" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
+<span id="cb45-400"><a href="#cb45-400" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-401"><a href="#cb45-401" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Auction revenue and competition.** Using <span class="in">`simulate_spectrum_auction()`</span>, plot mean revenue as a function of the number of bidders (from 5 to 30) for $k = 3$ licenses. How does revenue scale? Derive the expected revenue analytically for the Vickrey auction with uniform valuations and compare.</span>
+<span id="cb45-402"><a href="#cb45-402" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-403"><a href="#cb45-403" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Kidney exchange pool size.** Run <span class="in">`build_compatibility_graph()`</span> and <span class="in">`find_pairwise_matches()`</span> for pool sizes of 20, 50, 100, and 200 pairs. Plot the fraction of pairs matched as a function of pool size. Explain why larger pools yield disproportionately more matches (the "thick market" effect).</span>
+<span id="cb45-404"><a href="#cb45-404" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-405"><a href="#cb45-405" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Braess with tolls.** Suppose a social planner can impose a toll $\tau$ on the shortcut road $A \to B$. Find the value of $\tau$ that makes the Wardrop equilibrium coincide with the social optimum (i.e., the Pigouvian toll). Implement the computation in R and verify that the resulting travel times equal the social optimum from the worked example.</span>
+<span id="cb45-406"><a href="#cb45-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-407"><a href="#cb45-407" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
