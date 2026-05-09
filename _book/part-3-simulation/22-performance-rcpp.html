@@ -751,7 +751,7 @@ window.Quarto = {
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-3-simulation/22-performance-rcpp.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-3-simulation/22-performance-rcpp.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-3-simulation/22-performance-rcpp.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-3-simulation/22-performance-rcpp.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="../downloads/performance-optimization.pdf"><i class="bi bi-file-pdf"></i>Download Chapter PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1736,398 +1736,401 @@ Figure&nbsp;25.2: Scaling behavior of loop-based vs vectorized spatial PD as gri
 <span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
 <span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "Profiling R code, vectorization strategies, memory-efficient history storage, and when to consider Rcpp — demonstrated on game-theory simulations."</span></span>
 <span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["performance", "vectorization", "profiling", "Rcpp", "optimization"]</span></span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Performance Optimization {#sec-performance-rcpp}</span></span>
-<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
-<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
-<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"axelrod.R"</span>))</span>
-<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
-<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Profile R code using <span class="in">`system.time()`</span> and manual benchmarking to identify bottlenecks.</span>
-<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Replace explicit loops with vectorized matrix operations for payoff computation.</span>
-<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Pre-allocate data structures to avoid the performance cost of growing objects.</span>
-<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Recognize when Rcpp would provide further speedups and describe the conceptual approach.</span>
-<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
-<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a>A single run of the Axelrod tournament (@sec-axelrod-tournament) with eight strategies and 200 rounds finishes in under a second. But scale the problem — 100 strategies, 1000 rounds, spatial grids of 10,000 agents, evolutionary dynamics over 500 generations — and naive R code can take hours. The difference between a simulation that runs in 30 seconds and one that runs in 30 minutes is often not a better algorithm, but better use of R's strengths.</span>
-<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a>R is slow when you fight it: growing vectors with <span class="in">`c()`</span>, appending rows with <span class="in">`rbind()`</span>, nested loops over scalar operations. R is fast when you work with it: pre-allocated matrices, vectorized arithmetic, and functions that call optimized C code under the hood. In this chapter, we profile a game-theory simulation, identify the bottlenecks, and eliminate them.</span>
-<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
-<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why R loops are slow</span></span>
-<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a>R is an interpreted language with dynamic typing. Each iteration of a <span class="in">`for`</span> loop involves type checking, memory allocation, and function dispatch. A loop that runs $n$ times incurs this overhead $n$ times. Vectorized operations like <span class="in">`A %*% x`</span> delegate the loop to compiled C or Fortran code, paying the overhead once and executing the loop at native speed.</span>
-<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a><span class="fu">### Three levels of optimization</span></span>
-<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-42"><a href="#cb41-42" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Vectorization**: Replace element-wise loops with matrix operations. This is always the first step and often delivers 10--100x speedups.</span>
-<span id="cb41-43"><a href="#cb41-43" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Memory pre-allocation**: Replace <span class="in">`c(vec, new_val)`</span> and <span class="in">`rbind(df, new_row)`</span> with indexed assignment into pre-allocated objects. Growing objects forces R to copy the entire object on each append.</span>
-<span id="cb41-44"><a href="#cb41-44" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Compiled code (Rcpp)**: For algorithms that cannot be vectorized — complex conditional logic, recursive data structures, sequential dependencies — Rcpp lets you write inner loops in C++ while keeping the R interface. This is the tool of last resort, not the first.</span>
-<span id="cb41-45"><a href="#cb41-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-46"><a href="#cb41-46" aria-hidden="true" tabindex="-1"></a><span class="fu">### The profiling workflow</span></span>
-<span id="cb41-47"><a href="#cb41-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-48"><a href="#cb41-48" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Measure**: Use <span class="in">`system.time()`</span> to get elapsed time.</span>
-<span id="cb41-49"><a href="#cb41-49" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Identify**: Find the hotspot — the innermost loop consuming most runtime.</span>
-<span id="cb41-50"><a href="#cb41-50" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Optimize**: Apply vectorization, pre-allocation, or Rcpp.</span>
-<span id="cb41-51"><a href="#cb41-51" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Verify**: Confirm the optimized code produces identical results.</span>
-<span id="cb41-52"><a href="#cb41-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-53"><a href="#cb41-53" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R {#sec-performance-implementation}</span></span>
-<span id="cb41-54"><a href="#cb41-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-55"><a href="#cb41-55" aria-hidden="true" tabindex="-1"></a><span class="fu">### The baseline: loop-based spatial PD</span></span>
-<span id="cb41-56"><a href="#cb41-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-57"><a href="#cb41-57" aria-hidden="true" tabindex="-1"></a>We implement a simplified spatial Prisoner's Dilemma on a grid, similar to @sec-spatial-pd. This is our baseline for optimization.</span>
-<span id="cb41-58"><a href="#cb41-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-61"><a href="#cb41-61" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-62"><a href="#cb41-62" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: baseline-spatial-pd</span></span>
-<span id="cb41-63"><a href="#cb41-63" aria-hidden="true" tabindex="-1"></a>spatial_pd_loop <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>, <span class="at">b =</span> <span class="fl">1.8</span>) {</span>
-<span id="cb41-64"><a href="#cb41-64" aria-hidden="true" tabindex="-1"></a>  grid <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">0</span>L), n <span class="sc">*</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>), <span class="at">nrow =</span> n, <span class="at">ncol =</span> n)</span>
-<span id="cb41-65"><a href="#cb41-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-66"><a href="#cb41-66" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Store cooperation history</span></span>
-<span id="cb41-67"><a href="#cb41-67" aria-hidden="true" tabindex="-1"></a>  coop_history <span class="ot">&lt;-</span> <span class="fu">numeric</span>(rounds)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a><span class="an">other-links:</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a><span class="co">  - text: Download Chapter PDF</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a><span class="co">    href: ../downloads/performance-optimization.pdf</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a><span class="co">    icon: file-pdf</span></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># Performance Optimization {#sec-performance-rcpp}</span></span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb41-20"><a href="#cb41-20" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb41-21"><a href="#cb41-21" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"axelrod.R"</span>))</span>
+<span id="cb41-22"><a href="#cb41-22" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-23"><a href="#cb41-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-24"><a href="#cb41-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
+<span id="cb41-25"><a href="#cb41-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-26"><a href="#cb41-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Profile R code using <span class="in">`system.time()`</span> and manual benchmarking to identify bottlenecks.</span>
+<span id="cb41-27"><a href="#cb41-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Replace explicit loops with vectorized matrix operations for payoff computation.</span>
+<span id="cb41-28"><a href="#cb41-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Pre-allocate data structures to avoid the performance cost of growing objects.</span>
+<span id="cb41-29"><a href="#cb41-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Recognize when Rcpp would provide further speedups and describe the conceptual approach.</span>
+<span id="cb41-30"><a href="#cb41-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-31"><a href="#cb41-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
+<span id="cb41-32"><a href="#cb41-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-33"><a href="#cb41-33" aria-hidden="true" tabindex="-1"></a>A single run of the Axelrod tournament (@sec-axelrod-tournament) with eight strategies and 200 rounds finishes in under a second. But scale the problem — 100 strategies, 1000 rounds, spatial grids of 10,000 agents, evolutionary dynamics over 500 generations — and naive R code can take hours. The difference between a simulation that runs in 30 seconds and one that runs in 30 minutes is often not a better algorithm, but better use of R's strengths.</span>
+<span id="cb41-34"><a href="#cb41-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-35"><a href="#cb41-35" aria-hidden="true" tabindex="-1"></a>R is slow when you fight it: growing vectors with <span class="in">`c()`</span>, appending rows with <span class="in">`rbind()`</span>, nested loops over scalar operations. R is fast when you work with it: pre-allocated matrices, vectorized arithmetic, and functions that call optimized C code under the hood. In this chapter, we profile a game-theory simulation, identify the bottlenecks, and eliminate them.</span>
+<span id="cb41-36"><a href="#cb41-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-37"><a href="#cb41-37" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
+<span id="cb41-38"><a href="#cb41-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-39"><a href="#cb41-39" aria-hidden="true" tabindex="-1"></a><span class="fu">### Why R loops are slow</span></span>
+<span id="cb41-40"><a href="#cb41-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-41"><a href="#cb41-41" aria-hidden="true" tabindex="-1"></a>R is an interpreted language with dynamic typing. Each iteration of a <span class="in">`for`</span> loop involves type checking, memory allocation, and function dispatch. A loop that runs $n$ times incurs this overhead $n$ times. Vectorized operations like <span class="in">`A %*% x`</span> delegate the loop to compiled C or Fortran code, paying the overhead once and executing the loop at native speed.</span>
+<span id="cb41-42"><a href="#cb41-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-43"><a href="#cb41-43" aria-hidden="true" tabindex="-1"></a><span class="fu">### Three levels of optimization</span></span>
+<span id="cb41-44"><a href="#cb41-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-45"><a href="#cb41-45" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Vectorization**: Replace element-wise loops with matrix operations. This is always the first step and often delivers 10--100x speedups.</span>
+<span id="cb41-46"><a href="#cb41-46" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Memory pre-allocation**: Replace <span class="in">`c(vec, new_val)`</span> and <span class="in">`rbind(df, new_row)`</span> with indexed assignment into pre-allocated objects. Growing objects forces R to copy the entire object on each append.</span>
+<span id="cb41-47"><a href="#cb41-47" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Compiled code (Rcpp)**: For algorithms that cannot be vectorized — complex conditional logic, recursive data structures, sequential dependencies — Rcpp lets you write inner loops in C++ while keeping the R interface. This is the tool of last resort, not the first.</span>
+<span id="cb41-48"><a href="#cb41-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-49"><a href="#cb41-49" aria-hidden="true" tabindex="-1"></a><span class="fu">### The profiling workflow</span></span>
+<span id="cb41-50"><a href="#cb41-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-51"><a href="#cb41-51" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Measure**: Use <span class="in">`system.time()`</span> to get elapsed time.</span>
+<span id="cb41-52"><a href="#cb41-52" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Identify**: Find the hotspot — the innermost loop consuming most runtime.</span>
+<span id="cb41-53"><a href="#cb41-53" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Optimize**: Apply vectorization, pre-allocation, or Rcpp.</span>
+<span id="cb41-54"><a href="#cb41-54" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>**Verify**: Confirm the optimized code produces identical results.</span>
+<span id="cb41-55"><a href="#cb41-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-56"><a href="#cb41-56" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R {#sec-performance-implementation}</span></span>
+<span id="cb41-57"><a href="#cb41-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-58"><a href="#cb41-58" aria-hidden="true" tabindex="-1"></a><span class="fu">### The baseline: loop-based spatial PD</span></span>
+<span id="cb41-59"><a href="#cb41-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-60"><a href="#cb41-60" aria-hidden="true" tabindex="-1"></a>We implement a simplified spatial Prisoner's Dilemma on a grid, similar to @sec-spatial-pd. This is our baseline for optimization.</span>
+<span id="cb41-61"><a href="#cb41-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-64"><a href="#cb41-64" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-65"><a href="#cb41-65" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: baseline-spatial-pd</span></span>
+<span id="cb41-66"><a href="#cb41-66" aria-hidden="true" tabindex="-1"></a>spatial_pd_loop <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>, <span class="at">b =</span> <span class="fl">1.8</span>) {</span>
+<span id="cb41-67"><a href="#cb41-67" aria-hidden="true" tabindex="-1"></a>  grid <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">0</span>L), n <span class="sc">*</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>), <span class="at">nrow =</span> n, <span class="at">ncol =</span> n)</span>
 <span id="cb41-68"><a href="#cb41-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-69"><a href="#cb41-69" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="fu">seq_len</span>(rounds)) {</span>
-<span id="cb41-70"><a href="#cb41-70" aria-hidden="true" tabindex="-1"></a>    coop_history[t] <span class="ot">&lt;-</span> <span class="fu">mean</span>(grid)</span>
+<span id="cb41-69"><a href="#cb41-69" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Store cooperation history</span></span>
+<span id="cb41-70"><a href="#cb41-70" aria-hidden="true" tabindex="-1"></a>  coop_history <span class="ot">&lt;-</span> <span class="fu">numeric</span>(rounds)</span>
 <span id="cb41-71"><a href="#cb41-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-72"><a href="#cb41-72" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute payoffs (loop version)</span></span>
-<span id="cb41-73"><a href="#cb41-73" aria-hidden="true" tabindex="-1"></a>    payoffs <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> n, <span class="at">ncol =</span> n)</span>
-<span id="cb41-74"><a href="#cb41-74" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb41-75"><a href="#cb41-75" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb41-76"><a href="#cb41-76" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Four neighbors with periodic boundary</span></span>
-<span id="cb41-77"><a href="#cb41-77" aria-hidden="true" tabindex="-1"></a>        neighbors <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb41-78"><a href="#cb41-78" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(((i <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
-<span id="cb41-79"><a href="#cb41-79" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>((i <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
-<span id="cb41-80"><a href="#cb41-80" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, ((j <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb41-81"><a href="#cb41-81" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, (j <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb41-82"><a href="#cb41-82" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb41-83"><a href="#cb41-83" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (nb <span class="cf">in</span> neighbors) {</span>
-<span id="cb41-84"><a href="#cb41-84" aria-hidden="true" tabindex="-1"></a>          ni <span class="ot">&lt;-</span> nb[<span class="dv">1</span>]; nj <span class="ot">&lt;-</span> nb[<span class="dv">2</span>]</span>
-<span id="cb41-85"><a href="#cb41-85" aria-hidden="true" tabindex="-1"></a>          <span class="co"># PD payoff: C vs C = 1, C vs D = 0, D vs C = b, D vs D = 0</span></span>
-<span id="cb41-86"><a href="#cb41-86" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> (grid[i, j] <span class="sc">==</span> <span class="dv">1</span>L <span class="sc">&amp;&amp;</span> grid[ni, nj] <span class="sc">==</span> <span class="dv">1</span>L) {</span>
-<span id="cb41-87"><a href="#cb41-87" aria-hidden="true" tabindex="-1"></a>            payoffs[i, j] <span class="ot">&lt;-</span> payoffs[i, j] <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb41-88"><a href="#cb41-88" aria-hidden="true" tabindex="-1"></a>          } <span class="cf">else</span> <span class="cf">if</span> (grid[i, j] <span class="sc">==</span> <span class="dv">0</span>L <span class="sc">&amp;&amp;</span> grid[ni, nj] <span class="sc">==</span> <span class="dv">1</span>L) {</span>
-<span id="cb41-89"><a href="#cb41-89" aria-hidden="true" tabindex="-1"></a>            payoffs[i, j] <span class="ot">&lt;-</span> payoffs[i, j] <span class="sc">+</span> b</span>
-<span id="cb41-90"><a href="#cb41-90" aria-hidden="true" tabindex="-1"></a>          }</span>
-<span id="cb41-91"><a href="#cb41-91" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb41-92"><a href="#cb41-92" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb41-93"><a href="#cb41-93" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb41-94"><a href="#cb41-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-95"><a href="#cb41-95" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imitation: copy highest-earning neighbor or self</span></span>
-<span id="cb41-96"><a href="#cb41-96" aria-hidden="true" tabindex="-1"></a>    new_grid <span class="ot">&lt;-</span> grid</span>
-<span id="cb41-97"><a href="#cb41-97" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb41-98"><a href="#cb41-98" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb41-99"><a href="#cb41-99" aria-hidden="true" tabindex="-1"></a>        best_payoff <span class="ot">&lt;-</span> payoffs[i, j]</span>
-<span id="cb41-100"><a href="#cb41-100" aria-hidden="true" tabindex="-1"></a>        best_strategy <span class="ot">&lt;-</span> grid[i, j]</span>
-<span id="cb41-101"><a href="#cb41-101" aria-hidden="true" tabindex="-1"></a>        neighbors <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb41-102"><a href="#cb41-102" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(((i <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
-<span id="cb41-103"><a href="#cb41-103" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>((i <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
-<span id="cb41-104"><a href="#cb41-104" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, ((j <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>),</span>
-<span id="cb41-105"><a href="#cb41-105" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, (j <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>)</span>
-<span id="cb41-106"><a href="#cb41-106" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb41-107"><a href="#cb41-107" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (nb <span class="cf">in</span> neighbors) {</span>
-<span id="cb41-108"><a href="#cb41-108" aria-hidden="true" tabindex="-1"></a>          ni <span class="ot">&lt;-</span> nb[<span class="dv">1</span>]; nj <span class="ot">&lt;-</span> nb[<span class="dv">2</span>]</span>
-<span id="cb41-109"><a href="#cb41-109" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> (payoffs[ni, nj] <span class="sc">&gt;</span> best_payoff) {</span>
-<span id="cb41-110"><a href="#cb41-110" aria-hidden="true" tabindex="-1"></a>            best_payoff <span class="ot">&lt;-</span> payoffs[ni, nj]</span>
-<span id="cb41-111"><a href="#cb41-111" aria-hidden="true" tabindex="-1"></a>            best_strategy <span class="ot">&lt;-</span> grid[ni, nj]</span>
-<span id="cb41-112"><a href="#cb41-112" aria-hidden="true" tabindex="-1"></a>          }</span>
-<span id="cb41-113"><a href="#cb41-113" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb41-114"><a href="#cb41-114" aria-hidden="true" tabindex="-1"></a>        new_grid[i, j] <span class="ot">&lt;-</span> best_strategy</span>
-<span id="cb41-115"><a href="#cb41-115" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb41-116"><a href="#cb41-116" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb41-117"><a href="#cb41-117" aria-hidden="true" tabindex="-1"></a>    grid <span class="ot">&lt;-</span> new_grid</span>
-<span id="cb41-118"><a href="#cb41-118" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb41-119"><a href="#cb41-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-120"><a href="#cb41-120" aria-hidden="true" tabindex="-1"></a>  coop_history</span>
-<span id="cb41-121"><a href="#cb41-121" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-122"><a href="#cb41-122" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-123"><a href="#cb41-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-124"><a href="#cb41-124" aria-hidden="true" tabindex="-1"></a><span class="fu">### The optimized version: vectorized spatial PD</span></span>
-<span id="cb41-125"><a href="#cb41-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-126"><a href="#cb41-126" aria-hidden="true" tabindex="-1"></a>The key insight is that summing neighbor cooperators is a **convolution** — shifting the grid in each direction and adding. We replace the inner double loops with matrix shifts.</span>
-<span id="cb41-127"><a href="#cb41-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-130"><a href="#cb41-130" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-131"><a href="#cb41-131" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: vectorized-spatial-pd</span></span>
-<span id="cb41-132"><a href="#cb41-132" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper: shift a matrix with periodic boundaries</span></span>
-<span id="cb41-133"><a href="#cb41-133" aria-hidden="true" tabindex="-1"></a>shift_matrix <span class="ot">&lt;-</span> <span class="cf">function</span>(mat, row_shift, col_shift) {</span>
-<span id="cb41-134"><a href="#cb41-134" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mat)</span>
-<span id="cb41-135"><a href="#cb41-135" aria-hidden="true" tabindex="-1"></a>  rows <span class="ot">&lt;-</span> ((<span class="fu">seq_len</span>(n) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">+</span> row_shift) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb41-136"><a href="#cb41-136" aria-hidden="true" tabindex="-1"></a>  cols <span class="ot">&lt;-</span> ((<span class="fu">seq_len</span>(n) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">+</span> col_shift) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span></span>
-<span id="cb41-137"><a href="#cb41-137" aria-hidden="true" tabindex="-1"></a>  mat[rows, cols]</span>
-<span id="cb41-138"><a href="#cb41-138" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-139"><a href="#cb41-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-140"><a href="#cb41-140" aria-hidden="true" tabindex="-1"></a><span class="co"># Vectorized spatial PD simulation</span></span>
-<span id="cb41-141"><a href="#cb41-141" aria-hidden="true" tabindex="-1"></a>spatial_pd_vectorized <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>, <span class="at">b =</span> <span class="fl">1.8</span>) {</span>
-<span id="cb41-142"><a href="#cb41-142" aria-hidden="true" tabindex="-1"></a>  grid <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">0</span>L), n <span class="sc">*</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>), <span class="at">nrow =</span> n, <span class="at">ncol =</span> n)</span>
-<span id="cb41-143"><a href="#cb41-143" aria-hidden="true" tabindex="-1"></a>  coop_history <span class="ot">&lt;-</span> <span class="fu">numeric</span>(rounds)</span>
-<span id="cb41-144"><a href="#cb41-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-145"><a href="#cb41-145" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="fu">seq_len</span>(rounds)) {</span>
-<span id="cb41-146"><a href="#cb41-146" aria-hidden="true" tabindex="-1"></a>    coop_history[t] <span class="ot">&lt;-</span> <span class="fu">mean</span>(grid)</span>
+<span id="cb41-72"><a href="#cb41-72" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="fu">seq_len</span>(rounds)) {</span>
+<span id="cb41-73"><a href="#cb41-73" aria-hidden="true" tabindex="-1"></a>    coop_history[t] <span class="ot">&lt;-</span> <span class="fu">mean</span>(grid)</span>
+<span id="cb41-74"><a href="#cb41-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-75"><a href="#cb41-75" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute payoffs (loop version)</span></span>
+<span id="cb41-76"><a href="#cb41-76" aria-hidden="true" tabindex="-1"></a>    payoffs <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> n, <span class="at">ncol =</span> n)</span>
+<span id="cb41-77"><a href="#cb41-77" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb41-78"><a href="#cb41-78" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb41-79"><a href="#cb41-79" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Four neighbors with periodic boundary</span></span>
+<span id="cb41-80"><a href="#cb41-80" aria-hidden="true" tabindex="-1"></a>        neighbors <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb41-81"><a href="#cb41-81" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(((i <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
+<span id="cb41-82"><a href="#cb41-82" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>((i <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
+<span id="cb41-83"><a href="#cb41-83" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, ((j <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb41-84"><a href="#cb41-84" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, (j <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb41-85"><a href="#cb41-85" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb41-86"><a href="#cb41-86" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (nb <span class="cf">in</span> neighbors) {</span>
+<span id="cb41-87"><a href="#cb41-87" aria-hidden="true" tabindex="-1"></a>          ni <span class="ot">&lt;-</span> nb[<span class="dv">1</span>]; nj <span class="ot">&lt;-</span> nb[<span class="dv">2</span>]</span>
+<span id="cb41-88"><a href="#cb41-88" aria-hidden="true" tabindex="-1"></a>          <span class="co"># PD payoff: C vs C = 1, C vs D = 0, D vs C = b, D vs D = 0</span></span>
+<span id="cb41-89"><a href="#cb41-89" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> (grid[i, j] <span class="sc">==</span> <span class="dv">1</span>L <span class="sc">&amp;&amp;</span> grid[ni, nj] <span class="sc">==</span> <span class="dv">1</span>L) {</span>
+<span id="cb41-90"><a href="#cb41-90" aria-hidden="true" tabindex="-1"></a>            payoffs[i, j] <span class="ot">&lt;-</span> payoffs[i, j] <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb41-91"><a href="#cb41-91" aria-hidden="true" tabindex="-1"></a>          } <span class="cf">else</span> <span class="cf">if</span> (grid[i, j] <span class="sc">==</span> <span class="dv">0</span>L <span class="sc">&amp;&amp;</span> grid[ni, nj] <span class="sc">==</span> <span class="dv">1</span>L) {</span>
+<span id="cb41-92"><a href="#cb41-92" aria-hidden="true" tabindex="-1"></a>            payoffs[i, j] <span class="ot">&lt;-</span> payoffs[i, j] <span class="sc">+</span> b</span>
+<span id="cb41-93"><a href="#cb41-93" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb41-94"><a href="#cb41-94" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb41-95"><a href="#cb41-95" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb41-96"><a href="#cb41-96" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb41-97"><a href="#cb41-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-98"><a href="#cb41-98" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imitation: copy highest-earning neighbor or self</span></span>
+<span id="cb41-99"><a href="#cb41-99" aria-hidden="true" tabindex="-1"></a>    new_grid <span class="ot">&lt;-</span> grid</span>
+<span id="cb41-100"><a href="#cb41-100" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb41-101"><a href="#cb41-101" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb41-102"><a href="#cb41-102" aria-hidden="true" tabindex="-1"></a>        best_payoff <span class="ot">&lt;-</span> payoffs[i, j]</span>
+<span id="cb41-103"><a href="#cb41-103" aria-hidden="true" tabindex="-1"></a>        best_strategy <span class="ot">&lt;-</span> grid[i, j]</span>
+<span id="cb41-104"><a href="#cb41-104" aria-hidden="true" tabindex="-1"></a>        neighbors <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb41-105"><a href="#cb41-105" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(((i <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
+<span id="cb41-106"><a href="#cb41-106" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>((i <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>, j),</span>
+<span id="cb41-107"><a href="#cb41-107" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, ((j <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>),</span>
+<span id="cb41-108"><a href="#cb41-108" aria-hidden="true" tabindex="-1"></a>          <span class="fu">c</span>(i, (j <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb41-109"><a href="#cb41-109" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb41-110"><a href="#cb41-110" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (nb <span class="cf">in</span> neighbors) {</span>
+<span id="cb41-111"><a href="#cb41-111" aria-hidden="true" tabindex="-1"></a>          ni <span class="ot">&lt;-</span> nb[<span class="dv">1</span>]; nj <span class="ot">&lt;-</span> nb[<span class="dv">2</span>]</span>
+<span id="cb41-112"><a href="#cb41-112" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span> (payoffs[ni, nj] <span class="sc">&gt;</span> best_payoff) {</span>
+<span id="cb41-113"><a href="#cb41-113" aria-hidden="true" tabindex="-1"></a>            best_payoff <span class="ot">&lt;-</span> payoffs[ni, nj]</span>
+<span id="cb41-114"><a href="#cb41-114" aria-hidden="true" tabindex="-1"></a>            best_strategy <span class="ot">&lt;-</span> grid[ni, nj]</span>
+<span id="cb41-115"><a href="#cb41-115" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb41-116"><a href="#cb41-116" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb41-117"><a href="#cb41-117" aria-hidden="true" tabindex="-1"></a>        new_grid[i, j] <span class="ot">&lt;-</span> best_strategy</span>
+<span id="cb41-118"><a href="#cb41-118" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb41-119"><a href="#cb41-119" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb41-120"><a href="#cb41-120" aria-hidden="true" tabindex="-1"></a>    grid <span class="ot">&lt;-</span> new_grid</span>
+<span id="cb41-121"><a href="#cb41-121" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb41-122"><a href="#cb41-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-123"><a href="#cb41-123" aria-hidden="true" tabindex="-1"></a>  coop_history</span>
+<span id="cb41-124"><a href="#cb41-124" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-125"><a href="#cb41-125" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-126"><a href="#cb41-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-127"><a href="#cb41-127" aria-hidden="true" tabindex="-1"></a><span class="fu">### The optimized version: vectorized spatial PD</span></span>
+<span id="cb41-128"><a href="#cb41-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-129"><a href="#cb41-129" aria-hidden="true" tabindex="-1"></a>The key insight is that summing neighbor cooperators is a **convolution** — shifting the grid in each direction and adding. We replace the inner double loops with matrix shifts.</span>
+<span id="cb41-130"><a href="#cb41-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-133"><a href="#cb41-133" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-134"><a href="#cb41-134" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: vectorized-spatial-pd</span></span>
+<span id="cb41-135"><a href="#cb41-135" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper: shift a matrix with periodic boundaries</span></span>
+<span id="cb41-136"><a href="#cb41-136" aria-hidden="true" tabindex="-1"></a>shift_matrix <span class="ot">&lt;-</span> <span class="cf">function</span>(mat, row_shift, col_shift) {</span>
+<span id="cb41-137"><a href="#cb41-137" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(mat)</span>
+<span id="cb41-138"><a href="#cb41-138" aria-hidden="true" tabindex="-1"></a>  rows <span class="ot">&lt;-</span> ((<span class="fu">seq_len</span>(n) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">+</span> row_shift) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb41-139"><a href="#cb41-139" aria-hidden="true" tabindex="-1"></a>  cols <span class="ot">&lt;-</span> ((<span class="fu">seq_len</span>(n) <span class="sc">-</span> <span class="dv">1</span> <span class="sc">+</span> col_shift) <span class="sc">%%</span> n) <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb41-140"><a href="#cb41-140" aria-hidden="true" tabindex="-1"></a>  mat[rows, cols]</span>
+<span id="cb41-141"><a href="#cb41-141" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-142"><a href="#cb41-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-143"><a href="#cb41-143" aria-hidden="true" tabindex="-1"></a><span class="co"># Vectorized spatial PD simulation</span></span>
+<span id="cb41-144"><a href="#cb41-144" aria-hidden="true" tabindex="-1"></a>spatial_pd_vectorized <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>, <span class="at">b =</span> <span class="fl">1.8</span>) {</span>
+<span id="cb41-145"><a href="#cb41-145" aria-hidden="true" tabindex="-1"></a>  grid <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>L, <span class="dv">0</span>L), n <span class="sc">*</span> n, <span class="at">replace =</span> <span class="cn">TRUE</span>), <span class="at">nrow =</span> n, <span class="at">ncol =</span> n)</span>
+<span id="cb41-146"><a href="#cb41-146" aria-hidden="true" tabindex="-1"></a>  coop_history <span class="ot">&lt;-</span> <span class="fu">numeric</span>(rounds)</span>
 <span id="cb41-147"><a href="#cb41-147" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-148"><a href="#cb41-148" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Count cooperating neighbors (vectorized)</span></span>
-<span id="cb41-149"><a href="#cb41-149" aria-hidden="true" tabindex="-1"></a>    coop_neighbors <span class="ot">&lt;-</span> <span class="fu">shift_matrix</span>(grid, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb41-150"><a href="#cb41-150" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">shift_matrix</span>(grid, <span class="dv">1</span>, <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb41-151"><a href="#cb41-151" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">shift_matrix</span>(grid, <span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb41-152"><a href="#cb41-152" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">shift_matrix</span>(grid, <span class="dv">0</span>, <span class="dv">1</span>)</span>
-<span id="cb41-153"><a href="#cb41-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-154"><a href="#cb41-154" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Payoffs: cooperators get 1 per cooperating neighbor</span></span>
-<span id="cb41-155"><a href="#cb41-155" aria-hidden="true" tabindex="-1"></a>    <span class="co">#          defectors get b per cooperating neighbor</span></span>
-<span id="cb41-156"><a href="#cb41-156" aria-hidden="true" tabindex="-1"></a>    payoffs <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(grid <span class="sc">==</span> <span class="dv">1</span>L, coop_neighbors, b <span class="sc">*</span> coop_neighbors)</span>
-<span id="cb41-157"><a href="#cb41-157" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-158"><a href="#cb41-158" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imitation: compare with all neighbors' payoffs</span></span>
-<span id="cb41-159"><a href="#cb41-159" aria-hidden="true" tabindex="-1"></a>    best_payoff <span class="ot">&lt;-</span> payoffs</span>
-<span id="cb41-160"><a href="#cb41-160" aria-hidden="true" tabindex="-1"></a>    best_strategy <span class="ot">&lt;-</span> grid</span>
-<span id="cb41-161"><a href="#cb41-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-162"><a href="#cb41-162" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (shift <span class="cf">in</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">0</span>,<span class="sc">-</span><span class="dv">1</span>), <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))) {</span>
-<span id="cb41-163"><a href="#cb41-163" aria-hidden="true" tabindex="-1"></a>      nb_payoff <span class="ot">&lt;-</span> <span class="fu">shift_matrix</span>(payoffs, shift[<span class="dv">1</span>], shift[<span class="dv">2</span>])</span>
-<span id="cb41-164"><a href="#cb41-164" aria-hidden="true" tabindex="-1"></a>      nb_strategy <span class="ot">&lt;-</span> <span class="fu">shift_matrix</span>(grid, shift[<span class="dv">1</span>], shift[<span class="dv">2</span>])</span>
-<span id="cb41-165"><a href="#cb41-165" aria-hidden="true" tabindex="-1"></a>      update <span class="ot">&lt;-</span> nb_payoff <span class="sc">&gt;</span> best_payoff</span>
-<span id="cb41-166"><a href="#cb41-166" aria-hidden="true" tabindex="-1"></a>      best_payoff[update] <span class="ot">&lt;-</span> nb_payoff[update]</span>
-<span id="cb41-167"><a href="#cb41-167" aria-hidden="true" tabindex="-1"></a>      best_strategy[update] <span class="ot">&lt;-</span> nb_strategy[update]</span>
-<span id="cb41-168"><a href="#cb41-168" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb41-169"><a href="#cb41-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-170"><a href="#cb41-170" aria-hidden="true" tabindex="-1"></a>    grid <span class="ot">&lt;-</span> best_strategy</span>
-<span id="cb41-171"><a href="#cb41-171" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb41-148"><a href="#cb41-148" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="fu">seq_len</span>(rounds)) {</span>
+<span id="cb41-149"><a href="#cb41-149" aria-hidden="true" tabindex="-1"></a>    coop_history[t] <span class="ot">&lt;-</span> <span class="fu">mean</span>(grid)</span>
+<span id="cb41-150"><a href="#cb41-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-151"><a href="#cb41-151" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Count cooperating neighbors (vectorized)</span></span>
+<span id="cb41-152"><a href="#cb41-152" aria-hidden="true" tabindex="-1"></a>    coop_neighbors <span class="ot">&lt;-</span> <span class="fu">shift_matrix</span>(grid, <span class="sc">-</span><span class="dv">1</span>, <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb41-153"><a href="#cb41-153" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">shift_matrix</span>(grid, <span class="dv">1</span>, <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb41-154"><a href="#cb41-154" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">shift_matrix</span>(grid, <span class="dv">0</span>, <span class="sc">-</span><span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb41-155"><a href="#cb41-155" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">shift_matrix</span>(grid, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb41-156"><a href="#cb41-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-157"><a href="#cb41-157" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Payoffs: cooperators get 1 per cooperating neighbor</span></span>
+<span id="cb41-158"><a href="#cb41-158" aria-hidden="true" tabindex="-1"></a>    <span class="co">#          defectors get b per cooperating neighbor</span></span>
+<span id="cb41-159"><a href="#cb41-159" aria-hidden="true" tabindex="-1"></a>    payoffs <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(grid <span class="sc">==</span> <span class="dv">1</span>L, coop_neighbors, b <span class="sc">*</span> coop_neighbors)</span>
+<span id="cb41-160"><a href="#cb41-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-161"><a href="#cb41-161" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Imitation: compare with all neighbors' payoffs</span></span>
+<span id="cb41-162"><a href="#cb41-162" aria-hidden="true" tabindex="-1"></a>    best_payoff <span class="ot">&lt;-</span> payoffs</span>
+<span id="cb41-163"><a href="#cb41-163" aria-hidden="true" tabindex="-1"></a>    best_strategy <span class="ot">&lt;-</span> grid</span>
+<span id="cb41-164"><a href="#cb41-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-165"><a href="#cb41-165" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (shift <span class="cf">in</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="fu">c</span>(<span class="dv">0</span>,<span class="sc">-</span><span class="dv">1</span>), <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))) {</span>
+<span id="cb41-166"><a href="#cb41-166" aria-hidden="true" tabindex="-1"></a>      nb_payoff <span class="ot">&lt;-</span> <span class="fu">shift_matrix</span>(payoffs, shift[<span class="dv">1</span>], shift[<span class="dv">2</span>])</span>
+<span id="cb41-167"><a href="#cb41-167" aria-hidden="true" tabindex="-1"></a>      nb_strategy <span class="ot">&lt;-</span> <span class="fu">shift_matrix</span>(grid, shift[<span class="dv">1</span>], shift[<span class="dv">2</span>])</span>
+<span id="cb41-168"><a href="#cb41-168" aria-hidden="true" tabindex="-1"></a>      update <span class="ot">&lt;-</span> nb_payoff <span class="sc">&gt;</span> best_payoff</span>
+<span id="cb41-169"><a href="#cb41-169" aria-hidden="true" tabindex="-1"></a>      best_payoff[update] <span class="ot">&lt;-</span> nb_payoff[update]</span>
+<span id="cb41-170"><a href="#cb41-170" aria-hidden="true" tabindex="-1"></a>      best_strategy[update] <span class="ot">&lt;-</span> nb_strategy[update]</span>
+<span id="cb41-171"><a href="#cb41-171" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb41-172"><a href="#cb41-172" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-173"><a href="#cb41-173" aria-hidden="true" tabindex="-1"></a>  coop_history</span>
-<span id="cb41-174"><a href="#cb41-174" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-175"><a href="#cb41-175" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-176"><a href="#cb41-176" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-177"><a href="#cb41-177" aria-hidden="true" tabindex="-1"></a><span class="fu">### Benchmarking the two implementations</span></span>
-<span id="cb41-178"><a href="#cb41-178" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-181"><a href="#cb41-181" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-182"><a href="#cb41-182" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: benchmark-spatial</span></span>
-<span id="cb41-183"><a href="#cb41-183" aria-hidden="true" tabindex="-1"></a><span class="co"># Manual benchmarking function</span></span>
-<span id="cb41-184"><a href="#cb41-184" aria-hidden="true" tabindex="-1"></a>benchmark_fn <span class="ot">&lt;-</span> <span class="cf">function</span>(fn, ..., <span class="at">n_reps =</span> <span class="dv">5</span>) {</span>
-<span id="cb41-185"><a href="#cb41-185" aria-hidden="true" tabindex="-1"></a>  times <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n_reps)</span>
-<span id="cb41-186"><a href="#cb41-186" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n_reps)) {</span>
-<span id="cb41-187"><a href="#cb41-187" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-188"><a href="#cb41-188" aria-hidden="true" tabindex="-1"></a>    times[i] <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">fn</span>(...))[<span class="st">"elapsed"</span>]</span>
-<span id="cb41-189"><a href="#cb41-189" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb41-190"><a href="#cb41-190" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">mean =</span> <span class="fu">mean</span>(times), <span class="at">sd =</span> <span class="fu">sd</span>(times), <span class="at">times =</span> times)</span>
-<span id="cb41-191"><a href="#cb41-191" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-192"><a href="#cb41-192" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-193"><a href="#cb41-193" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Benchmarking spatial PD (30x30 grid, 50 rounds)...</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb41-194"><a href="#cb41-194" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-195"><a href="#cb41-195" aria-hidden="true" tabindex="-1"></a>time_loop <span class="ot">&lt;-</span> <span class="fu">benchmark_fn</span>(spatial_pd_loop, <span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>)</span>
-<span id="cb41-196"><a href="#cb41-196" aria-hidden="true" tabindex="-1"></a>time_vec  <span class="ot">&lt;-</span> <span class="fu">benchmark_fn</span>(spatial_pd_vectorized, <span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>)</span>
+<span id="cb41-173"><a href="#cb41-173" aria-hidden="true" tabindex="-1"></a>    grid <span class="ot">&lt;-</span> best_strategy</span>
+<span id="cb41-174"><a href="#cb41-174" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb41-175"><a href="#cb41-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-176"><a href="#cb41-176" aria-hidden="true" tabindex="-1"></a>  coop_history</span>
+<span id="cb41-177"><a href="#cb41-177" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-178"><a href="#cb41-178" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-179"><a href="#cb41-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-180"><a href="#cb41-180" aria-hidden="true" tabindex="-1"></a><span class="fu">### Benchmarking the two implementations</span></span>
+<span id="cb41-181"><a href="#cb41-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-184"><a href="#cb41-184" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-185"><a href="#cb41-185" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: benchmark-spatial</span></span>
+<span id="cb41-186"><a href="#cb41-186" aria-hidden="true" tabindex="-1"></a><span class="co"># Manual benchmarking function</span></span>
+<span id="cb41-187"><a href="#cb41-187" aria-hidden="true" tabindex="-1"></a>benchmark_fn <span class="ot">&lt;-</span> <span class="cf">function</span>(fn, ..., <span class="at">n_reps =</span> <span class="dv">5</span>) {</span>
+<span id="cb41-188"><a href="#cb41-188" aria-hidden="true" tabindex="-1"></a>  times <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n_reps)</span>
+<span id="cb41-189"><a href="#cb41-189" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n_reps)) {</span>
+<span id="cb41-190"><a href="#cb41-190" aria-hidden="true" tabindex="-1"></a>    <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-191"><a href="#cb41-191" aria-hidden="true" tabindex="-1"></a>    times[i] <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">fn</span>(...))[<span class="st">"elapsed"</span>]</span>
+<span id="cb41-192"><a href="#cb41-192" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb41-193"><a href="#cb41-193" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">mean =</span> <span class="fu">mean</span>(times), <span class="at">sd =</span> <span class="fu">sd</span>(times), <span class="at">times =</span> times)</span>
+<span id="cb41-194"><a href="#cb41-194" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-195"><a href="#cb41-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-196"><a href="#cb41-196" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Benchmarking spatial PD (30x30 grid, 50 rounds)...</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
 <span id="cb41-197"><a href="#cb41-197" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-198"><a href="#cb41-198" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Loop-based:  %.3f s (sd: %.3f)</span><span class="sc">\n</span><span class="st">"</span>, time_loop<span class="sc">$</span>mean, time_loop<span class="sc">$</span>sd))</span>
-<span id="cb41-199"><a href="#cb41-199" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Vectorized:  %.3f s (sd: %.3f)</span><span class="sc">\n</span><span class="st">"</span>, time_vec<span class="sc">$</span>mean, time_vec<span class="sc">$</span>sd))</span>
-<span id="cb41-200"><a href="#cb41-200" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Speedup:     %.1fx</span><span class="sc">\n</span><span class="st">"</span>, time_loop<span class="sc">$</span>mean <span class="sc">/</span> time_vec<span class="sc">$</span>mean))</span>
-<span id="cb41-201"><a href="#cb41-201" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-202"><a href="#cb41-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-203"><a href="#cb41-203" aria-hidden="true" tabindex="-1"></a><span class="fu">### Verifying correctness</span></span>
-<span id="cb41-204"><a href="#cb41-204" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-207"><a href="#cb41-207" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-208"><a href="#cb41-208" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: verify-correctness</span></span>
-<span id="cb41-209"><a href="#cb41-209" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-210"><a href="#cb41-210" aria-hidden="true" tabindex="-1"></a>result_loop <span class="ot">&lt;-</span> <span class="fu">spatial_pd_loop</span>(<span class="at">n =</span> <span class="dv">20</span>, <span class="at">rounds =</span> <span class="dv">30</span>)</span>
-<span id="cb41-211"><a href="#cb41-211" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-212"><a href="#cb41-212" aria-hidden="true" tabindex="-1"></a>result_vec <span class="ot">&lt;-</span> <span class="fu">spatial_pd_vectorized</span>(<span class="at">n =</span> <span class="dv">20</span>, <span class="at">rounds =</span> <span class="dv">30</span>)</span>
-<span id="cb41-213"><a href="#cb41-213" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-214"><a href="#cb41-214" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Verification: loop vs vectorized produce identical results:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb41-215"><a href="#cb41-215" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Max absolute difference: %.10f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">max</span>(<span class="fu">abs</span>(result_loop <span class="sc">-</span> result_vec))))</span>
-<span id="cb41-216"><a href="#cb41-216" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  All equal: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">all.equal</span>(result_loop, result_vec)))</span>
-<span id="cb41-217"><a href="#cb41-217" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-218"><a href="#cb41-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-219"><a href="#cb41-219" aria-hidden="true" tabindex="-1"></a><span class="fu">### Visualizing the benchmark</span></span>
-<span id="cb41-220"><a href="#cb41-220" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-223"><a href="#cb41-223" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-224"><a href="#cb41-224" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-performance-comparison</span></span>
-<span id="cb41-225"><a href="#cb41-225" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Execution time comparison for the spatial Prisoner's Dilemma simulation. Vectorized matrix operations eliminate the inner double loops, achieving a substantial speedup over the naive loop-based implementation."</span></span>
-<span id="cb41-226"><a href="#cb41-226" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
-<span id="cb41-227"><a href="#cb41-227" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
-<span id="cb41-228"><a href="#cb41-228" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-229"><a href="#cb41-229" aria-hidden="true" tabindex="-1"></a>bench_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb41-230"><a href="#cb41-230" aria-hidden="true" tabindex="-1"></a>  <span class="at">implementation =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span>),</span>
-<span id="cb41-231"><a href="#cb41-231" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_time =</span> <span class="fu">c</span>(time_loop<span class="sc">$</span>mean, time_vec<span class="sc">$</span>mean),</span>
-<span id="cb41-232"><a href="#cb41-232" aria-hidden="true" tabindex="-1"></a>  <span class="at">sd_time =</span> <span class="fu">c</span>(time_loop<span class="sc">$</span>sd, time_vec<span class="sc">$</span>sd)</span>
-<span id="cb41-233"><a href="#cb41-233" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb41-234"><a href="#cb41-234" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">implementation =</span> <span class="fu">factor</span>(implementation,</span>
-<span id="cb41-235"><a href="#cb41-235" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span>)))</span>
-<span id="cb41-236"><a href="#cb41-236" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-237"><a href="#cb41-237" aria-hidden="true" tabindex="-1"></a>p_bench <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(bench_df, <span class="fu">aes</span>(<span class="at">x =</span> implementation, <span class="at">y =</span> mean_time,</span>
-<span id="cb41-238"><a href="#cb41-238" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">fill =</span> implementation)) <span class="sc">+</span></span>
-<span id="cb41-239"><a href="#cb41-239" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
-<span id="cb41-240"><a href="#cb41-240" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> <span class="fu">pmax</span>(mean_time <span class="sc">-</span> sd_time, <span class="dv">0</span>),</span>
-<span id="cb41-241"><a href="#cb41-241" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> mean_time <span class="sc">+</span> sd_time),</span>
-<span id="cb41-242"><a href="#cb41-242" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> <span class="fl">0.15</span>) <span class="sc">+</span></span>
-<span id="cb41-243"><a href="#cb41-243" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.3fs"</span>, mean_time)),</span>
-<span id="cb41-244"><a href="#cb41-244" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
-<span id="cb41-245"><a href="#cb41-245" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span> <span class="ot">=</span> okabe_ito[<span class="dv">6</span>],</span>
-<span id="cb41-246"><a href="#cb41-246" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Vectorized"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>])) <span class="sc">+</span></span>
-<span id="cb41-247"><a href="#cb41-247" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
-<span id="cb41-248"><a href="#cb41-248" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb41-249"><a href="#cb41-249" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Spatial PD: Loop vs Vectorized"</span>,</span>
-<span id="cb41-250"><a href="#cb41-250" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Execution time (seconds)"</span>)</span>
-<span id="cb41-251"><a href="#cb41-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-252"><a href="#cb41-252" aria-hidden="true" tabindex="-1"></a>p_bench</span>
-<span id="cb41-253"><a href="#cb41-253" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_bench, <span class="st">"performance-comparison"</span>, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
-<span id="cb41-254"><a href="#cb41-254" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-255"><a href="#cb41-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-256"><a href="#cb41-256" aria-hidden="true" tabindex="-1"></a><span class="fu">### Scaling behavior</span></span>
-<span id="cb41-257"><a href="#cb41-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-258"><a href="#cb41-258" aria-hidden="true" tabindex="-1"></a>How does each implementation scale with grid size?</span>
-<span id="cb41-259"><a href="#cb41-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-262"><a href="#cb41-262" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-263"><a href="#cb41-263" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-performance-scaling</span></span>
-<span id="cb41-264"><a href="#cb41-264" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Scaling behavior of loop-based vs vectorized spatial PD as grid size increases (fixed at 20 rounds). Both scale roughly quadratically in the number of cells (as expected for a grid simulation), but the vectorized version maintains a consistent advantage. The log-log plot reveals parallel scaling slopes with a constant multiplicative gap."</span></span>
-<span id="cb41-265"><a href="#cb41-265" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb41-266"><a href="#cb41-266" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
-<span id="cb41-267"><a href="#cb41-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-268"><a href="#cb41-268" aria-hidden="true" tabindex="-1"></a>grid_sizes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>)</span>
-<span id="cb41-269"><a href="#cb41-269" aria-hidden="true" tabindex="-1"></a>scaling_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb41-198"><a href="#cb41-198" aria-hidden="true" tabindex="-1"></a>time_loop <span class="ot">&lt;-</span> <span class="fu">benchmark_fn</span>(spatial_pd_loop, <span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>)</span>
+<span id="cb41-199"><a href="#cb41-199" aria-hidden="true" tabindex="-1"></a>time_vec  <span class="ot">&lt;-</span> <span class="fu">benchmark_fn</span>(spatial_pd_vectorized, <span class="at">n =</span> <span class="dv">30</span>, <span class="at">rounds =</span> <span class="dv">50</span>)</span>
+<span id="cb41-200"><a href="#cb41-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-201"><a href="#cb41-201" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Loop-based:  %.3f s (sd: %.3f)</span><span class="sc">\n</span><span class="st">"</span>, time_loop<span class="sc">$</span>mean, time_loop<span class="sc">$</span>sd))</span>
+<span id="cb41-202"><a href="#cb41-202" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Vectorized:  %.3f s (sd: %.3f)</span><span class="sc">\n</span><span class="st">"</span>, time_vec<span class="sc">$</span>mean, time_vec<span class="sc">$</span>sd))</span>
+<span id="cb41-203"><a href="#cb41-203" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Speedup:     %.1fx</span><span class="sc">\n</span><span class="st">"</span>, time_loop<span class="sc">$</span>mean <span class="sc">/</span> time_vec<span class="sc">$</span>mean))</span>
+<span id="cb41-204"><a href="#cb41-204" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-205"><a href="#cb41-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-206"><a href="#cb41-206" aria-hidden="true" tabindex="-1"></a><span class="fu">### Verifying correctness</span></span>
+<span id="cb41-207"><a href="#cb41-207" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-210"><a href="#cb41-210" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-211"><a href="#cb41-211" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: verify-correctness</span></span>
+<span id="cb41-212"><a href="#cb41-212" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-213"><a href="#cb41-213" aria-hidden="true" tabindex="-1"></a>result_loop <span class="ot">&lt;-</span> <span class="fu">spatial_pd_loop</span>(<span class="at">n =</span> <span class="dv">20</span>, <span class="at">rounds =</span> <span class="dv">30</span>)</span>
+<span id="cb41-214"><a href="#cb41-214" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-215"><a href="#cb41-215" aria-hidden="true" tabindex="-1"></a>result_vec <span class="ot">&lt;-</span> <span class="fu">spatial_pd_vectorized</span>(<span class="at">n =</span> <span class="dv">20</span>, <span class="at">rounds =</span> <span class="dv">30</span>)</span>
+<span id="cb41-216"><a href="#cb41-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-217"><a href="#cb41-217" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Verification: loop vs vectorized produce identical results:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb41-218"><a href="#cb41-218" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Max absolute difference: %.10f</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">max</span>(<span class="fu">abs</span>(result_loop <span class="sc">-</span> result_vec))))</span>
+<span id="cb41-219"><a href="#cb41-219" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  All equal: %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="fu">all.equal</span>(result_loop, result_vec)))</span>
+<span id="cb41-220"><a href="#cb41-220" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-221"><a href="#cb41-221" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-222"><a href="#cb41-222" aria-hidden="true" tabindex="-1"></a><span class="fu">### Visualizing the benchmark</span></span>
+<span id="cb41-223"><a href="#cb41-223" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-226"><a href="#cb41-226" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-227"><a href="#cb41-227" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-performance-comparison</span></span>
+<span id="cb41-228"><a href="#cb41-228" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Execution time comparison for the spatial Prisoner's Dilemma simulation. Vectorized matrix operations eliminate the inner double loops, achieving a substantial speedup over the naive loop-based implementation."</span></span>
+<span id="cb41-229"><a href="#cb41-229" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 6</span></span>
+<span id="cb41-230"><a href="#cb41-230" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 4</span></span>
+<span id="cb41-231"><a href="#cb41-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-232"><a href="#cb41-232" aria-hidden="true" tabindex="-1"></a>bench_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb41-233"><a href="#cb41-233" aria-hidden="true" tabindex="-1"></a>  <span class="at">implementation =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span>),</span>
+<span id="cb41-234"><a href="#cb41-234" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean_time =</span> <span class="fu">c</span>(time_loop<span class="sc">$</span>mean, time_vec<span class="sc">$</span>mean),</span>
+<span id="cb41-235"><a href="#cb41-235" aria-hidden="true" tabindex="-1"></a>  <span class="at">sd_time =</span> <span class="fu">c</span>(time_loop<span class="sc">$</span>sd, time_vec<span class="sc">$</span>sd)</span>
+<span id="cb41-236"><a href="#cb41-236" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb41-237"><a href="#cb41-237" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">implementation =</span> <span class="fu">factor</span>(implementation,</span>
+<span id="cb41-238"><a href="#cb41-238" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span>)))</span>
+<span id="cb41-239"><a href="#cb41-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-240"><a href="#cb41-240" aria-hidden="true" tabindex="-1"></a>p_bench <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(bench_df, <span class="fu">aes</span>(<span class="at">x =</span> implementation, <span class="at">y =</span> mean_time,</span>
+<span id="cb41-241"><a href="#cb41-241" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">fill =</span> implementation)) <span class="sc">+</span></span>
+<span id="cb41-242"><a href="#cb41-242" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">width =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb41-243"><a href="#cb41-243" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> <span class="fu">pmax</span>(mean_time <span class="sc">-</span> sd_time, <span class="dv">0</span>),</span>
+<span id="cb41-244"><a href="#cb41-244" aria-hidden="true" tabindex="-1"></a>                    <span class="at">ymax =</span> mean_time <span class="sc">+</span> sd_time),</span>
+<span id="cb41-245"><a href="#cb41-245" aria-hidden="true" tabindex="-1"></a>                <span class="at">width =</span> <span class="fl">0.15</span>) <span class="sc">+</span></span>
+<span id="cb41-246"><a href="#cb41-246" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">"%.3fs"</span>, mean_time)),</span>
+<span id="cb41-247"><a href="#cb41-247" aria-hidden="true" tabindex="-1"></a>            <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.5</span>, <span class="at">size =</span> <span class="fl">3.5</span>) <span class="sc">+</span></span>
+<span id="cb41-248"><a href="#cb41-248" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span> <span class="ot">=</span> okabe_ito[<span class="dv">6</span>],</span>
+<span id="cb41-249"><a href="#cb41-249" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Vectorized"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>])) <span class="sc">+</span></span>
+<span id="cb41-250"><a href="#cb41-250" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb41-251"><a href="#cb41-251" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb41-252"><a href="#cb41-252" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Spatial PD: Loop vs Vectorized"</span>,</span>
+<span id="cb41-253"><a href="#cb41-253" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Execution time (seconds)"</span>)</span>
+<span id="cb41-254"><a href="#cb41-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-255"><a href="#cb41-255" aria-hidden="true" tabindex="-1"></a>p_bench</span>
+<span id="cb41-256"><a href="#cb41-256" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_bench, <span class="st">"performance-comparison"</span>, <span class="at">width =</span> <span class="dv">6</span>, <span class="at">height =</span> <span class="dv">4</span>)</span>
+<span id="cb41-257"><a href="#cb41-257" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-258"><a href="#cb41-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-259"><a href="#cb41-259" aria-hidden="true" tabindex="-1"></a><span class="fu">### Scaling behavior</span></span>
+<span id="cb41-260"><a href="#cb41-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-261"><a href="#cb41-261" aria-hidden="true" tabindex="-1"></a>How does each implementation scale with grid size?</span>
+<span id="cb41-262"><a href="#cb41-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-265"><a href="#cb41-265" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-266"><a href="#cb41-266" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-performance-scaling</span></span>
+<span id="cb41-267"><a href="#cb41-267" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Scaling behavior of loop-based vs vectorized spatial PD as grid size increases (fixed at 20 rounds). Both scale roughly quadratically in the number of cells (as expected for a grid simulation), but the vectorized version maintains a consistent advantage. The log-log plot reveals parallel scaling slopes with a constant multiplicative gap."</span></span>
+<span id="cb41-268"><a href="#cb41-268" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb41-269"><a href="#cb41-269" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
 <span id="cb41-270"><a href="#cb41-270" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-271"><a href="#cb41-271" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> grid_sizes) {</span>
-<span id="cb41-272"><a href="#cb41-272" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-273"><a href="#cb41-273" aria-hidden="true" tabindex="-1"></a>  t_loop <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">spatial_pd_loop</span>(<span class="at">n =</span> n, <span class="at">rounds =</span> <span class="dv">20</span>))[<span class="st">"elapsed"</span>]</span>
-<span id="cb41-274"><a href="#cb41-274" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-275"><a href="#cb41-275" aria-hidden="true" tabindex="-1"></a>  t_vec <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">spatial_pd_vectorized</span>(<span class="at">n =</span> n, <span class="at">rounds =</span> <span class="dv">20</span>))[<span class="st">"elapsed"</span>]</span>
-<span id="cb41-276"><a href="#cb41-276" aria-hidden="true" tabindex="-1"></a>  scaling_results[[<span class="fu">length</span>(scaling_results) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb41-277"><a href="#cb41-277" aria-hidden="true" tabindex="-1"></a>    <span class="at">grid_size =</span> n,</span>
-<span id="cb41-278"><a href="#cb41-278" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_cells =</span> n<span class="sc">^</span><span class="dv">2</span>,</span>
-<span id="cb41-279"><a href="#cb41-279" aria-hidden="true" tabindex="-1"></a>    <span class="at">loop_time =</span> t_loop,</span>
-<span id="cb41-280"><a href="#cb41-280" aria-hidden="true" tabindex="-1"></a>    <span class="at">vec_time =</span> t_vec</span>
-<span id="cb41-281"><a href="#cb41-281" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb41-282"><a href="#cb41-282" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-283"><a href="#cb41-283" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-284"><a href="#cb41-284" aria-hidden="true" tabindex="-1"></a>scaling_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(scaling_results) <span class="sc">|&gt;</span></span>
-<span id="cb41-285"><a href="#cb41-285" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(loop_time, vec_time),</span>
-<span id="cb41-286"><a href="#cb41-286" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"method"</span>, <span class="at">values_to =</span> <span class="st">"time"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb41-287"><a href="#cb41-287" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">method =</span> <span class="fu">ifelse</span>(method <span class="sc">==</span> <span class="st">"loop_time"</span>, <span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span>))</span>
-<span id="cb41-288"><a href="#cb41-288" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-289"><a href="#cb41-289" aria-hidden="true" tabindex="-1"></a>p_scaling <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(scaling_df, <span class="fu">aes</span>(<span class="at">x =</span> n_cells, <span class="at">y =</span> time, <span class="at">colour =</span> method)) <span class="sc">+</span></span>
-<span id="cb41-290"><a href="#cb41-290" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span></span>
-<span id="cb41-291"><a href="#cb41-291" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
-<span id="cb41-292"><a href="#cb41-292" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">comma_format</span>()) <span class="sc">+</span></span>
-<span id="cb41-293"><a href="#cb41-293" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_number</span>(<span class="at">suffix =</span> <span class="st">"s"</span>)) <span class="sc">+</span></span>
-<span id="cb41-294"><a href="#cb41-294" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span> <span class="ot">=</span> okabe_ito[<span class="dv">6</span>],</span>
-<span id="cb41-295"><a href="#cb41-295" aria-hidden="true" tabindex="-1"></a>                                  <span class="st">"Vectorized"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>]),</span>
-<span id="cb41-296"><a href="#cb41-296" aria-hidden="true" tabindex="-1"></a>                      <span class="at">name =</span> <span class="st">"Implementation"</span>) <span class="sc">+</span></span>
-<span id="cb41-297"><a href="#cb41-297" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotation_logticks</span>(<span class="at">sides =</span> <span class="st">"bl"</span>) <span class="sc">+</span></span>
-<span id="cb41-298"><a href="#cb41-298" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
-<span id="cb41-299"><a href="#cb41-299" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Scaling: Time vs Grid Size (log-log)"</span>,</span>
-<span id="cb41-300"><a href="#cb41-300" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of cells"</span>, <span class="at">y =</span> <span class="st">"Execution time"</span>)</span>
-<span id="cb41-301"><a href="#cb41-301" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-302"><a href="#cb41-302" aria-hidden="true" tabindex="-1"></a>p_scaling</span>
-<span id="cb41-303"><a href="#cb41-303" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_scaling, <span class="st">"performance-scaling"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
-<span id="cb41-304"><a href="#cb41-304" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-305"><a href="#cb41-305" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-306"><a href="#cb41-306" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
-<span id="cb41-307"><a href="#cb41-307" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-308"><a href="#cb41-308" aria-hidden="true" tabindex="-1"></a>We optimize the spatial PD simulation step by step, measuring the impact of each change.</span>
-<span id="cb41-309"><a href="#cb41-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-310"><a href="#cb41-310" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 1: Profile the baseline</span></span>
-<span id="cb41-311"><a href="#cb41-311" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-314"><a href="#cb41-314" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-315"><a href="#cb41-315" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-profile</span></span>
-<span id="cb41-316"><a href="#cb41-316" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Profiling the loop-based implementation (40x40, 20 rounds):</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb41-317"><a href="#cb41-317" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-318"><a href="#cb41-318" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-319"><a href="#cb41-319" aria-hidden="true" tabindex="-1"></a>t_full <span class="ot">&lt;-</span> <span class="fu">system.time</span>({</span>
-<span id="cb41-320"><a href="#cb41-320" aria-hidden="true" tabindex="-1"></a>  result_full <span class="ot">&lt;-</span> <span class="fu">spatial_pd_loop</span>(<span class="at">n =</span> <span class="dv">40</span>, <span class="at">rounds =</span> <span class="dv">20</span>)</span>
-<span id="cb41-321"><a href="#cb41-321" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb41-322"><a href="#cb41-322" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total elapsed time: %.3f s</span><span class="sc">\n</span><span class="st">"</span>, t_full[<span class="st">"elapsed"</span>]))</span>
-<span id="cb41-323"><a href="#cb41-323" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Bottleneck: nested loops over all cells and neighbors for payoff computation.</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb41-324"><a href="#cb41-324" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Each round iterates over n^2 cells x 4 neighbors = 6,400 scalar operations.</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb41-325"><a href="#cb41-325" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Over 20 rounds: 128,000 individual loop iterations.</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb41-326"><a href="#cb41-326" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-327"><a href="#cb41-327" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-328"><a href="#cb41-328" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 2: Vectorize payoff computation</span></span>
-<span id="cb41-329"><a href="#cb41-329" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-330"><a href="#cb41-330" aria-hidden="true" tabindex="-1"></a>The key rewrite replaces the inner double loop with four matrix-shift operations.</span>
-<span id="cb41-331"><a href="#cb41-331" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-334"><a href="#cb41-334" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-335"><a href="#cb41-335" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-vectorize</span></span>
-<span id="cb41-336"><a href="#cb41-336" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb41-337"><a href="#cb41-337" aria-hidden="true" tabindex="-1"></a>t_vec <span class="ot">&lt;-</span> <span class="fu">system.time</span>(result_vec <span class="ot">&lt;-</span> <span class="fu">spatial_pd_vectorized</span>(<span class="at">n =</span> <span class="dv">40</span>, <span class="at">rounds =</span> <span class="dv">20</span>))</span>
-<span id="cb41-338"><a href="#cb41-338" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Vectorized time:  %.3f s</span><span class="sc">\n</span><span class="st">"</span>, t_vec[<span class="st">"elapsed"</span>]))</span>
-<span id="cb41-339"><a href="#cb41-339" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Loop-based time:  %.3f s</span><span class="sc">\n</span><span class="st">"</span>, t_full[<span class="st">"elapsed"</span>]))</span>
-<span id="cb41-340"><a href="#cb41-340" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Speedup:          %.1fx</span><span class="sc">\n</span><span class="st">"</span>, t_full[<span class="st">"elapsed"</span>] <span class="sc">/</span> t_vec[<span class="st">"elapsed"</span>]))</span>
-<span id="cb41-341"><a href="#cb41-341" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-342"><a href="#cb41-342" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-343"><a href="#cb41-343" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 3: Memory pre-allocation matters</span></span>
-<span id="cb41-344"><a href="#cb41-344" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-345"><a href="#cb41-345" aria-hidden="true" tabindex="-1"></a>A common anti-pattern in R is growing a data frame row by row. We demonstrate the cost.</span>
-<span id="cb41-346"><a href="#cb41-346" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-349"><a href="#cb41-349" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb41-350"><a href="#cb41-350" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-prealloc</span></span>
-<span id="cb41-351"><a href="#cb41-351" aria-hidden="true" tabindex="-1"></a><span class="co"># Growing a vector vs pre-allocated</span></span>
-<span id="cb41-352"><a href="#cb41-352" aria-hidden="true" tabindex="-1"></a>grow_vector <span class="ot">&lt;-</span> <span class="cf">function</span>(n) {</span>
-<span id="cb41-353"><a href="#cb41-353" aria-hidden="true" tabindex="-1"></a>  v <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb41-354"><a href="#cb41-354" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb41-355"><a href="#cb41-355" aria-hidden="true" tabindex="-1"></a>    v <span class="ot">&lt;-</span> <span class="fu">c</span>(v, i)</span>
-<span id="cb41-356"><a href="#cb41-356" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb41-357"><a href="#cb41-357" aria-hidden="true" tabindex="-1"></a>  v</span>
-<span id="cb41-358"><a href="#cb41-358" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-359"><a href="#cb41-359" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-360"><a href="#cb41-360" aria-hidden="true" tabindex="-1"></a>prealloc_vector <span class="ot">&lt;-</span> <span class="cf">function</span>(n) {</span>
-<span id="cb41-361"><a href="#cb41-361" aria-hidden="true" tabindex="-1"></a>  v <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
-<span id="cb41-362"><a href="#cb41-362" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb41-363"><a href="#cb41-363" aria-hidden="true" tabindex="-1"></a>    v[i] <span class="ot">&lt;-</span> i</span>
-<span id="cb41-364"><a href="#cb41-364" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb41-365"><a href="#cb41-365" aria-hidden="true" tabindex="-1"></a>  v</span>
-<span id="cb41-366"><a href="#cb41-366" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-367"><a href="#cb41-367" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-368"><a href="#cb41-368" aria-hidden="true" tabindex="-1"></a>sizes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">20000</span>)</span>
-<span id="cb41-369"><a href="#cb41-369" aria-hidden="true" tabindex="-1"></a>prealloc_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb41-271"><a href="#cb41-271" aria-hidden="true" tabindex="-1"></a>grid_sizes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">40</span>, <span class="dv">50</span>)</span>
+<span id="cb41-272"><a href="#cb41-272" aria-hidden="true" tabindex="-1"></a>scaling_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb41-273"><a href="#cb41-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-274"><a href="#cb41-274" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> grid_sizes) {</span>
+<span id="cb41-275"><a href="#cb41-275" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-276"><a href="#cb41-276" aria-hidden="true" tabindex="-1"></a>  t_loop <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">spatial_pd_loop</span>(<span class="at">n =</span> n, <span class="at">rounds =</span> <span class="dv">20</span>))[<span class="st">"elapsed"</span>]</span>
+<span id="cb41-277"><a href="#cb41-277" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-278"><a href="#cb41-278" aria-hidden="true" tabindex="-1"></a>  t_vec <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">spatial_pd_vectorized</span>(<span class="at">n =</span> n, <span class="at">rounds =</span> <span class="dv">20</span>))[<span class="st">"elapsed"</span>]</span>
+<span id="cb41-279"><a href="#cb41-279" aria-hidden="true" tabindex="-1"></a>  scaling_results[[<span class="fu">length</span>(scaling_results) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb41-280"><a href="#cb41-280" aria-hidden="true" tabindex="-1"></a>    <span class="at">grid_size =</span> n,</span>
+<span id="cb41-281"><a href="#cb41-281" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_cells =</span> n<span class="sc">^</span><span class="dv">2</span>,</span>
+<span id="cb41-282"><a href="#cb41-282" aria-hidden="true" tabindex="-1"></a>    <span class="at">loop_time =</span> t_loop,</span>
+<span id="cb41-283"><a href="#cb41-283" aria-hidden="true" tabindex="-1"></a>    <span class="at">vec_time =</span> t_vec</span>
+<span id="cb41-284"><a href="#cb41-284" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb41-285"><a href="#cb41-285" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-286"><a href="#cb41-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-287"><a href="#cb41-287" aria-hidden="true" tabindex="-1"></a>scaling_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(scaling_results) <span class="sc">|&gt;</span></span>
+<span id="cb41-288"><a href="#cb41-288" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(loop_time, vec_time),</span>
+<span id="cb41-289"><a href="#cb41-289" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"method"</span>, <span class="at">values_to =</span> <span class="st">"time"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb41-290"><a href="#cb41-290" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">method =</span> <span class="fu">ifelse</span>(method <span class="sc">==</span> <span class="st">"loop_time"</span>, <span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span>))</span>
+<span id="cb41-291"><a href="#cb41-291" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-292"><a href="#cb41-292" aria-hidden="true" tabindex="-1"></a>p_scaling <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(scaling_df, <span class="fu">aes</span>(<span class="at">x =</span> n_cells, <span class="at">y =</span> time, <span class="at">colour =</span> method)) <span class="sc">+</span></span>
+<span id="cb41-293"><a href="#cb41-293" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span></span>
+<span id="cb41-294"><a href="#cb41-294" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb41-295"><a href="#cb41-295" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">comma_format</span>()) <span class="sc">+</span></span>
+<span id="cb41-296"><a href="#cb41-296" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_number</span>(<span class="at">suffix =</span> <span class="st">"s"</span>)) <span class="sc">+</span></span>
+<span id="cb41-297"><a href="#cb41-297" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Loop-based"</span> <span class="ot">=</span> okabe_ito[<span class="dv">6</span>],</span>
+<span id="cb41-298"><a href="#cb41-298" aria-hidden="true" tabindex="-1"></a>                                  <span class="st">"Vectorized"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>]),</span>
+<span id="cb41-299"><a href="#cb41-299" aria-hidden="true" tabindex="-1"></a>                      <span class="at">name =</span> <span class="st">"Implementation"</span>) <span class="sc">+</span></span>
+<span id="cb41-300"><a href="#cb41-300" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotation_logticks</span>(<span class="at">sides =</span> <span class="st">"bl"</span>) <span class="sc">+</span></span>
+<span id="cb41-301"><a href="#cb41-301" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb41-302"><a href="#cb41-302" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Scaling: Time vs Grid Size (log-log)"</span>,</span>
+<span id="cb41-303"><a href="#cb41-303" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Number of cells"</span>, <span class="at">y =</span> <span class="st">"Execution time"</span>)</span>
+<span id="cb41-304"><a href="#cb41-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-305"><a href="#cb41-305" aria-hidden="true" tabindex="-1"></a>p_scaling</span>
+<span id="cb41-306"><a href="#cb41-306" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_scaling, <span class="st">"performance-scaling"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
+<span id="cb41-307"><a href="#cb41-307" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-308"><a href="#cb41-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-309"><a href="#cb41-309" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
+<span id="cb41-310"><a href="#cb41-310" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-311"><a href="#cb41-311" aria-hidden="true" tabindex="-1"></a>We optimize the spatial PD simulation step by step, measuring the impact of each change.</span>
+<span id="cb41-312"><a href="#cb41-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-313"><a href="#cb41-313" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 1: Profile the baseline</span></span>
+<span id="cb41-314"><a href="#cb41-314" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-317"><a href="#cb41-317" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-318"><a href="#cb41-318" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-profile</span></span>
+<span id="cb41-319"><a href="#cb41-319" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Profiling the loop-based implementation (40x40, 20 rounds):</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb41-320"><a href="#cb41-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-321"><a href="#cb41-321" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-322"><a href="#cb41-322" aria-hidden="true" tabindex="-1"></a>t_full <span class="ot">&lt;-</span> <span class="fu">system.time</span>({</span>
+<span id="cb41-323"><a href="#cb41-323" aria-hidden="true" tabindex="-1"></a>  result_full <span class="ot">&lt;-</span> <span class="fu">spatial_pd_loop</span>(<span class="at">n =</span> <span class="dv">40</span>, <span class="at">rounds =</span> <span class="dv">20</span>)</span>
+<span id="cb41-324"><a href="#cb41-324" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb41-325"><a href="#cb41-325" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Total elapsed time: %.3f s</span><span class="sc">\n</span><span class="st">"</span>, t_full[<span class="st">"elapsed"</span>]))</span>
+<span id="cb41-326"><a href="#cb41-326" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Bottleneck: nested loops over all cells and neighbors for payoff computation.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb41-327"><a href="#cb41-327" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Each round iterates over n^2 cells x 4 neighbors = 6,400 scalar operations.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb41-328"><a href="#cb41-328" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Over 20 rounds: 128,000 individual loop iterations.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb41-329"><a href="#cb41-329" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-330"><a href="#cb41-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-331"><a href="#cb41-331" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 2: Vectorize payoff computation</span></span>
+<span id="cb41-332"><a href="#cb41-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-333"><a href="#cb41-333" aria-hidden="true" tabindex="-1"></a>The key rewrite replaces the inner double loop with four matrix-shift operations.</span>
+<span id="cb41-334"><a href="#cb41-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-337"><a href="#cb41-337" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-338"><a href="#cb41-338" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-vectorize</span></span>
+<span id="cb41-339"><a href="#cb41-339" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb41-340"><a href="#cb41-340" aria-hidden="true" tabindex="-1"></a>t_vec <span class="ot">&lt;-</span> <span class="fu">system.time</span>(result_vec <span class="ot">&lt;-</span> <span class="fu">spatial_pd_vectorized</span>(<span class="at">n =</span> <span class="dv">40</span>, <span class="at">rounds =</span> <span class="dv">20</span>))</span>
+<span id="cb41-341"><a href="#cb41-341" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Vectorized time:  %.3f s</span><span class="sc">\n</span><span class="st">"</span>, t_vec[<span class="st">"elapsed"</span>]))</span>
+<span id="cb41-342"><a href="#cb41-342" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Loop-based time:  %.3f s</span><span class="sc">\n</span><span class="st">"</span>, t_full[<span class="st">"elapsed"</span>]))</span>
+<span id="cb41-343"><a href="#cb41-343" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  Speedup:          %.1fx</span><span class="sc">\n</span><span class="st">"</span>, t_full[<span class="st">"elapsed"</span>] <span class="sc">/</span> t_vec[<span class="st">"elapsed"</span>]))</span>
+<span id="cb41-344"><a href="#cb41-344" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-345"><a href="#cb41-345" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-346"><a href="#cb41-346" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 3: Memory pre-allocation matters</span></span>
+<span id="cb41-347"><a href="#cb41-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-348"><a href="#cb41-348" aria-hidden="true" tabindex="-1"></a>A common anti-pattern in R is growing a data frame row by row. We demonstrate the cost.</span>
+<span id="cb41-349"><a href="#cb41-349" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-352"><a href="#cb41-352" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb41-353"><a href="#cb41-353" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: worked-prealloc</span></span>
+<span id="cb41-354"><a href="#cb41-354" aria-hidden="true" tabindex="-1"></a><span class="co"># Growing a vector vs pre-allocated</span></span>
+<span id="cb41-355"><a href="#cb41-355" aria-hidden="true" tabindex="-1"></a>grow_vector <span class="ot">&lt;-</span> <span class="cf">function</span>(n) {</span>
+<span id="cb41-356"><a href="#cb41-356" aria-hidden="true" tabindex="-1"></a>  v <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb41-357"><a href="#cb41-357" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb41-358"><a href="#cb41-358" aria-hidden="true" tabindex="-1"></a>    v <span class="ot">&lt;-</span> <span class="fu">c</span>(v, i)</span>
+<span id="cb41-359"><a href="#cb41-359" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb41-360"><a href="#cb41-360" aria-hidden="true" tabindex="-1"></a>  v</span>
+<span id="cb41-361"><a href="#cb41-361" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-362"><a href="#cb41-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-363"><a href="#cb41-363" aria-hidden="true" tabindex="-1"></a>prealloc_vector <span class="ot">&lt;-</span> <span class="cf">function</span>(n) {</span>
+<span id="cb41-364"><a href="#cb41-364" aria-hidden="true" tabindex="-1"></a>  v <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
+<span id="cb41-365"><a href="#cb41-365" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb41-366"><a href="#cb41-366" aria-hidden="true" tabindex="-1"></a>    v[i] <span class="ot">&lt;-</span> i</span>
+<span id="cb41-367"><a href="#cb41-367" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb41-368"><a href="#cb41-368" aria-hidden="true" tabindex="-1"></a>  v</span>
+<span id="cb41-369"><a href="#cb41-369" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb41-370"><a href="#cb41-370" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-371"><a href="#cb41-371" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (sz <span class="cf">in</span> sizes) {</span>
-<span id="cb41-372"><a href="#cb41-372" aria-hidden="true" tabindex="-1"></a>  t_grow <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">grow_vector</span>(sz))[<span class="st">"elapsed"</span>]</span>
-<span id="cb41-373"><a href="#cb41-373" aria-hidden="true" tabindex="-1"></a>  t_pre <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">prealloc_vector</span>(sz))[<span class="st">"elapsed"</span>]</span>
-<span id="cb41-374"><a href="#cb41-374" aria-hidden="true" tabindex="-1"></a>  prealloc_results[[<span class="fu">length</span>(prealloc_results) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb41-375"><a href="#cb41-375" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> sz, <span class="at">grow =</span> t_grow, <span class="at">prealloc =</span> t_pre</span>
-<span id="cb41-376"><a href="#cb41-376" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb41-377"><a href="#cb41-377" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-378"><a href="#cb41-378" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-379"><a href="#cb41-379" aria-hidden="true" tabindex="-1"></a>prealloc_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(prealloc_results)</span>
-<span id="cb41-380"><a href="#cb41-380" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-381"><a href="#cb41-381" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Growing vs pre-allocated vector (seconds):</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb41-382"><a href="#cb41-382" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  %-8s  %-8s  %-10s  %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"n"</span>, <span class="st">"Grow"</span>, <span class="st">"Prealloc"</span>, <span class="st">"Speedup"</span>))</span>
-<span id="cb41-383"><a href="#cb41-383" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(prealloc_df))) {</span>
-<span id="cb41-384"><a href="#cb41-384" aria-hidden="true" tabindex="-1"></a>  sp <span class="ot">&lt;-</span> <span class="cf">if</span> (prealloc_df<span class="sc">$</span>prealloc[i] <span class="sc">&gt;</span> <span class="dv">0</span>) prealloc_df<span class="sc">$</span>grow[i]<span class="sc">/</span>prealloc_df<span class="sc">$</span>prealloc[i] <span class="cf">else</span> <span class="cn">Inf</span></span>
-<span id="cb41-385"><a href="#cb41-385" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  %-8s  %-8.4f  %-10.4f  %.0fx</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb41-386"><a href="#cb41-386" aria-hidden="true" tabindex="-1"></a>              scales<span class="sc">::</span><span class="fu">comma</span>(prealloc_df<span class="sc">$</span>n[i]), prealloc_df<span class="sc">$</span>grow[i], prealloc_df<span class="sc">$</span>prealloc[i], sp))</span>
-<span id="cb41-387"><a href="#cb41-387" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb41-388"><a href="#cb41-388" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb41-389"><a href="#cb41-389" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-390"><a href="#cb41-390" aria-hidden="true" tabindex="-1"></a>The growing vector copies the entire vector on each append, producing $O(n^2)$ total work. Pre-allocation is $O(n)$.</span>
-<span id="cb41-391"><a href="#cb41-391" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-392"><a href="#cb41-392" aria-hidden="true" tabindex="-1"></a><span class="fu">### When to consider Rcpp</span></span>
-<span id="cb41-393"><a href="#cb41-393" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-394"><a href="#cb41-394" aria-hidden="true" tabindex="-1"></a>For the spatial PD, vectorization delivered a large speedup because the core operation — summing neighbor states — is naturally expressed as matrix arithmetic. But some algorithms resist vectorization:</span>
-<span id="cb41-395"><a href="#cb41-395" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-396"><a href="#cb41-396" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Sequential dependencies**: When round $t$'s outcome depends on the order of updates within round $t-1$, you cannot compute all cells simultaneously.</span>
-<span id="cb41-397"><a href="#cb41-397" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Complex conditionals**: Strategies with multi-step memory require per-agent branching that <span class="in">`ifelse()`</span> cannot cleanly express.</span>
-<span id="cb41-398"><a href="#cb41-398" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Graph traversal**: Shortest paths and clustering on irregular networks involve queues and visited-node tracking that are inherently sequential.</span>
-<span id="cb41-399"><a href="#cb41-399" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-400"><a href="#cb41-400" aria-hidden="true" tabindex="-1"></a>In these cases, **Rcpp** lets you write the inner loop in C++ while keeping the R interface. A typical C++ function takes R matrices as input, performs the sequential computation, and returns the result — with 50--200x speedups over R loops.</span>
-<span id="cb41-401"><a href="#cb41-401" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-402"><a href="#cb41-402" aria-hidden="true" tabindex="-1"></a>The decision rule is simple: **vectorize first, Rcpp second**. If the bottleneck can be expressed as matrix operations, do that. Only reach for Rcpp when it cannot.</span>
-<span id="cb41-403"><a href="#cb41-403" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-404"><a href="#cb41-404" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
-<span id="cb41-405"><a href="#cb41-405" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-406"><a href="#cb41-406" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Parallel computation**: R's <span class="in">`parallel`</span> package provides <span class="in">`mclapply()`</span> (Unix) and <span class="in">`parLapply()`</span> (all platforms) for embarrassingly parallel tasks like running independent replications.</span>
-<span id="cb41-407"><a href="#cb41-407" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Sparse matrices**: The <span class="in">`Matrix`</span> package provides sparse representations that reduce storage from $O(n^2)$ to $O(m)$ for networks with $m$ edges, and its arithmetic skips zero entries.</span>
-<span id="cb41-408"><a href="#cb41-408" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Byte compilation**: <span class="in">`compiler::cmpfun()`</span> byte-compiles R functions, delivering 2--5x speedups for loop-heavy code with zero code changes.</span>
-<span id="cb41-409"><a href="#cb41-409" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Profiling tools**: <span class="in">`Rprof()`</span> provides sampling-based profiling, and <span class="in">`profvis::profvis()`</span> offers interactive flame-graph visualizations for identifying hotspots.</span>
-<span id="cb41-410"><a href="#cb41-410" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-411"><a href="#cb41-411" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
-<span id="cb41-412"><a href="#cb41-412" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-413"><a href="#cb41-413" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Vectorize the tournament.** The <span class="in">`run_tournament()`</span> function in <span class="in">`R/axelrod.R`</span> uses nested loops over strategy pairs. Each match is independent, so the outer loop is embarrassingly parallel. Write a version that stores results in a pre-allocated matrix and measure the speedup.</span>
-<span id="cb41-414"><a href="#cb41-414" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-415"><a href="#cb41-415" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Memory scaling.** Modify the spatial PD to store the full grid at each round using (a) a growing list <span class="in">`grid_list[[t]] &lt;- grid`</span> and (b) a pre-allocated 3D array <span class="in">`array(0L, dim = c(n, n, rounds))`</span>. Benchmark both for $n = 50$ and 100 rounds.</span>
-<span id="cb41-416"><a href="#cb41-416" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-417"><a href="#cb41-417" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Identify the crossover.** Find the grid size $n$ at which the vectorized version becomes faster than the loop-based version. Plot both timing curves and mark the crossover point.</span>
-<span id="cb41-418"><a href="#cb41-418" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-419"><a href="#cb41-419" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
+<span id="cb41-371"><a href="#cb41-371" aria-hidden="true" tabindex="-1"></a>sizes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">20000</span>)</span>
+<span id="cb41-372"><a href="#cb41-372" aria-hidden="true" tabindex="-1"></a>prealloc_results <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb41-373"><a href="#cb41-373" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-374"><a href="#cb41-374" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (sz <span class="cf">in</span> sizes) {</span>
+<span id="cb41-375"><a href="#cb41-375" aria-hidden="true" tabindex="-1"></a>  t_grow <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">grow_vector</span>(sz))[<span class="st">"elapsed"</span>]</span>
+<span id="cb41-376"><a href="#cb41-376" aria-hidden="true" tabindex="-1"></a>  t_pre <span class="ot">&lt;-</span> <span class="fu">system.time</span>(<span class="fu">prealloc_vector</span>(sz))[<span class="st">"elapsed"</span>]</span>
+<span id="cb41-377"><a href="#cb41-377" aria-hidden="true" tabindex="-1"></a>  prealloc_results[[<span class="fu">length</span>(prealloc_results) <span class="sc">+</span> <span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb41-378"><a href="#cb41-378" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> sz, <span class="at">grow =</span> t_grow, <span class="at">prealloc =</span> t_pre</span>
+<span id="cb41-379"><a href="#cb41-379" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb41-380"><a href="#cb41-380" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-381"><a href="#cb41-381" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-382"><a href="#cb41-382" aria-hidden="true" tabindex="-1"></a>prealloc_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(prealloc_results)</span>
+<span id="cb41-383"><a href="#cb41-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-384"><a href="#cb41-384" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Growing vs pre-allocated vector (seconds):</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb41-385"><a href="#cb41-385" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  %-8s  %-8s  %-10s  %s</span><span class="sc">\n</span><span class="st">"</span>, <span class="st">"n"</span>, <span class="st">"Grow"</span>, <span class="st">"Prealloc"</span>, <span class="st">"Speedup"</span>))</span>
+<span id="cb41-386"><a href="#cb41-386" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(prealloc_df))) {</span>
+<span id="cb41-387"><a href="#cb41-387" aria-hidden="true" tabindex="-1"></a>  sp <span class="ot">&lt;-</span> <span class="cf">if</span> (prealloc_df<span class="sc">$</span>prealloc[i] <span class="sc">&gt;</span> <span class="dv">0</span>) prealloc_df<span class="sc">$</span>grow[i]<span class="sc">/</span>prealloc_df<span class="sc">$</span>prealloc[i] <span class="cf">else</span> <span class="cn">Inf</span></span>
+<span id="cb41-388"><a href="#cb41-388" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  %-8s  %-8.4f  %-10.4f  %.0fx</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb41-389"><a href="#cb41-389" aria-hidden="true" tabindex="-1"></a>              scales<span class="sc">::</span><span class="fu">comma</span>(prealloc_df<span class="sc">$</span>n[i]), prealloc_df<span class="sc">$</span>grow[i], prealloc_df<span class="sc">$</span>prealloc[i], sp))</span>
+<span id="cb41-390"><a href="#cb41-390" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb41-391"><a href="#cb41-391" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb41-392"><a href="#cb41-392" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-393"><a href="#cb41-393" aria-hidden="true" tabindex="-1"></a>The growing vector copies the entire vector on each append, producing $O(n^2)$ total work. Pre-allocation is $O(n)$.</span>
+<span id="cb41-394"><a href="#cb41-394" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-395"><a href="#cb41-395" aria-hidden="true" tabindex="-1"></a><span class="fu">### When to consider Rcpp</span></span>
+<span id="cb41-396"><a href="#cb41-396" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-397"><a href="#cb41-397" aria-hidden="true" tabindex="-1"></a>For the spatial PD, vectorization delivered a large speedup because the core operation — summing neighbor states — is naturally expressed as matrix arithmetic. But some algorithms resist vectorization:</span>
+<span id="cb41-398"><a href="#cb41-398" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-399"><a href="#cb41-399" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Sequential dependencies**: When round $t$'s outcome depends on the order of updates within round $t-1$, you cannot compute all cells simultaneously.</span>
+<span id="cb41-400"><a href="#cb41-400" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Complex conditionals**: Strategies with multi-step memory require per-agent branching that <span class="in">`ifelse()`</span> cannot cleanly express.</span>
+<span id="cb41-401"><a href="#cb41-401" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Graph traversal**: Shortest paths and clustering on irregular networks involve queues and visited-node tracking that are inherently sequential.</span>
+<span id="cb41-402"><a href="#cb41-402" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-403"><a href="#cb41-403" aria-hidden="true" tabindex="-1"></a>In these cases, **Rcpp** lets you write the inner loop in C++ while keeping the R interface. A typical C++ function takes R matrices as input, performs the sequential computation, and returns the result — with 50--200x speedups over R loops.</span>
+<span id="cb41-404"><a href="#cb41-404" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-405"><a href="#cb41-405" aria-hidden="true" tabindex="-1"></a>The decision rule is simple: **vectorize first, Rcpp second**. If the bottleneck can be expressed as matrix operations, do that. Only reach for Rcpp when it cannot.</span>
+<span id="cb41-406"><a href="#cb41-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-407"><a href="#cb41-407" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
+<span id="cb41-408"><a href="#cb41-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-409"><a href="#cb41-409" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Parallel computation**: R's <span class="in">`parallel`</span> package provides <span class="in">`mclapply()`</span> (Unix) and <span class="in">`parLapply()`</span> (all platforms) for embarrassingly parallel tasks like running independent replications.</span>
+<span id="cb41-410"><a href="#cb41-410" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Sparse matrices**: The <span class="in">`Matrix`</span> package provides sparse representations that reduce storage from $O(n^2)$ to $O(m)$ for networks with $m$ edges, and its arithmetic skips zero entries.</span>
+<span id="cb41-411"><a href="#cb41-411" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Byte compilation**: <span class="in">`compiler::cmpfun()`</span> byte-compiles R functions, delivering 2--5x speedups for loop-heavy code with zero code changes.</span>
+<span id="cb41-412"><a href="#cb41-412" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Profiling tools**: <span class="in">`Rprof()`</span> provides sampling-based profiling, and <span class="in">`profvis::profvis()`</span> offers interactive flame-graph visualizations for identifying hotspots.</span>
+<span id="cb41-413"><a href="#cb41-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-414"><a href="#cb41-414" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
+<span id="cb41-415"><a href="#cb41-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-416"><a href="#cb41-416" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Vectorize the tournament.** The <span class="in">`run_tournament()`</span> function in <span class="in">`R/axelrod.R`</span> uses nested loops over strategy pairs. Each match is independent, so the outer loop is embarrassingly parallel. Write a version that stores results in a pre-allocated matrix and measure the speedup.</span>
+<span id="cb41-417"><a href="#cb41-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-418"><a href="#cb41-418" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Memory scaling.** Modify the spatial PD to store the full grid at each round using (a) a growing list <span class="in">`grid_list[[t]] &lt;- grid`</span> and (b) a pre-allocated 3D array <span class="in">`array(0L, dim = c(n, n, rounds))`</span>. Benchmark both for $n = 50$ and 100 rounds.</span>
+<span id="cb41-419"><a href="#cb41-419" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-420"><a href="#cb41-420" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Identify the crossover.** Find the grid size $n$ at which the vectorized version becomes faster than the loop-based version. Plot both timing curves and mark the crossover point.</span>
+<span id="cb41-421"><a href="#cb41-421" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-422"><a href="#cb41-422" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

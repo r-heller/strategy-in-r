@@ -768,7 +768,7 @@ window.Quarto = {
   <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises">Exercises</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-3-simulation/20-evolutionary-stable-strategies.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-3-simulation/20-evolutionary-stable-strategies.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/part-3-simulation/20-evolutionary-stable-strategies.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/part-3-simulation/20-evolutionary-stable-strategies.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="../downloads/evolutionarily-stable-strategies.pdf"><i class="bi bi-file-pdf"></i>Download Chapter PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1790,395 +1790,398 @@ Nowak, M. A., Sasaki, A., Taylor, C., &amp; Fudenberg, D. (2004). Emergence of c
 <span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
 <span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "Formalizing evolutionary stability: ESS conditions, computational verification for symmetric games, invasion dynamics, and the Hawk-Dove-Retaliator game."</span></span>
 <span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["ESS", "evolutionarily stable strategy", "Hawk-Dove", "Maynard Smith", "invasion barrier"]</span></span>
-<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Evolutionarily Stable Strategies {#sec-ess}</span></span>
-<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
-<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
-<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"replicator.R"</span>))</span>
-<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
-<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>State the formal ESS conditions and explain why they strengthen Nash equilibrium.</span>
-<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement a computational check for ESS in arbitrary symmetric games.</span>
-<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Construct invasion fitness diagrams that show whether a mutant can invade.</span>
-<span id="cb60-26"><a href="#cb60-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Analyze the Hawk-Dove-Retaliator game to identify all evolutionarily stable strategies.</span>
-<span id="cb60-27"><a href="#cb60-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-28"><a href="#cb60-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
-<span id="cb60-29"><a href="#cb60-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-30"><a href="#cb60-30" aria-hidden="true" tabindex="-1"></a>Natural selection does not optimize — it filters. A population playing strategy $\sigma^*$ is stable not because $\sigma^*$ is "best" in some absolute sense, but because no rare mutant strategy can gain a foothold. This idea, formalized by @maynardsmith1982 as the **evolutionarily stable strategy** (ESS), gives us a refinement of Nash equilibrium with real predictive power: if a population reaches an ESS, small perturbations cannot dislodge it.</span>
-<span id="cb60-31"><a href="#cb60-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-32"><a href="#cb60-32" aria-hidden="true" tabindex="-1"></a>The concept matters beyond biology. Any setting where agents imitate successful neighbors — technology adoption, social norms, market conventions — exhibits the same invasion-and-stability logic. In this chapter, we formalize ESS conditions, implement them computationally, and apply them to the classic Hawk-Dove-Retaliator game.</span>
-<span id="cb60-33"><a href="#cb60-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-34"><a href="#cb60-34" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
-<span id="cb60-35"><a href="#cb60-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-36"><a href="#cb60-36" aria-hidden="true" tabindex="-1"></a><span class="fu">### The ESS definition</span></span>
-<span id="cb60-37"><a href="#cb60-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-38"><a href="#cb60-38" aria-hidden="true" tabindex="-1"></a>Consider a symmetric two-player game with payoff function $u(\sigma_i, \sigma_j)$ giving the payoff to a player using strategy $\sigma_i$ against an opponent using $\sigma_j$. A strategy $\sigma^*$ is an **evolutionarily stable strategy** if for every mutant strategy $\sigma \neq \sigma^*$, at least one of the following holds:</span>
-<span id="cb60-39"><a href="#cb60-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-40"><a href="#cb60-40" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Strict Nash condition**: $u(\sigma^*, \sigma^*) &gt; u(\sigma, \sigma^*)$</span>
-<span id="cb60-41"><a href="#cb60-41" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Stability condition**: $u(\sigma^*, \sigma^*) = u(\sigma, \sigma^*)$ **and** $u(\sigma^*, \sigma) &gt; u(\sigma, \sigma)$</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a><span class="an">other-links:</span></span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a><span class="co">  - text: Download Chapter PDF</span></span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a><span class="co">    href: ../downloads/evolutionarily-stable-strategies.pdf</span></span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a><span class="co">    icon: file-pdf</span></span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># Evolutionarily Stable Strategies {#sec-ess}</span></span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"replicator.R"</span>))</span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a><span class="fu">## Learning objectives {.unnumbered}</span></span>
+<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-26"><a href="#cb60-26" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>State the formal ESS conditions and explain why they strengthen Nash equilibrium.</span>
+<span id="cb60-27"><a href="#cb60-27" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Implement a computational check for ESS in arbitrary symmetric games.</span>
+<span id="cb60-28"><a href="#cb60-28" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Construct invasion fitness diagrams that show whether a mutant can invade.</span>
+<span id="cb60-29"><a href="#cb60-29" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Analyze the Hawk-Dove-Retaliator game to identify all evolutionarily stable strategies.</span>
+<span id="cb60-30"><a href="#cb60-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-31"><a href="#cb60-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Motivation</span></span>
+<span id="cb60-32"><a href="#cb60-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-33"><a href="#cb60-33" aria-hidden="true" tabindex="-1"></a>Natural selection does not optimize — it filters. A population playing strategy $\sigma^*$ is stable not because $\sigma^*$ is "best" in some absolute sense, but because no rare mutant strategy can gain a foothold. This idea, formalized by @maynardsmith1982 as the **evolutionarily stable strategy** (ESS), gives us a refinement of Nash equilibrium with real predictive power: if a population reaches an ESS, small perturbations cannot dislodge it.</span>
+<span id="cb60-34"><a href="#cb60-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-35"><a href="#cb60-35" aria-hidden="true" tabindex="-1"></a>The concept matters beyond biology. Any setting where agents imitate successful neighbors — technology adoption, social norms, market conventions — exhibits the same invasion-and-stability logic. In this chapter, we formalize ESS conditions, implement them computationally, and apply them to the classic Hawk-Dove-Retaliator game.</span>
+<span id="cb60-36"><a href="#cb60-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-37"><a href="#cb60-37" aria-hidden="true" tabindex="-1"></a><span class="fu">## Theory</span></span>
+<span id="cb60-38"><a href="#cb60-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-39"><a href="#cb60-39" aria-hidden="true" tabindex="-1"></a><span class="fu">### The ESS definition</span></span>
+<span id="cb60-40"><a href="#cb60-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-41"><a href="#cb60-41" aria-hidden="true" tabindex="-1"></a>Consider a symmetric two-player game with payoff function $u(\sigma_i, \sigma_j)$ giving the payoff to a player using strategy $\sigma_i$ against an opponent using $\sigma_j$. A strategy $\sigma^*$ is an **evolutionarily stable strategy** if for every mutant strategy $\sigma \neq \sigma^*$, at least one of the following holds:</span>
 <span id="cb60-42"><a href="#cb60-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-43"><a href="#cb60-43" aria-hidden="true" tabindex="-1"></a>The first condition says the incumbent does strictly better against itself than any mutant does against the incumbent. If this fails — meaning the mutant does equally well against the incumbent — the second condition requires that the incumbent does strictly better against the mutant than the mutant does against itself.</span>
-<span id="cb60-44"><a href="#cb60-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-45"><a href="#cb60-45" aria-hidden="true" tabindex="-1"></a><span class="fu">### Relationship to Nash equilibrium</span></span>
-<span id="cb60-46"><a href="#cb60-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-47"><a href="#cb60-47" aria-hidden="true" tabindex="-1"></a>Every ESS is a symmetric Nash equilibrium, but not every Nash equilibrium is an ESS. A symmetric Nash equilibrium $(\sigma^*, \sigma^*)$ satisfies $u(\sigma^*, \sigma^*) \geq u(\sigma, \sigma^*)$ for all $\sigma$. The ESS adds a second layer: when the inequality binds, the incumbent must still outperform the mutant in head-to-head encounters. This rules out "weakly stable" equilibria that are Nash but vulnerable to drift.</span>
-<span id="cb60-48"><a href="#cb60-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-49"><a href="#cb60-49" aria-hidden="true" tabindex="-1"></a><span class="fu">### Invasion dynamics</span></span>
-<span id="cb60-50"><a href="#cb60-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-51"><a href="#cb60-51" aria-hidden="true" tabindex="-1"></a>When a small fraction $\epsilon$ of mutants enters a population of incumbents, the expected payoff to a mutant is:</span>
-<span id="cb60-52"><a href="#cb60-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-53"><a href="#cb60-53" aria-hidden="true" tabindex="-1"></a>$$W_{\text{mutant}}(\epsilon) = (1 - \epsilon)\, u(\sigma, \sigma^*) + \epsilon\, u(\sigma, \sigma)$$</span>
-<span id="cb60-54"><a href="#cb60-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-55"><a href="#cb60-55" aria-hidden="true" tabindex="-1"></a>and the expected payoff to an incumbent is:</span>
-<span id="cb60-56"><a href="#cb60-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-57"><a href="#cb60-57" aria-hidden="true" tabindex="-1"></a>$$W_{\text{incumbent}}(\epsilon) = (1 - \epsilon)\, u(\sigma^*, \sigma^*) + \epsilon\, u(\sigma^*, \sigma)$$</span>
-<span id="cb60-58"><a href="#cb60-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-59"><a href="#cb60-59" aria-hidden="true" tabindex="-1"></a>The strategy $\sigma^*$ resists invasion if $W_{\text{incumbent}}(\epsilon) &gt; W_{\text{mutant}}(\epsilon)$ for all sufficiently small $\epsilon &gt; 0$. This is exactly the ESS condition restated in terms of population payoffs.</span>
-<span id="cb60-60"><a href="#cb60-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-61"><a href="#cb60-61" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R {#sec-ess-implementation}</span></span>
-<span id="cb60-62"><a href="#cb60-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-63"><a href="#cb60-63" aria-hidden="true" tabindex="-1"></a><span class="fu">### Checking ESS conditions for a symmetric game</span></span>
-<span id="cb60-64"><a href="#cb60-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-65"><a href="#cb60-65" aria-hidden="true" tabindex="-1"></a>We write a function that takes a payoff matrix for a symmetric game and checks each pure strategy for ESS status.</span>
-<span id="cb60-66"><a href="#cb60-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-69"><a href="#cb60-69" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-70"><a href="#cb60-70" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: ess-check</span></span>
-<span id="cb60-71"><a href="#cb60-71" aria-hidden="true" tabindex="-1"></a>check_ess <span class="ot">&lt;-</span> <span class="cf">function</span>(A) {</span>
-<span id="cb60-72"><a href="#cb60-72" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(A)</span>
-<span id="cb60-73"><a href="#cb60-73" aria-hidden="true" tabindex="-1"></a>  strategies <span class="ot">&lt;-</span> <span class="fu">rownames</span>(A)</span>
-<span id="cb60-74"><a href="#cb60-74" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(strategies)) strategies <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"S"</span>, <span class="fu">seq_len</span>(n))</span>
-<span id="cb60-75"><a href="#cb60-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-76"><a href="#cb60-76" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb60-77"><a href="#cb60-77" aria-hidden="true" tabindex="-1"></a>    <span class="at">strategy =</span> strategies,</span>
-<span id="cb60-78"><a href="#cb60-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_nash =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb60-79"><a href="#cb60-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">strict_nash =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb60-80"><a href="#cb60-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_ess =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb60-81"><a href="#cb60-81" aria-hidden="true" tabindex="-1"></a>    <span class="at">failing_mutant =</span> <span class="cn">NA_character_</span></span>
-<span id="cb60-82"><a href="#cb60-82" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb60-83"><a href="#cb60-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-84"><a href="#cb60-84" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb60-85"><a href="#cb60-85" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check Nash: u(i, i) &gt;= u(j, i) for all j</span></span>
-<span id="cb60-86"><a href="#cb60-86" aria-hidden="true" tabindex="-1"></a>    payoff_ii <span class="ot">&lt;-</span> A[i, i]</span>
-<span id="cb60-87"><a href="#cb60-87" aria-hidden="true" tabindex="-1"></a>    payoffs_ji <span class="ot">&lt;-</span> A[, i]  <span class="co"># column i: payoffs of all strategies against i</span></span>
-<span id="cb60-88"><a href="#cb60-88" aria-hidden="true" tabindex="-1"></a>    is_nash <span class="ot">&lt;-</span> <span class="fu">all</span>(payoff_ii <span class="sc">&gt;=</span> payoffs_ji)</span>
-<span id="cb60-89"><a href="#cb60-89" aria-hidden="true" tabindex="-1"></a>    is_strict <span class="ot">&lt;-</span> <span class="fu">all</span>(payoff_ii <span class="sc">&gt;</span> payoffs_ji[<span class="sc">-</span>i])</span>
-<span id="cb60-90"><a href="#cb60-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-91"><a href="#cb60-91" aria-hidden="true" tabindex="-1"></a>    results<span class="sc">$</span>is_nash[i] <span class="ot">&lt;-</span> is_nash</span>
-<span id="cb60-92"><a href="#cb60-92" aria-hidden="true" tabindex="-1"></a>    results<span class="sc">$</span>strict_nash[i] <span class="ot">&lt;-</span> is_strict</span>
+<span id="cb60-43"><a href="#cb60-43" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Strict Nash condition**: $u(\sigma^*, \sigma^*) &gt; u(\sigma, \sigma^*)$</span>
+<span id="cb60-44"><a href="#cb60-44" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Stability condition**: $u(\sigma^*, \sigma^*) = u(\sigma, \sigma^*)$ **and** $u(\sigma^*, \sigma) &gt; u(\sigma, \sigma)$</span>
+<span id="cb60-45"><a href="#cb60-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-46"><a href="#cb60-46" aria-hidden="true" tabindex="-1"></a>The first condition says the incumbent does strictly better against itself than any mutant does against the incumbent. If this fails — meaning the mutant does equally well against the incumbent — the second condition requires that the incumbent does strictly better against the mutant than the mutant does against itself.</span>
+<span id="cb60-47"><a href="#cb60-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-48"><a href="#cb60-48" aria-hidden="true" tabindex="-1"></a><span class="fu">### Relationship to Nash equilibrium</span></span>
+<span id="cb60-49"><a href="#cb60-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-50"><a href="#cb60-50" aria-hidden="true" tabindex="-1"></a>Every ESS is a symmetric Nash equilibrium, but not every Nash equilibrium is an ESS. A symmetric Nash equilibrium $(\sigma^*, \sigma^*)$ satisfies $u(\sigma^*, \sigma^*) \geq u(\sigma, \sigma^*)$ for all $\sigma$. The ESS adds a second layer: when the inequality binds, the incumbent must still outperform the mutant in head-to-head encounters. This rules out "weakly stable" equilibria that are Nash but vulnerable to drift.</span>
+<span id="cb60-51"><a href="#cb60-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-52"><a href="#cb60-52" aria-hidden="true" tabindex="-1"></a><span class="fu">### Invasion dynamics</span></span>
+<span id="cb60-53"><a href="#cb60-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-54"><a href="#cb60-54" aria-hidden="true" tabindex="-1"></a>When a small fraction $\epsilon$ of mutants enters a population of incumbents, the expected payoff to a mutant is:</span>
+<span id="cb60-55"><a href="#cb60-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-56"><a href="#cb60-56" aria-hidden="true" tabindex="-1"></a>$$W_{\text{mutant}}(\epsilon) = (1 - \epsilon)\, u(\sigma, \sigma^*) + \epsilon\, u(\sigma, \sigma)$$</span>
+<span id="cb60-57"><a href="#cb60-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-58"><a href="#cb60-58" aria-hidden="true" tabindex="-1"></a>and the expected payoff to an incumbent is:</span>
+<span id="cb60-59"><a href="#cb60-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-60"><a href="#cb60-60" aria-hidden="true" tabindex="-1"></a>$$W_{\text{incumbent}}(\epsilon) = (1 - \epsilon)\, u(\sigma^*, \sigma^*) + \epsilon\, u(\sigma^*, \sigma)$$</span>
+<span id="cb60-61"><a href="#cb60-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-62"><a href="#cb60-62" aria-hidden="true" tabindex="-1"></a>The strategy $\sigma^*$ resists invasion if $W_{\text{incumbent}}(\epsilon) &gt; W_{\text{mutant}}(\epsilon)$ for all sufficiently small $\epsilon &gt; 0$. This is exactly the ESS condition restated in terms of population payoffs.</span>
+<span id="cb60-63"><a href="#cb60-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-64"><a href="#cb60-64" aria-hidden="true" tabindex="-1"></a><span class="fu">## Implementation in R {#sec-ess-implementation}</span></span>
+<span id="cb60-65"><a href="#cb60-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-66"><a href="#cb60-66" aria-hidden="true" tabindex="-1"></a><span class="fu">### Checking ESS conditions for a symmetric game</span></span>
+<span id="cb60-67"><a href="#cb60-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-68"><a href="#cb60-68" aria-hidden="true" tabindex="-1"></a>We write a function that takes a payoff matrix for a symmetric game and checks each pure strategy for ESS status.</span>
+<span id="cb60-69"><a href="#cb60-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-72"><a href="#cb60-72" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-73"><a href="#cb60-73" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: ess-check</span></span>
+<span id="cb60-74"><a href="#cb60-74" aria-hidden="true" tabindex="-1"></a>check_ess <span class="ot">&lt;-</span> <span class="cf">function</span>(A) {</span>
+<span id="cb60-75"><a href="#cb60-75" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(A)</span>
+<span id="cb60-76"><a href="#cb60-76" aria-hidden="true" tabindex="-1"></a>  strategies <span class="ot">&lt;-</span> <span class="fu">rownames</span>(A)</span>
+<span id="cb60-77"><a href="#cb60-77" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(strategies)) strategies <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"S"</span>, <span class="fu">seq_len</span>(n))</span>
+<span id="cb60-78"><a href="#cb60-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-79"><a href="#cb60-79" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb60-80"><a href="#cb60-80" aria-hidden="true" tabindex="-1"></a>    <span class="at">strategy =</span> strategies,</span>
+<span id="cb60-81"><a href="#cb60-81" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_nash =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb60-82"><a href="#cb60-82" aria-hidden="true" tabindex="-1"></a>    <span class="at">strict_nash =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb60-83"><a href="#cb60-83" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_ess =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb60-84"><a href="#cb60-84" aria-hidden="true" tabindex="-1"></a>    <span class="at">failing_mutant =</span> <span class="cn">NA_character_</span></span>
+<span id="cb60-85"><a href="#cb60-85" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb60-86"><a href="#cb60-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-87"><a href="#cb60-87" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb60-88"><a href="#cb60-88" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check Nash: u(i, i) &gt;= u(j, i) for all j</span></span>
+<span id="cb60-89"><a href="#cb60-89" aria-hidden="true" tabindex="-1"></a>    payoff_ii <span class="ot">&lt;-</span> A[i, i]</span>
+<span id="cb60-90"><a href="#cb60-90" aria-hidden="true" tabindex="-1"></a>    payoffs_ji <span class="ot">&lt;-</span> A[, i]  <span class="co"># column i: payoffs of all strategies against i</span></span>
+<span id="cb60-91"><a href="#cb60-91" aria-hidden="true" tabindex="-1"></a>    is_nash <span class="ot">&lt;-</span> <span class="fu">all</span>(payoff_ii <span class="sc">&gt;=</span> payoffs_ji)</span>
+<span id="cb60-92"><a href="#cb60-92" aria-hidden="true" tabindex="-1"></a>    is_strict <span class="ot">&lt;-</span> <span class="fu">all</span>(payoff_ii <span class="sc">&gt;</span> payoffs_ji[<span class="sc">-</span>i])</span>
 <span id="cb60-93"><a href="#cb60-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-94"><a href="#cb60-94" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span>is_nash) {</span>
-<span id="cb60-95"><a href="#cb60-95" aria-hidden="true" tabindex="-1"></a>      worst <span class="ot">&lt;-</span> <span class="fu">which.max</span>(payoffs_ji <span class="sc">-</span> payoff_ii)</span>
-<span id="cb60-96"><a href="#cb60-96" aria-hidden="true" tabindex="-1"></a>      results<span class="sc">$</span>failing_mutant[i] <span class="ot">&lt;-</span> strategies[worst]</span>
-<span id="cb60-97"><a href="#cb60-97" aria-hidden="true" tabindex="-1"></a>      <span class="cf">next</span></span>
-<span id="cb60-98"><a href="#cb60-98" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb60-99"><a href="#cb60-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-100"><a href="#cb60-100" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (is_strict) {</span>
-<span id="cb60-101"><a href="#cb60-101" aria-hidden="true" tabindex="-1"></a>      results<span class="sc">$</span>is_ess[i] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
-<span id="cb60-102"><a href="#cb60-102" aria-hidden="true" tabindex="-1"></a>      <span class="cf">next</span></span>
-<span id="cb60-103"><a href="#cb60-103" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb60-104"><a href="#cb60-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-105"><a href="#cb60-105" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check stability condition for ties</span></span>
-<span id="cb60-106"><a href="#cb60-106" aria-hidden="true" tabindex="-1"></a>    ess <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
-<span id="cb60-107"><a href="#cb60-107" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
-<span id="cb60-108"><a href="#cb60-108" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (j <span class="sc">==</span> i) <span class="cf">next</span></span>
-<span id="cb60-109"><a href="#cb60-109" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (A[j, i] <span class="sc">==</span> payoff_ii) {</span>
-<span id="cb60-110"><a href="#cb60-110" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Tied — must have u(i, j) &gt; u(j, j)</span></span>
-<span id="cb60-111"><a href="#cb60-111" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (A[i, j] <span class="sc">&lt;=</span> A[j, j]) {</span>
-<span id="cb60-112"><a href="#cb60-112" aria-hidden="true" tabindex="-1"></a>          ess <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
-<span id="cb60-113"><a href="#cb60-113" aria-hidden="true" tabindex="-1"></a>          results<span class="sc">$</span>failing_mutant[i] <span class="ot">&lt;-</span> strategies[j]</span>
-<span id="cb60-114"><a href="#cb60-114" aria-hidden="true" tabindex="-1"></a>          <span class="cf">break</span></span>
-<span id="cb60-115"><a href="#cb60-115" aria-hidden="true" tabindex="-1"></a>        }</span>
-<span id="cb60-116"><a href="#cb60-116" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb60-117"><a href="#cb60-117" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb60-118"><a href="#cb60-118" aria-hidden="true" tabindex="-1"></a>    results<span class="sc">$</span>is_ess[i] <span class="ot">&lt;-</span> ess</span>
-<span id="cb60-119"><a href="#cb60-119" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb60-120"><a href="#cb60-120" aria-hidden="true" tabindex="-1"></a>  results</span>
-<span id="cb60-121"><a href="#cb60-121" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb60-122"><a href="#cb60-122" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-123"><a href="#cb60-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-124"><a href="#cb60-124" aria-hidden="true" tabindex="-1"></a><span class="fu">### Testing on the Hawk-Dove game</span></span>
-<span id="cb60-125"><a href="#cb60-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-126"><a href="#cb60-126" aria-hidden="true" tabindex="-1"></a>The classic Hawk-Dove game (also called Chicken) with value $V = 2$ and cost $C = 4$:</span>
-<span id="cb60-127"><a href="#cb60-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-130"><a href="#cb60-130" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-131"><a href="#cb60-131" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hawk-dove-basic</span></span>
-<span id="cb60-132"><a href="#cb60-132" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="dv">2</span></span>
-<span id="cb60-133"><a href="#cb60-133" aria-hidden="true" tabindex="-1"></a>C_cost <span class="ot">&lt;-</span> <span class="dv">4</span></span>
-<span id="cb60-134"><a href="#cb60-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-135"><a href="#cb60-135" aria-hidden="true" tabindex="-1"></a>hd_matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
-<span id="cb60-136"><a href="#cb60-136" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>((V <span class="sc">-</span> C_cost) <span class="sc">/</span> <span class="dv">2</span>,  V,</span>
-<span id="cb60-137"><a href="#cb60-137" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>,                  V <span class="sc">/</span> <span class="dv">2</span>),</span>
-<span id="cb60-138"><a href="#cb60-138" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb60-139"><a href="#cb60-139" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>), <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>))</span>
-<span id="cb60-140"><a href="#cb60-140" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb60-141"><a href="#cb60-141" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-142"><a href="#cb60-142" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk-Dove payoff matrix:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-143"><a href="#cb60-143" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hd_matrix)</span>
+<span id="cb60-94"><a href="#cb60-94" aria-hidden="true" tabindex="-1"></a>    results<span class="sc">$</span>is_nash[i] <span class="ot">&lt;-</span> is_nash</span>
+<span id="cb60-95"><a href="#cb60-95" aria-hidden="true" tabindex="-1"></a>    results<span class="sc">$</span>strict_nash[i] <span class="ot">&lt;-</span> is_strict</span>
+<span id="cb60-96"><a href="#cb60-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-97"><a href="#cb60-97" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span>is_nash) {</span>
+<span id="cb60-98"><a href="#cb60-98" aria-hidden="true" tabindex="-1"></a>      worst <span class="ot">&lt;-</span> <span class="fu">which.max</span>(payoffs_ji <span class="sc">-</span> payoff_ii)</span>
+<span id="cb60-99"><a href="#cb60-99" aria-hidden="true" tabindex="-1"></a>      results<span class="sc">$</span>failing_mutant[i] <span class="ot">&lt;-</span> strategies[worst]</span>
+<span id="cb60-100"><a href="#cb60-100" aria-hidden="true" tabindex="-1"></a>      <span class="cf">next</span></span>
+<span id="cb60-101"><a href="#cb60-101" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb60-102"><a href="#cb60-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-103"><a href="#cb60-103" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (is_strict) {</span>
+<span id="cb60-104"><a href="#cb60-104" aria-hidden="true" tabindex="-1"></a>      results<span class="sc">$</span>is_ess[i] <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb60-105"><a href="#cb60-105" aria-hidden="true" tabindex="-1"></a>      <span class="cf">next</span></span>
+<span id="cb60-106"><a href="#cb60-106" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb60-107"><a href="#cb60-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-108"><a href="#cb60-108" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check stability condition for ties</span></span>
+<span id="cb60-109"><a href="#cb60-109" aria-hidden="true" tabindex="-1"></a>    ess <span class="ot">&lt;-</span> <span class="cn">TRUE</span></span>
+<span id="cb60-110"><a href="#cb60-110" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(n)) {</span>
+<span id="cb60-111"><a href="#cb60-111" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (j <span class="sc">==</span> i) <span class="cf">next</span></span>
+<span id="cb60-112"><a href="#cb60-112" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (A[j, i] <span class="sc">==</span> payoff_ii) {</span>
+<span id="cb60-113"><a href="#cb60-113" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Tied — must have u(i, j) &gt; u(j, j)</span></span>
+<span id="cb60-114"><a href="#cb60-114" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> (A[i, j] <span class="sc">&lt;=</span> A[j, j]) {</span>
+<span id="cb60-115"><a href="#cb60-115" aria-hidden="true" tabindex="-1"></a>          ess <span class="ot">&lt;-</span> <span class="cn">FALSE</span></span>
+<span id="cb60-116"><a href="#cb60-116" aria-hidden="true" tabindex="-1"></a>          results<span class="sc">$</span>failing_mutant[i] <span class="ot">&lt;-</span> strategies[j]</span>
+<span id="cb60-117"><a href="#cb60-117" aria-hidden="true" tabindex="-1"></a>          <span class="cf">break</span></span>
+<span id="cb60-118"><a href="#cb60-118" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb60-119"><a href="#cb60-119" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb60-120"><a href="#cb60-120" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb60-121"><a href="#cb60-121" aria-hidden="true" tabindex="-1"></a>    results<span class="sc">$</span>is_ess[i] <span class="ot">&lt;-</span> ess</span>
+<span id="cb60-122"><a href="#cb60-122" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb60-123"><a href="#cb60-123" aria-hidden="true" tabindex="-1"></a>  results</span>
+<span id="cb60-124"><a href="#cb60-124" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-125"><a href="#cb60-125" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-126"><a href="#cb60-126" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-127"><a href="#cb60-127" aria-hidden="true" tabindex="-1"></a><span class="fu">### Testing on the Hawk-Dove game</span></span>
+<span id="cb60-128"><a href="#cb60-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-129"><a href="#cb60-129" aria-hidden="true" tabindex="-1"></a>The classic Hawk-Dove game (also called Chicken) with value $V = 2$ and cost $C = 4$:</span>
+<span id="cb60-130"><a href="#cb60-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-133"><a href="#cb60-133" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-134"><a href="#cb60-134" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hawk-dove-basic</span></span>
+<span id="cb60-135"><a href="#cb60-135" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="dv">2</span></span>
+<span id="cb60-136"><a href="#cb60-136" aria-hidden="true" tabindex="-1"></a>C_cost <span class="ot">&lt;-</span> <span class="dv">4</span></span>
+<span id="cb60-137"><a href="#cb60-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-138"><a href="#cb60-138" aria-hidden="true" tabindex="-1"></a>hd_matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb60-139"><a href="#cb60-139" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>((V <span class="sc">-</span> C_cost) <span class="sc">/</span> <span class="dv">2</span>,  V,</span>
+<span id="cb60-140"><a href="#cb60-140" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>,                  V <span class="sc">/</span> <span class="dv">2</span>),</span>
+<span id="cb60-141"><a href="#cb60-141" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb60-142"><a href="#cb60-142" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>), <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>))</span>
+<span id="cb60-143"><a href="#cb60-143" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb60-144"><a href="#cb60-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-145"><a href="#cb60-145" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">ESS check:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-146"><a href="#cb60-146" aria-hidden="true" tabindex="-1"></a>hd_ess <span class="ot">&lt;-</span> <span class="fu">check_ess</span>(hd_matrix)</span>
-<span id="cb60-147"><a href="#cb60-147" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hd_ess)</span>
-<span id="cb60-148"><a href="#cb60-148" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-149"><a href="#cb60-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-150"><a href="#cb60-150" aria-hidden="true" tabindex="-1"></a>Neither pure strategy is an ESS — Hawks can be invaded by Doves and vice versa. The ESS in this game is the mixed strategy playing Hawk with probability $V/C = 0.5$.</span>
-<span id="cb60-151"><a href="#cb60-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-152"><a href="#cb60-152" aria-hidden="true" tabindex="-1"></a><span class="fu">### Invasion fitness landscape</span></span>
-<span id="cb60-153"><a href="#cb60-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-156"><a href="#cb60-156" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-157"><a href="#cb60-157" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ess-invasion</span></span>
-<span id="cb60-158"><a href="#cb60-158" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Invasion fitness landscape for the Hawk-Dove game. The plot shows the payoff advantage of the incumbent over a mutant as a function of mutant fraction. A positive value means the incumbent resists invasion. At the ESS mixture (Hawk with probability 0.5), both pure-strategy mutants have zero advantage at low frequency but negative advantage as they grow, confirming evolutionary stability of the mixed ESS."</span></span>
-<span id="cb60-159"><a href="#cb60-159" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb60-160"><a href="#cb60-160" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
-<span id="cb60-161"><a href="#cb60-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-162"><a href="#cb60-162" aria-hidden="true" tabindex="-1"></a>eps <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="at">length.out =</span> <span class="dv">200</span>)</span>
-<span id="cb60-163"><a href="#cb60-163" aria-hidden="true" tabindex="-1"></a>p_star <span class="ot">&lt;-</span> V <span class="sc">/</span> C_cost  <span class="co"># ESS mixture: Hawk with probability 0.5</span></span>
+<span id="cb60-145"><a href="#cb60-145" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk-Dove payoff matrix:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-146"><a href="#cb60-146" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hd_matrix)</span>
+<span id="cb60-147"><a href="#cb60-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-148"><a href="#cb60-148" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">ESS check:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-149"><a href="#cb60-149" aria-hidden="true" tabindex="-1"></a>hd_ess <span class="ot">&lt;-</span> <span class="fu">check_ess</span>(hd_matrix)</span>
+<span id="cb60-150"><a href="#cb60-150" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hd_ess)</span>
+<span id="cb60-151"><a href="#cb60-151" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-152"><a href="#cb60-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-153"><a href="#cb60-153" aria-hidden="true" tabindex="-1"></a>Neither pure strategy is an ESS — Hawks can be invaded by Doves and vice versa. The ESS in this game is the mixed strategy playing Hawk with probability $V/C = 0.5$.</span>
+<span id="cb60-154"><a href="#cb60-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-155"><a href="#cb60-155" aria-hidden="true" tabindex="-1"></a><span class="fu">### Invasion fitness landscape</span></span>
+<span id="cb60-156"><a href="#cb60-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-159"><a href="#cb60-159" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-160"><a href="#cb60-160" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ess-invasion</span></span>
+<span id="cb60-161"><a href="#cb60-161" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Invasion fitness landscape for the Hawk-Dove game. The plot shows the payoff advantage of the incumbent over a mutant as a function of mutant fraction. A positive value means the incumbent resists invasion. At the ESS mixture (Hawk with probability 0.5), both pure-strategy mutants have zero advantage at low frequency but negative advantage as they grow, confirming evolutionary stability of the mixed ESS."</span></span>
+<span id="cb60-162"><a href="#cb60-162" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb60-163"><a href="#cb60-163" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
 <span id="cb60-164"><a href="#cb60-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-165"><a href="#cb60-165" aria-hidden="true" tabindex="-1"></a><span class="co"># Effective payoffs for mixed ESS incumbent vs pure mutants</span></span>
-<span id="cb60-166"><a href="#cb60-166" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> hd_matrix</span>
-<span id="cb60-167"><a href="#cb60-167" aria-hidden="true" tabindex="-1"></a>u_mix_mix <span class="ot">&lt;-</span> p_star<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">1</span>] <span class="sc">+</span> p_star<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">*</span>(A[<span class="dv">1</span>,<span class="dv">2</span>]<span class="sc">+</span>A[<span class="dv">2</span>,<span class="dv">1</span>]) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>A[<span class="dv">2</span>,<span class="dv">2</span>]</span>
-<span id="cb60-168"><a href="#cb60-168" aria-hidden="true" tabindex="-1"></a>u_H_mix <span class="ot">&lt;-</span> p_star<span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">1</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">2</span>]</span>
-<span id="cb60-169"><a href="#cb60-169" aria-hidden="true" tabindex="-1"></a>u_mix_H <span class="ot">&lt;-</span> p_star<span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">1</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">*</span>A[<span class="dv">2</span>,<span class="dv">1</span>]</span>
-<span id="cb60-170"><a href="#cb60-170" aria-hidden="true" tabindex="-1"></a>u_H_H   <span class="ot">&lt;-</span> A[<span class="dv">1</span>,<span class="dv">1</span>]</span>
-<span id="cb60-171"><a href="#cb60-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-172"><a href="#cb60-172" aria-hidden="true" tabindex="-1"></a>W_inc_H <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_mix_mix <span class="sc">+</span> eps <span class="sc">*</span> u_mix_H</span>
-<span id="cb60-173"><a href="#cb60-173" aria-hidden="true" tabindex="-1"></a>W_mut_H <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_H_mix   <span class="sc">+</span> eps <span class="sc">*</span> u_H_H</span>
-<span id="cb60-174"><a href="#cb60-174" aria-hidden="true" tabindex="-1"></a>adv_hawk <span class="ot">&lt;-</span> W_inc_H <span class="sc">-</span> W_mut_H</span>
-<span id="cb60-175"><a href="#cb60-175" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-176"><a href="#cb60-176" aria-hidden="true" tabindex="-1"></a><span class="co"># Pure Dove mutant invading mixed ESS</span></span>
-<span id="cb60-177"><a href="#cb60-177" aria-hidden="true" tabindex="-1"></a>u_D_mix <span class="ot">&lt;-</span> p_star <span class="sc">*</span> hd_matrix[<span class="dv">2</span>,<span class="dv">1</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star) <span class="sc">*</span> hd_matrix[<span class="dv">2</span>,<span class="dv">2</span>]</span>
-<span id="cb60-178"><a href="#cb60-178" aria-hidden="true" tabindex="-1"></a>u_mix_D <span class="ot">&lt;-</span> p_star <span class="sc">*</span> hd_matrix[<span class="dv">1</span>,<span class="dv">2</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star) <span class="sc">*</span> hd_matrix[<span class="dv">2</span>,<span class="dv">2</span>]</span>
-<span id="cb60-179"><a href="#cb60-179" aria-hidden="true" tabindex="-1"></a>u_D_D   <span class="ot">&lt;-</span> hd_matrix[<span class="dv">2</span>,<span class="dv">2</span>]</span>
-<span id="cb60-180"><a href="#cb60-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-181"><a href="#cb60-181" aria-hidden="true" tabindex="-1"></a>W_inc_D <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_mix_mix <span class="sc">+</span> eps <span class="sc">*</span> u_mix_D</span>
-<span id="cb60-182"><a href="#cb60-182" aria-hidden="true" tabindex="-1"></a>W_mut_D <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_D_mix   <span class="sc">+</span> eps <span class="sc">*</span> u_D_D</span>
-<span id="cb60-183"><a href="#cb60-183" aria-hidden="true" tabindex="-1"></a>adv_dove <span class="ot">&lt;-</span> W_inc_D <span class="sc">-</span> W_mut_D</span>
-<span id="cb60-184"><a href="#cb60-184" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-185"><a href="#cb60-185" aria-hidden="true" tabindex="-1"></a>invasion_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb60-186"><a href="#cb60-186" aria-hidden="true" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fu">rep</span>(eps, <span class="dv">2</span>),</span>
-<span id="cb60-187"><a href="#cb60-187" aria-hidden="true" tabindex="-1"></a>  <span class="at">advantage =</span> <span class="fu">c</span>(adv_hawk, adv_dove),</span>
-<span id="cb60-188"><a href="#cb60-188" aria-hidden="true" tabindex="-1"></a>  <span class="at">mutant =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Hawk mutant"</span>, <span class="st">"Dove mutant"</span>), <span class="at">each =</span> <span class="fu">length</span>(eps))</span>
-<span id="cb60-189"><a href="#cb60-189" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb60-190"><a href="#cb60-190" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-191"><a href="#cb60-191" aria-hidden="true" tabindex="-1"></a>p_invasion <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(invasion_df, <span class="fu">aes</span>(<span class="at">x =</span> epsilon, <span class="at">y =</span> advantage, <span class="at">colour =</span> mutant)) <span class="sc">+</span></span>
-<span id="cb60-192"><a href="#cb60-192" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb60-193"><a href="#cb60-193" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey40"</span>) <span class="sc">+</span></span>
-<span id="cb60-194"><a href="#cb60-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Hawk mutant"</span> <span class="ot">=</span> okabe_ito[<span class="dv">6</span>],</span>
-<span id="cb60-195"><a href="#cb60-195" aria-hidden="true" tabindex="-1"></a>                                  <span class="st">"Dove mutant"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>]),</span>
-<span id="cb60-196"><a href="#cb60-196" aria-hidden="true" tabindex="-1"></a>                      <span class="at">name =</span> <span class="st">"Mutant type"</span>) <span class="sc">+</span></span>
-<span id="cb60-197"><a href="#cb60-197" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
-<span id="cb60-198"><a href="#cb60-198" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Invasion Fitness: Mixed ESS in Hawk-Dove"</span>,</span>
-<span id="cb60-199"><a href="#cb60-199" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="fu">expression</span>(<span class="st">"Mutant fraction "</span> <span class="sc">*</span> epsilon),</span>
-<span id="cb60-200"><a href="#cb60-200" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Incumbent advantage (payoff difference)"</span>)</span>
-<span id="cb60-201"><a href="#cb60-201" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-202"><a href="#cb60-202" aria-hidden="true" tabindex="-1"></a>p_invasion</span>
-<span id="cb60-203"><a href="#cb60-203" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_invasion, <span class="st">"ess-invasion"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
-<span id="cb60-204"><a href="#cb60-204" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-205"><a href="#cb60-205" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-206"><a href="#cb60-206" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basins of attraction in a 3-strategy game</span></span>
-<span id="cb60-207"><a href="#cb60-207" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-208"><a href="#cb60-208" aria-hidden="true" tabindex="-1"></a>We visualize the dynamics on the 2-simplex using the replicator equation from <span class="in">`R/replicator.R`</span>. Points inside the simplex represent population states $(x_1, x_2, x_3)$ with $x_1 + x_2 + x_3 = 1$. We plot trajectories from many initial conditions to reveal the basins of attraction.</span>
-<span id="cb60-209"><a href="#cb60-209" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-212"><a href="#cb60-212" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-213"><a href="#cb60-213" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ess-simplex</span></span>
-<span id="cb60-214"><a href="#cb60-214" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Basins of attraction in the Hawk-Dove-Retaliator game under replicator dynamics. Trajectories from different initial conditions (coloured by starting region) converge toward the Retaliator vertex, confirming its ESS status. The interior mixed equilibrium is unstable."</span></span>
-<span id="cb60-215"><a href="#cb60-215" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
-<span id="cb60-216"><a href="#cb60-216" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
-<span id="cb60-217"><a href="#cb60-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-218"><a href="#cb60-218" aria-hidden="true" tabindex="-1"></a><span class="co"># Hawk-Dove-Retaliator payoff matrix (V=2, C=4)</span></span>
-<span id="cb60-219"><a href="#cb60-219" aria-hidden="true" tabindex="-1"></a><span class="co"># Retaliator: plays Dove against Dove, plays Hawk against Hawk</span></span>
-<span id="cb60-220"><a href="#cb60-220" aria-hidden="true" tabindex="-1"></a>hdr_matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
-<span id="cb60-221"><a href="#cb60-221" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>((V <span class="sc">-</span> C_cost)<span class="sc">/</span><span class="dv">2</span>,   V,           (V <span class="sc">-</span> C_cost)<span class="sc">/</span><span class="dv">2</span>,</span>
-<span id="cb60-222"><a href="#cb60-222" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>,                 V<span class="sc">/</span><span class="dv">2</span>,         V<span class="sc">/</span><span class="dv">2</span>,</span>
-<span id="cb60-223"><a href="#cb60-223" aria-hidden="true" tabindex="-1"></a>    (V <span class="sc">-</span> C_cost)<span class="sc">/</span><span class="dv">2</span>,   V<span class="sc">/</span><span class="dv">2</span>,         V<span class="sc">/</span><span class="dv">2</span>),</span>
-<span id="cb60-224"><a href="#cb60-224" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb60-225"><a href="#cb60-225" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>),</span>
-<span id="cb60-226"><a href="#cb60-226" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>))</span>
-<span id="cb60-227"><a href="#cb60-227" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb60-228"><a href="#cb60-228" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-229"><a href="#cb60-229" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk-Dove-Retaliator payoff matrix:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-230"><a href="#cb60-230" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hdr_matrix)</span>
+<span id="cb60-165"><a href="#cb60-165" aria-hidden="true" tabindex="-1"></a>eps <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="at">length.out =</span> <span class="dv">200</span>)</span>
+<span id="cb60-166"><a href="#cb60-166" aria-hidden="true" tabindex="-1"></a>p_star <span class="ot">&lt;-</span> V <span class="sc">/</span> C_cost  <span class="co"># ESS mixture: Hawk with probability 0.5</span></span>
+<span id="cb60-167"><a href="#cb60-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-168"><a href="#cb60-168" aria-hidden="true" tabindex="-1"></a><span class="co"># Effective payoffs for mixed ESS incumbent vs pure mutants</span></span>
+<span id="cb60-169"><a href="#cb60-169" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> hd_matrix</span>
+<span id="cb60-170"><a href="#cb60-170" aria-hidden="true" tabindex="-1"></a>u_mix_mix <span class="ot">&lt;-</span> p_star<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">1</span>] <span class="sc">+</span> p_star<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">*</span>(A[<span class="dv">1</span>,<span class="dv">2</span>]<span class="sc">+</span>A[<span class="dv">2</span>,<span class="dv">1</span>]) <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">^</span><span class="dv">2</span><span class="sc">*</span>A[<span class="dv">2</span>,<span class="dv">2</span>]</span>
+<span id="cb60-171"><a href="#cb60-171" aria-hidden="true" tabindex="-1"></a>u_H_mix <span class="ot">&lt;-</span> p_star<span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">1</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">2</span>]</span>
+<span id="cb60-172"><a href="#cb60-172" aria-hidden="true" tabindex="-1"></a>u_mix_H <span class="ot">&lt;-</span> p_star<span class="sc">*</span>A[<span class="dv">1</span>,<span class="dv">1</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star)<span class="sc">*</span>A[<span class="dv">2</span>,<span class="dv">1</span>]</span>
+<span id="cb60-173"><a href="#cb60-173" aria-hidden="true" tabindex="-1"></a>u_H_H   <span class="ot">&lt;-</span> A[<span class="dv">1</span>,<span class="dv">1</span>]</span>
+<span id="cb60-174"><a href="#cb60-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-175"><a href="#cb60-175" aria-hidden="true" tabindex="-1"></a>W_inc_H <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_mix_mix <span class="sc">+</span> eps <span class="sc">*</span> u_mix_H</span>
+<span id="cb60-176"><a href="#cb60-176" aria-hidden="true" tabindex="-1"></a>W_mut_H <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_H_mix   <span class="sc">+</span> eps <span class="sc">*</span> u_H_H</span>
+<span id="cb60-177"><a href="#cb60-177" aria-hidden="true" tabindex="-1"></a>adv_hawk <span class="ot">&lt;-</span> W_inc_H <span class="sc">-</span> W_mut_H</span>
+<span id="cb60-178"><a href="#cb60-178" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-179"><a href="#cb60-179" aria-hidden="true" tabindex="-1"></a><span class="co"># Pure Dove mutant invading mixed ESS</span></span>
+<span id="cb60-180"><a href="#cb60-180" aria-hidden="true" tabindex="-1"></a>u_D_mix <span class="ot">&lt;-</span> p_star <span class="sc">*</span> hd_matrix[<span class="dv">2</span>,<span class="dv">1</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star) <span class="sc">*</span> hd_matrix[<span class="dv">2</span>,<span class="dv">2</span>]</span>
+<span id="cb60-181"><a href="#cb60-181" aria-hidden="true" tabindex="-1"></a>u_mix_D <span class="ot">&lt;-</span> p_star <span class="sc">*</span> hd_matrix[<span class="dv">1</span>,<span class="dv">2</span>] <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>p_star) <span class="sc">*</span> hd_matrix[<span class="dv">2</span>,<span class="dv">2</span>]</span>
+<span id="cb60-182"><a href="#cb60-182" aria-hidden="true" tabindex="-1"></a>u_D_D   <span class="ot">&lt;-</span> hd_matrix[<span class="dv">2</span>,<span class="dv">2</span>]</span>
+<span id="cb60-183"><a href="#cb60-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-184"><a href="#cb60-184" aria-hidden="true" tabindex="-1"></a>W_inc_D <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_mix_mix <span class="sc">+</span> eps <span class="sc">*</span> u_mix_D</span>
+<span id="cb60-185"><a href="#cb60-185" aria-hidden="true" tabindex="-1"></a>W_mut_D <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> eps) <span class="sc">*</span> u_D_mix   <span class="sc">+</span> eps <span class="sc">*</span> u_D_D</span>
+<span id="cb60-186"><a href="#cb60-186" aria-hidden="true" tabindex="-1"></a>adv_dove <span class="ot">&lt;-</span> W_inc_D <span class="sc">-</span> W_mut_D</span>
+<span id="cb60-187"><a href="#cb60-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-188"><a href="#cb60-188" aria-hidden="true" tabindex="-1"></a>invasion_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb60-189"><a href="#cb60-189" aria-hidden="true" tabindex="-1"></a>  <span class="at">epsilon =</span> <span class="fu">rep</span>(eps, <span class="dv">2</span>),</span>
+<span id="cb60-190"><a href="#cb60-190" aria-hidden="true" tabindex="-1"></a>  <span class="at">advantage =</span> <span class="fu">c</span>(adv_hawk, adv_dove),</span>
+<span id="cb60-191"><a href="#cb60-191" aria-hidden="true" tabindex="-1"></a>  <span class="at">mutant =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Hawk mutant"</span>, <span class="st">"Dove mutant"</span>), <span class="at">each =</span> <span class="fu">length</span>(eps))</span>
+<span id="cb60-192"><a href="#cb60-192" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb60-193"><a href="#cb60-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-194"><a href="#cb60-194" aria-hidden="true" tabindex="-1"></a>p_invasion <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(invasion_df, <span class="fu">aes</span>(<span class="at">x =</span> epsilon, <span class="at">y =</span> advantage, <span class="at">colour =</span> mutant)) <span class="sc">+</span></span>
+<span id="cb60-195"><a href="#cb60-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb60-196"><a href="#cb60-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey40"</span>) <span class="sc">+</span></span>
+<span id="cb60-197"><a href="#cb60-197" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Hawk mutant"</span> <span class="ot">=</span> okabe_ito[<span class="dv">6</span>],</span>
+<span id="cb60-198"><a href="#cb60-198" aria-hidden="true" tabindex="-1"></a>                                  <span class="st">"Dove mutant"</span> <span class="ot">=</span> okabe_ito[<span class="dv">3</span>]),</span>
+<span id="cb60-199"><a href="#cb60-199" aria-hidden="true" tabindex="-1"></a>                      <span class="at">name =</span> <span class="st">"Mutant type"</span>) <span class="sc">+</span></span>
+<span id="cb60-200"><a href="#cb60-200" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb60-201"><a href="#cb60-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Invasion Fitness: Mixed ESS in Hawk-Dove"</span>,</span>
+<span id="cb60-202"><a href="#cb60-202" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="fu">expression</span>(<span class="st">"Mutant fraction "</span> <span class="sc">*</span> epsilon),</span>
+<span id="cb60-203"><a href="#cb60-203" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Incumbent advantage (payoff difference)"</span>)</span>
+<span id="cb60-204"><a href="#cb60-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-205"><a href="#cb60-205" aria-hidden="true" tabindex="-1"></a>p_invasion</span>
+<span id="cb60-206"><a href="#cb60-206" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_invasion, <span class="st">"ess-invasion"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">5</span>)</span>
+<span id="cb60-207"><a href="#cb60-207" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-208"><a href="#cb60-208" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-209"><a href="#cb60-209" aria-hidden="true" tabindex="-1"></a><span class="fu">### Basins of attraction in a 3-strategy game</span></span>
+<span id="cb60-210"><a href="#cb60-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-211"><a href="#cb60-211" aria-hidden="true" tabindex="-1"></a>We visualize the dynamics on the 2-simplex using the replicator equation from <span class="in">`R/replicator.R`</span>. Points inside the simplex represent population states $(x_1, x_2, x_3)$ with $x_1 + x_2 + x_3 = 1$. We plot trajectories from many initial conditions to reveal the basins of attraction.</span>
+<span id="cb60-212"><a href="#cb60-212" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-215"><a href="#cb60-215" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-216"><a href="#cb60-216" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-ess-simplex</span></span>
+<span id="cb60-217"><a href="#cb60-217" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Basins of attraction in the Hawk-Dove-Retaliator game under replicator dynamics. Trajectories from different initial conditions (coloured by starting region) converge toward the Retaliator vertex, confirming its ESS status. The interior mixed equilibrium is unstable."</span></span>
+<span id="cb60-218"><a href="#cb60-218" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 7</span></span>
+<span id="cb60-219"><a href="#cb60-219" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb60-220"><a href="#cb60-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-221"><a href="#cb60-221" aria-hidden="true" tabindex="-1"></a><span class="co"># Hawk-Dove-Retaliator payoff matrix (V=2, C=4)</span></span>
+<span id="cb60-222"><a href="#cb60-222" aria-hidden="true" tabindex="-1"></a><span class="co"># Retaliator: plays Dove against Dove, plays Hawk against Hawk</span></span>
+<span id="cb60-223"><a href="#cb60-223" aria-hidden="true" tabindex="-1"></a>hdr_matrix <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb60-224"><a href="#cb60-224" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>((V <span class="sc">-</span> C_cost)<span class="sc">/</span><span class="dv">2</span>,   V,           (V <span class="sc">-</span> C_cost)<span class="sc">/</span><span class="dv">2</span>,</span>
+<span id="cb60-225"><a href="#cb60-225" aria-hidden="true" tabindex="-1"></a>    <span class="dv">0</span>,                 V<span class="sc">/</span><span class="dv">2</span>,         V<span class="sc">/</span><span class="dv">2</span>,</span>
+<span id="cb60-226"><a href="#cb60-226" aria-hidden="true" tabindex="-1"></a>    (V <span class="sc">-</span> C_cost)<span class="sc">/</span><span class="dv">2</span>,   V<span class="sc">/</span><span class="dv">2</span>,         V<span class="sc">/</span><span class="dv">2</span>),</span>
+<span id="cb60-227"><a href="#cb60-227" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb60-228"><a href="#cb60-228" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>),</span>
+<span id="cb60-229"><a href="#cb60-229" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>))</span>
+<span id="cb60-230"><a href="#cb60-230" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb60-231"><a href="#cb60-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-232"><a href="#cb60-232" aria-hidden="true" tabindex="-1"></a><span class="co"># Simplex coordinates: map (x1, x2, x3) to 2D</span></span>
-<span id="cb60-233"><a href="#cb60-233" aria-hidden="true" tabindex="-1"></a><span class="co"># Vertices: Hawk = (0, 0), Dove = (1, 0), Retaliator = (0.5, sqrt(3)/2)</span></span>
-<span id="cb60-234"><a href="#cb60-234" aria-hidden="true" tabindex="-1"></a>to_simplex_xy <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, x3) {</span>
-<span id="cb60-235"><a href="#cb60-235" aria-hidden="true" tabindex="-1"></a>  px <span class="ot">&lt;-</span> x2 <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> x3</span>
-<span id="cb60-236"><a href="#cb60-236" aria-hidden="true" tabindex="-1"></a>  py <span class="ot">&lt;-</span> (<span class="fu">sqrt</span>(<span class="dv">3</span>) <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">*</span> x3</span>
-<span id="cb60-237"><a href="#cb60-237" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">sx =</span> px, <span class="at">sy =</span> py)</span>
-<span id="cb60-238"><a href="#cb60-238" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb60-239"><a href="#cb60-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-240"><a href="#cb60-240" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate initial conditions on a grid inside the simplex</span></span>
-<span id="cb60-241"><a href="#cb60-241" aria-hidden="true" tabindex="-1"></a>generate_simplex_grid <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_per_side =</span> <span class="dv">8</span>) {</span>
-<span id="cb60-242"><a href="#cb60-242" aria-hidden="true" tabindex="-1"></a>  pts <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb60-243"><a href="#cb60-243" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_per_side)) {</span>
-<span id="cb60-244"><a href="#cb60-244" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_per_side <span class="sc">-</span> i)) {</span>
-<span id="cb60-245"><a href="#cb60-245" aria-hidden="true" tabindex="-1"></a>      k <span class="ot">&lt;-</span> n_per_side <span class="sc">-</span> i <span class="sc">-</span> j</span>
-<span id="cb60-246"><a href="#cb60-246" aria-hidden="true" tabindex="-1"></a>      x1 <span class="ot">&lt;-</span> i <span class="sc">/</span> n_per_side</span>
-<span id="cb60-247"><a href="#cb60-247" aria-hidden="true" tabindex="-1"></a>      x2 <span class="ot">&lt;-</span> j <span class="sc">/</span> n_per_side</span>
-<span id="cb60-248"><a href="#cb60-248" aria-hidden="true" tabindex="-1"></a>      x3 <span class="ot">&lt;-</span> k <span class="sc">/</span> n_per_side</span>
-<span id="cb60-249"><a href="#cb60-249" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Avoid vertices and edges</span></span>
-<span id="cb60-250"><a href="#cb60-250" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (x1 <span class="sc">&gt;</span> <span class="fl">0.02</span> <span class="sc">&amp;&amp;</span> x2 <span class="sc">&gt;</span> <span class="fl">0.02</span> <span class="sc">&amp;&amp;</span> x3 <span class="sc">&gt;</span> <span class="fl">0.02</span>) {</span>
-<span id="cb60-251"><a href="#cb60-251" aria-hidden="true" tabindex="-1"></a>        pts <span class="ot">&lt;-</span> <span class="fu">c</span>(pts, <span class="fu">list</span>(<span class="fu">c</span>(x1, x2, x3)))</span>
-<span id="cb60-252"><a href="#cb60-252" aria-hidden="true" tabindex="-1"></a>      }</span>
-<span id="cb60-253"><a href="#cb60-253" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb60-254"><a href="#cb60-254" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb60-255"><a href="#cb60-255" aria-hidden="true" tabindex="-1"></a>  pts</span>
-<span id="cb60-256"><a href="#cb60-256" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb60-257"><a href="#cb60-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-258"><a href="#cb60-258" aria-hidden="true" tabindex="-1"></a>initial_conditions <span class="ot">&lt;-</span> <span class="fu">generate_simplex_grid</span>(<span class="dv">12</span>)</span>
-<span id="cb60-259"><a href="#cb60-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-260"><a href="#cb60-260" aria-hidden="true" tabindex="-1"></a><span class="co"># Run replicator dynamics from each initial condition</span></span>
-<span id="cb60-261"><a href="#cb60-261" aria-hidden="true" tabindex="-1"></a>all_trajectories <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb60-232"><a href="#cb60-232" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk-Dove-Retaliator payoff matrix:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-233"><a href="#cb60-233" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hdr_matrix)</span>
+<span id="cb60-234"><a href="#cb60-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-235"><a href="#cb60-235" aria-hidden="true" tabindex="-1"></a><span class="co"># Simplex coordinates: map (x1, x2, x3) to 2D</span></span>
+<span id="cb60-236"><a href="#cb60-236" aria-hidden="true" tabindex="-1"></a><span class="co"># Vertices: Hawk = (0, 0), Dove = (1, 0), Retaliator = (0.5, sqrt(3)/2)</span></span>
+<span id="cb60-237"><a href="#cb60-237" aria-hidden="true" tabindex="-1"></a>to_simplex_xy <span class="ot">&lt;-</span> <span class="cf">function</span>(x1, x2, x3) {</span>
+<span id="cb60-238"><a href="#cb60-238" aria-hidden="true" tabindex="-1"></a>  px <span class="ot">&lt;-</span> x2 <span class="sc">+</span> <span class="fl">0.5</span> <span class="sc">*</span> x3</span>
+<span id="cb60-239"><a href="#cb60-239" aria-hidden="true" tabindex="-1"></a>  py <span class="ot">&lt;-</span> (<span class="fu">sqrt</span>(<span class="dv">3</span>) <span class="sc">/</span> <span class="dv">2</span>) <span class="sc">*</span> x3</span>
+<span id="cb60-240"><a href="#cb60-240" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">sx =</span> px, <span class="at">sy =</span> py)</span>
+<span id="cb60-241"><a href="#cb60-241" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-242"><a href="#cb60-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-243"><a href="#cb60-243" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate initial conditions on a grid inside the simplex</span></span>
+<span id="cb60-244"><a href="#cb60-244" aria-hidden="true" tabindex="-1"></a>generate_simplex_grid <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">n_per_side =</span> <span class="dv">8</span>) {</span>
+<span id="cb60-245"><a href="#cb60-245" aria-hidden="true" tabindex="-1"></a>  pts <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb60-246"><a href="#cb60-246" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_per_side)) {</span>
+<span id="cb60-247"><a href="#cb60-247" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq</span>(<span class="dv">0</span>, n_per_side <span class="sc">-</span> i)) {</span>
+<span id="cb60-248"><a href="#cb60-248" aria-hidden="true" tabindex="-1"></a>      k <span class="ot">&lt;-</span> n_per_side <span class="sc">-</span> i <span class="sc">-</span> j</span>
+<span id="cb60-249"><a href="#cb60-249" aria-hidden="true" tabindex="-1"></a>      x1 <span class="ot">&lt;-</span> i <span class="sc">/</span> n_per_side</span>
+<span id="cb60-250"><a href="#cb60-250" aria-hidden="true" tabindex="-1"></a>      x2 <span class="ot">&lt;-</span> j <span class="sc">/</span> n_per_side</span>
+<span id="cb60-251"><a href="#cb60-251" aria-hidden="true" tabindex="-1"></a>      x3 <span class="ot">&lt;-</span> k <span class="sc">/</span> n_per_side</span>
+<span id="cb60-252"><a href="#cb60-252" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Avoid vertices and edges</span></span>
+<span id="cb60-253"><a href="#cb60-253" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (x1 <span class="sc">&gt;</span> <span class="fl">0.02</span> <span class="sc">&amp;&amp;</span> x2 <span class="sc">&gt;</span> <span class="fl">0.02</span> <span class="sc">&amp;&amp;</span> x3 <span class="sc">&gt;</span> <span class="fl">0.02</span>) {</span>
+<span id="cb60-254"><a href="#cb60-254" aria-hidden="true" tabindex="-1"></a>        pts <span class="ot">&lt;-</span> <span class="fu">c</span>(pts, <span class="fu">list</span>(<span class="fu">c</span>(x1, x2, x3)))</span>
+<span id="cb60-255"><a href="#cb60-255" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb60-256"><a href="#cb60-256" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb60-257"><a href="#cb60-257" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb60-258"><a href="#cb60-258" aria-hidden="true" tabindex="-1"></a>  pts</span>
+<span id="cb60-259"><a href="#cb60-259" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-260"><a href="#cb60-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-261"><a href="#cb60-261" aria-hidden="true" tabindex="-1"></a>initial_conditions <span class="ot">&lt;-</span> <span class="fu">generate_simplex_grid</span>(<span class="dv">12</span>)</span>
 <span id="cb60-262"><a href="#cb60-262" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-263"><a href="#cb60-263" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (idx <span class="cf">in</span> <span class="fu">seq_along</span>(initial_conditions)) {</span>
-<span id="cb60-264"><a href="#cb60-264" aria-hidden="true" tabindex="-1"></a>  x0 <span class="ot">&lt;-</span> initial_conditions[[idx]]</span>
-<span id="cb60-265"><a href="#cb60-265" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(x0) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>)</span>
-<span id="cb60-266"><a href="#cb60-266" aria-hidden="true" tabindex="-1"></a>  sol <span class="ot">&lt;-</span> <span class="fu">run_replicator</span>(hdr_matrix, x0, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">80</span>, <span class="at">by =</span> <span class="fl">0.5</span>))</span>
-<span id="cb60-267"><a href="#cb60-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-268"><a href="#cb60-268" aria-hidden="true" tabindex="-1"></a>  coords <span class="ot">&lt;-</span> <span class="fu">to_simplex_xy</span>(sol<span class="sc">$</span>Hawk, sol<span class="sc">$</span>Dove, sol<span class="sc">$</span>Retaliator)</span>
-<span id="cb60-269"><a href="#cb60-269" aria-hidden="true" tabindex="-1"></a>  traj_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb60-270"><a href="#cb60-270" aria-hidden="true" tabindex="-1"></a>    <span class="at">sx =</span> coords<span class="sc">$</span>sx,</span>
-<span id="cb60-271"><a href="#cb60-271" aria-hidden="true" tabindex="-1"></a>    <span class="at">sy =</span> coords<span class="sc">$</span>sy,</span>
-<span id="cb60-272"><a href="#cb60-272" aria-hidden="true" tabindex="-1"></a>    <span class="at">time =</span> sol<span class="sc">$</span>time,</span>
-<span id="cb60-273"><a href="#cb60-273" aria-hidden="true" tabindex="-1"></a>    <span class="at">traj_id =</span> idx,</span>
-<span id="cb60-274"><a href="#cb60-274" aria-hidden="true" tabindex="-1"></a>    <span class="at">start_hawk =</span> x0[<span class="dv">1</span>]</span>
-<span id="cb60-275"><a href="#cb60-275" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb60-276"><a href="#cb60-276" aria-hidden="true" tabindex="-1"></a>  all_trajectories[[idx]] <span class="ot">&lt;-</span> traj_df</span>
-<span id="cb60-277"><a href="#cb60-277" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb60-278"><a href="#cb60-278" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-279"><a href="#cb60-279" aria-hidden="true" tabindex="-1"></a>traj_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(all_trajectories)</span>
-<span id="cb60-280"><a href="#cb60-280" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-281"><a href="#cb60-281" aria-hidden="true" tabindex="-1"></a><span class="co"># Simplex triangle vertices</span></span>
-<span id="cb60-282"><a href="#cb60-282" aria-hidden="true" tabindex="-1"></a>tri <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb60-283"><a href="#cb60-283" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">0</span>),</span>
-<span id="cb60-284"><a href="#cb60-284" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">/</span><span class="dv">2</span>, <span class="dv">0</span>)</span>
-<span id="cb60-285"><a href="#cb60-285" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb60-286"><a href="#cb60-286" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-287"><a href="#cb60-287" aria-hidden="true" tabindex="-1"></a>vertex_labels <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
-<span id="cb60-288"><a href="#cb60-288" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.06</span>, <span class="fl">1.06</span>, <span class="fl">0.5</span>),</span>
-<span id="cb60-289"><a href="#cb60-289" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.04</span>, <span class="sc">-</span><span class="fl">0.04</span>, <span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="fl">0.04</span>),</span>
-<span id="cb60-290"><a href="#cb60-290" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>)</span>
-<span id="cb60-291"><a href="#cb60-291" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb60-292"><a href="#cb60-292" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-293"><a href="#cb60-293" aria-hidden="true" tabindex="-1"></a>p_simplex <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
-<span id="cb60-294"><a href="#cb60-294" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> tri, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="at">colour =</span> <span class="st">"grey30"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb60-295"><a href="#cb60-295" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> traj_data,</span>
-<span id="cb60-296"><a href="#cb60-296" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">x =</span> sx, <span class="at">y =</span> sy, <span class="at">group =</span> traj_id, <span class="at">colour =</span> start_hawk),</span>
-<span id="cb60-297"><a href="#cb60-297" aria-hidden="true" tabindex="-1"></a>            <span class="at">linewidth =</span> <span class="fl">0.3</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
-<span id="cb60-298"><a href="#cb60-298" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_gradient</span>(<span class="at">low =</span> okabe_ito[<span class="dv">3</span>], <span class="at">high =</span> okabe_ito[<span class="dv">6</span>],</span>
-<span id="cb60-299"><a href="#cb60-299" aria-hidden="true" tabindex="-1"></a>                        <span class="at">name =</span> <span class="st">"Initial Hawk</span><span class="sc">\n</span><span class="st">fraction"</span>) <span class="sc">+</span></span>
-<span id="cb60-300"><a href="#cb60-300" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> vertex_labels, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">label =</span> label),</span>
-<span id="cb60-301"><a href="#cb60-301" aria-hidden="true" tabindex="-1"></a>            <span class="at">fontface =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="fl">3.8</span>) <span class="sc">+</span></span>
-<span id="cb60-302"><a href="#cb60-302" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
-<span id="cb60-303"><a href="#cb60-303" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
-<span id="cb60-304"><a href="#cb60-304" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb60-305"><a href="#cb60-305" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb60-306"><a href="#cb60-306" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb60-307"><a href="#cb60-307" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
-<span id="cb60-308"><a href="#cb60-308" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Replicator Dynamics on the Hawk-Dove-Retaliator Simplex"</span>)</span>
-<span id="cb60-309"><a href="#cb60-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-310"><a href="#cb60-310" aria-hidden="true" tabindex="-1"></a>p_simplex</span>
-<span id="cb60-311"><a href="#cb60-311" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_simplex, <span class="st">"ess-simplex"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
-<span id="cb60-312"><a href="#cb60-312" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-313"><a href="#cb60-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-314"><a href="#cb60-314" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
-<span id="cb60-315"><a href="#cb60-315" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-316"><a href="#cb60-316" aria-hidden="true" tabindex="-1"></a>We now systematically find all ESS candidates in the Hawk-Dove-Retaliator game and verify the conditions.</span>
-<span id="cb60-317"><a href="#cb60-317" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-318"><a href="#cb60-318" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 1: Check pure strategies</span></span>
-<span id="cb60-319"><a href="#cb60-319" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-322"><a href="#cb60-322" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-323"><a href="#cb60-323" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hdr-ess-check</span></span>
-<span id="cb60-324"><a href="#cb60-324" aria-hidden="true" tabindex="-1"></a>hdr_ess <span class="ot">&lt;-</span> <span class="fu">check_ess</span>(hdr_matrix)</span>
-<span id="cb60-325"><a href="#cb60-325" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-326"><a href="#cb60-326" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ESS analysis for Hawk-Dove-Retaliator:</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb60-327"><a href="#cb60-327" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(hdr_ess))) {</span>
-<span id="cb60-328"><a href="#cb60-328" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  %-12s  Nash: %-5s  Strict Nash: %-5s  ESS: %-5s"</span>,</span>
-<span id="cb60-329"><a href="#cb60-329" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>strategy[i],</span>
-<span id="cb60-330"><a href="#cb60-330" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>is_nash[i],</span>
-<span id="cb60-331"><a href="#cb60-331" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>strict_nash[i],</span>
-<span id="cb60-332"><a href="#cb60-332" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>is_ess[i]))</span>
-<span id="cb60-333"><a href="#cb60-333" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(hdr_ess<span class="sc">$</span>failing_mutant[i])) {</span>
-<span id="cb60-334"><a href="#cb60-334" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  (fails against %s)"</span>, hdr_ess<span class="sc">$</span>failing_mutant[i]))</span>
-<span id="cb60-335"><a href="#cb60-335" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb60-336"><a href="#cb60-336" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-337"><a href="#cb60-337" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb60-338"><a href="#cb60-338" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-339"><a href="#cb60-339" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-340"><a href="#cb60-340" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 2: Interpret the results</span></span>
-<span id="cb60-341"><a href="#cb60-341" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-344"><a href="#cb60-344" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-345"><a href="#cb60-345" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hdr-interpret</span></span>
-<span id="cb60-346"><a href="#cb60-346" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Detailed verification:</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb60-347"><a href="#cb60-347" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-348"><a href="#cb60-348" aria-hidden="true" tabindex="-1"></a><span class="co"># Hawk vs Hawk</span></span>
-<span id="cb60-349"><a href="#cb60-349" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk as candidate ESS:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-350"><a href="#cb60-350" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Hawk, Hawk) = %.1f</span><span class="sc">\n</span><span class="st">"</span>, hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Hawk"</span>]))</span>
-<span id="cb60-351"><a href="#cb60-351" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Dove, Hawk) = %.1f  -&gt; Dove does better against Hawk</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-352"><a href="#cb60-352" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Hawk"</span>]))</span>
-<span id="cb60-353"><a href="#cb60-353" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Hawk is NOT a Nash equilibrium — Dove can invade.</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb60-354"><a href="#cb60-354" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-355"><a href="#cb60-355" aria-hidden="true" tabindex="-1"></a><span class="co"># Dove vs Dove</span></span>
-<span id="cb60-356"><a href="#cb60-356" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Dove as candidate ESS:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-357"><a href="#cb60-357" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Dove, Dove) = %.1f</span><span class="sc">\n</span><span class="st">"</span>, hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Dove"</span>]))</span>
-<span id="cb60-358"><a href="#cb60-358" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Hawk, Dove) = %.1f  -&gt; Hawk does better against Dove</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-359"><a href="#cb60-359" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>]))</span>
-<span id="cb60-360"><a href="#cb60-360" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Dove is NOT a Nash equilibrium — Hawk can invade.</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
-<span id="cb60-361"><a href="#cb60-361" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-362"><a href="#cb60-362" aria-hidden="true" tabindex="-1"></a><span class="co"># Retaliator vs all</span></span>
-<span id="cb60-363"><a href="#cb60-363" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Retaliator as candidate ESS:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-364"><a href="#cb60-364" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Ret, Ret) = %.1f</span><span class="sc">\n</span><span class="st">"</span>, hdr_matrix[<span class="st">"Retaliator"</span>, <span class="st">"Retaliator"</span>]))</span>
-<span id="cb60-365"><a href="#cb60-365" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Hawk, Ret) = %.1f  -&gt; Hawk does equally well</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-366"><a href="#cb60-366" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Retaliator"</span>]))</span>
-<span id="cb60-367"><a href="#cb60-367" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Dove, Ret) = %.1f  -&gt; Dove does equally well</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-368"><a href="#cb60-368" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>]))</span>
-<span id="cb60-369"><a href="#cb60-369" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Ties exist — check stability condition:</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-370"><a href="#cb60-370" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Ret, Hawk) = %.1f vs u(Hawk, Hawk) = %.1f  -&gt; Ret wins</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-371"><a href="#cb60-371" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Retaliator"</span>, <span class="st">"Hawk"</span>], hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Hawk"</span>]))</span>
-<span id="cb60-372"><a href="#cb60-372" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Ret, Dove) = %.1f vs u(Dove, Dove) = %.1f  -&gt; Tied</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-373"><a href="#cb60-373" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Retaliator"</span>, <span class="st">"Dove"</span>], hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Dove"</span>]))</span>
-<span id="cb60-374"><a href="#cb60-374" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-375"><a href="#cb60-375" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-376"><a href="#cb60-376" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 3: Verify with replicator dynamics</span></span>
-<span id="cb60-377"><a href="#cb60-377" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-378"><a href="#cb60-378" aria-hidden="true" tabindex="-1"></a>The simplex diagram above (@fig-ess-simplex) confirms the analytic result. Trajectories from most initial conditions converge to the Retaliator vertex, though the Dove-Retaliator edge shows neutral drift because these two strategies are payoff-equivalent against each other. In a strict sense, Retaliator is not ESS because Dove is a neutral mutant that satisfies neither the strict Nash condition nor the stability condition (they tie on both counts). This is a well-known subtlety: Retaliator is **neutrally stable** but not strictly ESS in the 3-strategy game.</span>
-<span id="cb60-379"><a href="#cb60-379" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-382"><a href="#cb60-382" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb60-383"><a href="#cb60-383" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hdr-dynamics-verify</span></span>
-<span id="cb60-384"><a href="#cb60-384" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify: start near Retaliator, introduce small Hawk mutation</span></span>
-<span id="cb60-385"><a href="#cb60-385" aria-hidden="true" tabindex="-1"></a>x0_test <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Hawk =</span> <span class="fl">0.05</span>, <span class="at">Dove =</span> <span class="fl">0.0</span>, <span class="at">Retaliator =</span> <span class="fl">0.95</span>)</span>
-<span id="cb60-386"><a href="#cb60-386" aria-hidden="true" tabindex="-1"></a>sol_test <span class="ot">&lt;-</span> <span class="fu">run_replicator</span>(hdr_matrix, x0_test, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">100</span>, <span class="at">by =</span> <span class="dv">1</span>))</span>
-<span id="cb60-387"><a href="#cb60-387" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-388"><a href="#cb60-388" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk invasion attempt (starting at 5% Hawk, 95% Retaliator):</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-389"><a href="#cb60-389" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  t=0:   Hawk=%.3f  Dove=%.3f  Ret=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-390"><a href="#cb60-390" aria-hidden="true" tabindex="-1"></a>            sol_test<span class="sc">$</span>Hawk[<span class="dv">1</span>], sol_test<span class="sc">$</span>Dove[<span class="dv">1</span>], sol_test<span class="sc">$</span>Retaliator[<span class="dv">1</span>]))</span>
-<span id="cb60-391"><a href="#cb60-391" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">nrow</span>(sol_test)</span>
-<span id="cb60-392"><a href="#cb60-392" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  t=100: Hawk=%.3f  Dove=%.3f  Ret=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb60-393"><a href="#cb60-393" aria-hidden="true" tabindex="-1"></a>            sol_test<span class="sc">$</span>Hawk[final], sol_test<span class="sc">$</span>Dove[final], sol_test<span class="sc">$</span>Retaliator[final]))</span>
-<span id="cb60-394"><a href="#cb60-394" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Hawk is driven out — Retaliator resists Hawk invasion.</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb60-395"><a href="#cb60-395" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb60-396"><a href="#cb60-396" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-397"><a href="#cb60-397" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
-<span id="cb60-398"><a href="#cb60-398" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-399"><a href="#cb60-399" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Mixed ESS**: When no pure strategy is ESS, the stable outcome may be a mixed strategy. For 2-strategy games, the ESS mixture can be found analytically; for larger games, the Bishop-Cannings theorem provides necessary conditions <span class="co">[</span><span class="ot">@maynardsmith1982</span><span class="co">]</span>.</span>
-<span id="cb60-400"><a href="#cb60-400" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Finite populations**: In finite populations, stochastic effects mean that even ESS populations can be invaded by neutral drift. Nowak et al. <span class="co">[</span><span class="ot">-@nowak2004</span><span class="co">]</span> introduced stochastic stability concepts for evolutionary dynamics.</span>
-<span id="cb60-401"><a href="#cb60-401" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Multi-population ESS**: When different roles exist (e.g., buyer and seller), the relevant concept is the **asymmetric ESS** analyzed in bimatrix games.</span>
-<span id="cb60-402"><a href="#cb60-402" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Connection to replicator dynamics**: The replicator equation (@sec-replicator-dynamics) provides the dynamic justification for ESS — every ESS is an asymptotically stable rest point of the replicator dynamics, though the converse is not always true.</span>
-<span id="cb60-403"><a href="#cb60-403" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-404"><a href="#cb60-404" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
-<span id="cb60-405"><a href="#cb60-405" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-406"><a href="#cb60-406" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Stag Hunt ESS.** Consider the Stag Hunt game with payoff matrix $A = \begin{pmatrix} 4 &amp; 0 <span class="sc">\\</span> 3 &amp; 2 \end{pmatrix}$. Use <span class="in">`check_ess()`</span> to verify that both (Stag, Stag) and (Hare, Hare) are Nash equilibria, but only one is an ESS. Which one, and why?</span>
-<span id="cb60-407"><a href="#cb60-407" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-408"><a href="#cb60-408" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Three-strategy Rock-Paper-Scissors.** Construct the symmetric payoff matrix for RPS with win = 1, loss = -1, draw = 0. Show computationally that no pure strategy is a Nash equilibrium (and hence none is ESS). Then argue from the invasion fitness formula why the uniform mixture $(\tfrac{1}{3}, \tfrac{1}{3}, \tfrac{1}{3})$ is not ESS either — it is neutrally stable.</span>
-<span id="cb60-409"><a href="#cb60-409" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-410"><a href="#cb60-410" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Invasion barrier.** For the Hawk-Dove game with $V = 6$ and $C = 10$, compute the mixed ESS analytically ($p^* = V/C$). Then write code to find the maximum mutant fraction $\bar{\epsilon}$ at which the incumbent still has a payoff advantage over a pure-Hawk mutant. Plot the advantage curve and mark $\bar{\epsilon}$ on the graph.</span>
-<span id="cb60-411"><a href="#cb60-411" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb60-412"><a href="#cb60-412" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
+<span id="cb60-263"><a href="#cb60-263" aria-hidden="true" tabindex="-1"></a><span class="co"># Run replicator dynamics from each initial condition</span></span>
+<span id="cb60-264"><a href="#cb60-264" aria-hidden="true" tabindex="-1"></a>all_trajectories <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb60-265"><a href="#cb60-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-266"><a href="#cb60-266" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (idx <span class="cf">in</span> <span class="fu">seq_along</span>(initial_conditions)) {</span>
+<span id="cb60-267"><a href="#cb60-267" aria-hidden="true" tabindex="-1"></a>  x0 <span class="ot">&lt;-</span> initial_conditions[[idx]]</span>
+<span id="cb60-268"><a href="#cb60-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(x0) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>)</span>
+<span id="cb60-269"><a href="#cb60-269" aria-hidden="true" tabindex="-1"></a>  sol <span class="ot">&lt;-</span> <span class="fu">run_replicator</span>(hdr_matrix, x0, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">80</span>, <span class="at">by =</span> <span class="fl">0.5</span>))</span>
+<span id="cb60-270"><a href="#cb60-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-271"><a href="#cb60-271" aria-hidden="true" tabindex="-1"></a>  coords <span class="ot">&lt;-</span> <span class="fu">to_simplex_xy</span>(sol<span class="sc">$</span>Hawk, sol<span class="sc">$</span>Dove, sol<span class="sc">$</span>Retaliator)</span>
+<span id="cb60-272"><a href="#cb60-272" aria-hidden="true" tabindex="-1"></a>  traj_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb60-273"><a href="#cb60-273" aria-hidden="true" tabindex="-1"></a>    <span class="at">sx =</span> coords<span class="sc">$</span>sx,</span>
+<span id="cb60-274"><a href="#cb60-274" aria-hidden="true" tabindex="-1"></a>    <span class="at">sy =</span> coords<span class="sc">$</span>sy,</span>
+<span id="cb60-275"><a href="#cb60-275" aria-hidden="true" tabindex="-1"></a>    <span class="at">time =</span> sol<span class="sc">$</span>time,</span>
+<span id="cb60-276"><a href="#cb60-276" aria-hidden="true" tabindex="-1"></a>    <span class="at">traj_id =</span> idx,</span>
+<span id="cb60-277"><a href="#cb60-277" aria-hidden="true" tabindex="-1"></a>    <span class="at">start_hawk =</span> x0[<span class="dv">1</span>]</span>
+<span id="cb60-278"><a href="#cb60-278" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb60-279"><a href="#cb60-279" aria-hidden="true" tabindex="-1"></a>  all_trajectories[[idx]] <span class="ot">&lt;-</span> traj_df</span>
+<span id="cb60-280"><a href="#cb60-280" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-281"><a href="#cb60-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-282"><a href="#cb60-282" aria-hidden="true" tabindex="-1"></a>traj_data <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(all_trajectories)</span>
+<span id="cb60-283"><a href="#cb60-283" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-284"><a href="#cb60-284" aria-hidden="true" tabindex="-1"></a><span class="co"># Simplex triangle vertices</span></span>
+<span id="cb60-285"><a href="#cb60-285" aria-hidden="true" tabindex="-1"></a>tri <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb60-286"><a href="#cb60-286" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">0</span>),</span>
+<span id="cb60-287"><a href="#cb60-287" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>, <span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">/</span><span class="dv">2</span>, <span class="dv">0</span>)</span>
+<span id="cb60-288"><a href="#cb60-288" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb60-289"><a href="#cb60-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-290"><a href="#cb60-290" aria-hidden="true" tabindex="-1"></a>vertex_labels <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb60-291"><a href="#cb60-291" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.06</span>, <span class="fl">1.06</span>, <span class="fl">0.5</span>),</span>
+<span id="cb60-292"><a href="#cb60-292" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.04</span>, <span class="sc">-</span><span class="fl">0.04</span>, <span class="fu">sqrt</span>(<span class="dv">3</span>)<span class="sc">/</span><span class="dv">2</span> <span class="sc">+</span> <span class="fl">0.04</span>),</span>
+<span id="cb60-293"><a href="#cb60-293" aria-hidden="true" tabindex="-1"></a>  <span class="at">label =</span> <span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>)</span>
+<span id="cb60-294"><a href="#cb60-294" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb60-295"><a href="#cb60-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-296"><a href="#cb60-296" aria-hidden="true" tabindex="-1"></a>p_simplex <span class="ot">&lt;-</span> <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb60-297"><a href="#cb60-297" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> tri, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y), <span class="at">colour =</span> <span class="st">"grey30"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb60-298"><a href="#cb60-298" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">data =</span> traj_data,</span>
+<span id="cb60-299"><a href="#cb60-299" aria-hidden="true" tabindex="-1"></a>            <span class="fu">aes</span>(<span class="at">x =</span> sx, <span class="at">y =</span> sy, <span class="at">group =</span> traj_id, <span class="at">colour =</span> start_hawk),</span>
+<span id="cb60-300"><a href="#cb60-300" aria-hidden="true" tabindex="-1"></a>            <span class="at">linewidth =</span> <span class="fl">0.3</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb60-301"><a href="#cb60-301" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_gradient</span>(<span class="at">low =</span> okabe_ito[<span class="dv">3</span>], <span class="at">high =</span> okabe_ito[<span class="dv">6</span>],</span>
+<span id="cb60-302"><a href="#cb60-302" aria-hidden="true" tabindex="-1"></a>                        <span class="at">name =</span> <span class="st">"Initial Hawk</span><span class="sc">\n</span><span class="st">fraction"</span>) <span class="sc">+</span></span>
+<span id="cb60-303"><a href="#cb60-303" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> vertex_labels, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">label =</span> label),</span>
+<span id="cb60-304"><a href="#cb60-304" aria-hidden="true" tabindex="-1"></a>            <span class="at">fontface =</span> <span class="st">"bold"</span>, <span class="at">size =</span> <span class="fl">3.8</span>) <span class="sc">+</span></span>
+<span id="cb60-305"><a href="#cb60-305" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb60-306"><a href="#cb60-306" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_publication</span>() <span class="sc">+</span></span>
+<span id="cb60-307"><a href="#cb60-307" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb60-308"><a href="#cb60-308" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb60-309"><a href="#cb60-309" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb60-310"><a href="#cb60-310" aria-hidden="true" tabindex="-1"></a>        <span class="at">panel.grid =</span> <span class="fu">element_blank</span>()) <span class="sc">+</span></span>
+<span id="cb60-311"><a href="#cb60-311" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Replicator Dynamics on the Hawk-Dove-Retaliator Simplex"</span>)</span>
+<span id="cb60-312"><a href="#cb60-312" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-313"><a href="#cb60-313" aria-hidden="true" tabindex="-1"></a>p_simplex</span>
+<span id="cb60-314"><a href="#cb60-314" aria-hidden="true" tabindex="-1"></a><span class="fu">save_pub_fig</span>(p_simplex, <span class="st">"ess-simplex"</span>, <span class="at">width =</span> <span class="dv">7</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
+<span id="cb60-315"><a href="#cb60-315" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-316"><a href="#cb60-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-317"><a href="#cb60-317" aria-hidden="true" tabindex="-1"></a><span class="fu">## Worked example</span></span>
+<span id="cb60-318"><a href="#cb60-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-319"><a href="#cb60-319" aria-hidden="true" tabindex="-1"></a>We now systematically find all ESS candidates in the Hawk-Dove-Retaliator game and verify the conditions.</span>
+<span id="cb60-320"><a href="#cb60-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-321"><a href="#cb60-321" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 1: Check pure strategies</span></span>
+<span id="cb60-322"><a href="#cb60-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-325"><a href="#cb60-325" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-326"><a href="#cb60-326" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hdr-ess-check</span></span>
+<span id="cb60-327"><a href="#cb60-327" aria-hidden="true" tabindex="-1"></a>hdr_ess <span class="ot">&lt;-</span> <span class="fu">check_ess</span>(hdr_matrix)</span>
+<span id="cb60-328"><a href="#cb60-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-329"><a href="#cb60-329" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"ESS analysis for Hawk-Dove-Retaliator:</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb60-330"><a href="#cb60-330" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(hdr_ess))) {</span>
+<span id="cb60-331"><a href="#cb60-331" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  %-12s  Nash: %-5s  Strict Nash: %-5s  ESS: %-5s"</span>,</span>
+<span id="cb60-332"><a href="#cb60-332" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>strategy[i],</span>
+<span id="cb60-333"><a href="#cb60-333" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>is_nash[i],</span>
+<span id="cb60-334"><a href="#cb60-334" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>strict_nash[i],</span>
+<span id="cb60-335"><a href="#cb60-335" aria-hidden="true" tabindex="-1"></a>              hdr_ess<span class="sc">$</span>is_ess[i]))</span>
+<span id="cb60-336"><a href="#cb60-336" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.na</span>(hdr_ess<span class="sc">$</span>failing_mutant[i])) {</span>
+<span id="cb60-337"><a href="#cb60-337" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  (fails against %s)"</span>, hdr_ess<span class="sc">$</span>failing_mutant[i]))</span>
+<span id="cb60-338"><a href="#cb60-338" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb60-339"><a href="#cb60-339" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-340"><a href="#cb60-340" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-341"><a href="#cb60-341" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-342"><a href="#cb60-342" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-343"><a href="#cb60-343" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 2: Interpret the results</span></span>
+<span id="cb60-344"><a href="#cb60-344" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-347"><a href="#cb60-347" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-348"><a href="#cb60-348" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hdr-interpret</span></span>
+<span id="cb60-349"><a href="#cb60-349" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Detailed verification:</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb60-350"><a href="#cb60-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-351"><a href="#cb60-351" aria-hidden="true" tabindex="-1"></a><span class="co"># Hawk vs Hawk</span></span>
+<span id="cb60-352"><a href="#cb60-352" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk as candidate ESS:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-353"><a href="#cb60-353" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Hawk, Hawk) = %.1f</span><span class="sc">\n</span><span class="st">"</span>, hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Hawk"</span>]))</span>
+<span id="cb60-354"><a href="#cb60-354" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Dove, Hawk) = %.1f  -&gt; Dove does better against Hawk</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-355"><a href="#cb60-355" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Hawk"</span>]))</span>
+<span id="cb60-356"><a href="#cb60-356" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Hawk is NOT a Nash equilibrium — Dove can invade.</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb60-357"><a href="#cb60-357" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-358"><a href="#cb60-358" aria-hidden="true" tabindex="-1"></a><span class="co"># Dove vs Dove</span></span>
+<span id="cb60-359"><a href="#cb60-359" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Dove as candidate ESS:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-360"><a href="#cb60-360" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Dove, Dove) = %.1f</span><span class="sc">\n</span><span class="st">"</span>, hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Dove"</span>]))</span>
+<span id="cb60-361"><a href="#cb60-361" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Hawk, Dove) = %.1f  -&gt; Hawk does better against Dove</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-362"><a href="#cb60-362" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>]))</span>
+<span id="cb60-363"><a href="#cb60-363" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Dove is NOT a Nash equilibrium — Hawk can invade.</span><span class="sc">\n\n</span><span class="st">"</span>)</span>
+<span id="cb60-364"><a href="#cb60-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-365"><a href="#cb60-365" aria-hidden="true" tabindex="-1"></a><span class="co"># Retaliator vs all</span></span>
+<span id="cb60-366"><a href="#cb60-366" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Retaliator as candidate ESS:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-367"><a href="#cb60-367" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Ret, Ret) = %.1f</span><span class="sc">\n</span><span class="st">"</span>, hdr_matrix[<span class="st">"Retaliator"</span>, <span class="st">"Retaliator"</span>]))</span>
+<span id="cb60-368"><a href="#cb60-368" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Hawk, Ret) = %.1f  -&gt; Hawk does equally well</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-369"><a href="#cb60-369" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Retaliator"</span>]))</span>
+<span id="cb60-370"><a href="#cb60-370" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Dove, Ret) = %.1f  -&gt; Dove does equally well</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-371"><a href="#cb60-371" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Retaliator"</span>]))</span>
+<span id="cb60-372"><a href="#cb60-372" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Ties exist — check stability condition:</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-373"><a href="#cb60-373" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Ret, Hawk) = %.1f vs u(Hawk, Hawk) = %.1f  -&gt; Ret wins</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-374"><a href="#cb60-374" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Retaliator"</span>, <span class="st">"Hawk"</span>], hdr_matrix[<span class="st">"Hawk"</span>, <span class="st">"Hawk"</span>]))</span>
+<span id="cb60-375"><a href="#cb60-375" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  u(Ret, Dove) = %.1f vs u(Dove, Dove) = %.1f  -&gt; Tied</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-376"><a href="#cb60-376" aria-hidden="true" tabindex="-1"></a>            hdr_matrix[<span class="st">"Retaliator"</span>, <span class="st">"Dove"</span>], hdr_matrix[<span class="st">"Dove"</span>, <span class="st">"Dove"</span>]))</span>
+<span id="cb60-377"><a href="#cb60-377" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-378"><a href="#cb60-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-379"><a href="#cb60-379" aria-hidden="true" tabindex="-1"></a><span class="fu">### Step 3: Verify with replicator dynamics</span></span>
+<span id="cb60-380"><a href="#cb60-380" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-381"><a href="#cb60-381" aria-hidden="true" tabindex="-1"></a>The simplex diagram above (@fig-ess-simplex) confirms the analytic result. Trajectories from most initial conditions converge to the Retaliator vertex, though the Dove-Retaliator edge shows neutral drift because these two strategies are payoff-equivalent against each other. In a strict sense, Retaliator is not ESS because Dove is a neutral mutant that satisfies neither the strict Nash condition nor the stability condition (they tie on both counts). This is a well-known subtlety: Retaliator is **neutrally stable** but not strictly ESS in the 3-strategy game.</span>
+<span id="cb60-382"><a href="#cb60-382" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-385"><a href="#cb60-385" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb60-386"><a href="#cb60-386" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: hdr-dynamics-verify</span></span>
+<span id="cb60-387"><a href="#cb60-387" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify: start near Retaliator, introduce small Hawk mutation</span></span>
+<span id="cb60-388"><a href="#cb60-388" aria-hidden="true" tabindex="-1"></a>x0_test <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Hawk =</span> <span class="fl">0.05</span>, <span class="at">Dove =</span> <span class="fl">0.0</span>, <span class="at">Retaliator =</span> <span class="fl">0.95</span>)</span>
+<span id="cb60-389"><a href="#cb60-389" aria-hidden="true" tabindex="-1"></a>sol_test <span class="ot">&lt;-</span> <span class="fu">run_replicator</span>(hdr_matrix, x0_test, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">100</span>, <span class="at">by =</span> <span class="dv">1</span>))</span>
+<span id="cb60-390"><a href="#cb60-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-391"><a href="#cb60-391" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Hawk invasion attempt (starting at 5% Hawk, 95% Retaliator):</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-392"><a href="#cb60-392" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  t=0:   Hawk=%.3f  Dove=%.3f  Ret=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-393"><a href="#cb60-393" aria-hidden="true" tabindex="-1"></a>            sol_test<span class="sc">$</span>Hawk[<span class="dv">1</span>], sol_test<span class="sc">$</span>Dove[<span class="dv">1</span>], sol_test<span class="sc">$</span>Retaliator[<span class="dv">1</span>]))</span>
+<span id="cb60-394"><a href="#cb60-394" aria-hidden="true" tabindex="-1"></a>final <span class="ot">&lt;-</span> <span class="fu">nrow</span>(sol_test)</span>
+<span id="cb60-395"><a href="#cb60-395" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">"  t=100: Hawk=%.3f  Dove=%.3f  Ret=%.3f</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb60-396"><a href="#cb60-396" aria-hidden="true" tabindex="-1"></a>            sol_test<span class="sc">$</span>Hawk[final], sol_test<span class="sc">$</span>Dove[final], sol_test<span class="sc">$</span>Retaliator[final]))</span>
+<span id="cb60-397"><a href="#cb60-397" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"  Hawk is driven out — Retaliator resists Hawk invasion.</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb60-398"><a href="#cb60-398" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb60-399"><a href="#cb60-399" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-400"><a href="#cb60-400" aria-hidden="true" tabindex="-1"></a><span class="fu">## Extensions</span></span>
+<span id="cb60-401"><a href="#cb60-401" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-402"><a href="#cb60-402" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Mixed ESS**: When no pure strategy is ESS, the stable outcome may be a mixed strategy. For 2-strategy games, the ESS mixture can be found analytically; for larger games, the Bishop-Cannings theorem provides necessary conditions <span class="co">[</span><span class="ot">@maynardsmith1982</span><span class="co">]</span>.</span>
+<span id="cb60-403"><a href="#cb60-403" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Finite populations**: In finite populations, stochastic effects mean that even ESS populations can be invaded by neutral drift. Nowak et al. <span class="co">[</span><span class="ot">-@nowak2004</span><span class="co">]</span> introduced stochastic stability concepts for evolutionary dynamics.</span>
+<span id="cb60-404"><a href="#cb60-404" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Multi-population ESS**: When different roles exist (e.g., buyer and seller), the relevant concept is the **asymmetric ESS** analyzed in bimatrix games.</span>
+<span id="cb60-405"><a href="#cb60-405" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Connection to replicator dynamics**: The replicator equation (@sec-replicator-dynamics) provides the dynamic justification for ESS — every ESS is an asymptotically stable rest point of the replicator dynamics, though the converse is not always true.</span>
+<span id="cb60-406"><a href="#cb60-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-407"><a href="#cb60-407" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exercises {.unnumbered}</span></span>
+<span id="cb60-408"><a href="#cb60-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-409"><a href="#cb60-409" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>**Stag Hunt ESS.** Consider the Stag Hunt game with payoff matrix $A = \begin{pmatrix} 4 &amp; 0 <span class="sc">\\</span> 3 &amp; 2 \end{pmatrix}$. Use <span class="in">`check_ess()`</span> to verify that both (Stag, Stag) and (Hare, Hare) are Nash equilibria, but only one is an ESS. Which one, and why?</span>
+<span id="cb60-410"><a href="#cb60-410" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-411"><a href="#cb60-411" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>**Three-strategy Rock-Paper-Scissors.** Construct the symmetric payoff matrix for RPS with win = 1, loss = -1, draw = 0. Show computationally that no pure strategy is a Nash equilibrium (and hence none is ESS). Then argue from the invasion fitness formula why the uniform mixture $(\tfrac{1}{3}, \tfrac{1}{3}, \tfrac{1}{3})$ is not ESS either — it is neutrally stable.</span>
+<span id="cb60-412"><a href="#cb60-412" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-413"><a href="#cb60-413" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>**Invasion barrier.** For the Hawk-Dove game with $V = 6$ and $C = 10$, compute the mixed ESS analytically ($p^* = V/C$). Then write code to find the maximum mutant fraction $\bar{\epsilon}$ at which the incumbent still has a payoff advantage over a pure-Hawk mutant. Plot the advantage curve and mark $\bar{\epsilon}$ on the graph.</span>
+<span id="cb60-414"><a href="#cb60-414" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-415"><a href="#cb60-415" aria-hidden="true" tabindex="-1"></a>Solutions appear in @sec-solutions.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

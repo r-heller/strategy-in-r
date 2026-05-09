@@ -751,7 +751,7 @@ window.Quarto = {
   <li><a href="#summary-of-r-probability-functions" id="toc-summary-of-r-probability-functions" class="nav-link" data-scroll-target="#summary-of-r-probability-functions"><span class="header-section-number">D.9</span> Summary of R probability functions</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/appendices/C-probability.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/appendices/C-probability.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/appendices/C-probability.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/appendices/C-probability.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="../downloads/probability-essentials.pdf"><i class="bi bi-file-pdf"></i>Download Chapter PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1690,299 +1690,302 @@ Table&nbsp;D.1: R functions for common probability distributions
 <span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
 <span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "Probability distributions, expectations, Bayes' rule, and stochastic processes."</span></span>
 <span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["probability", "distributions", "Bayes", "stochastic processes"]</span></span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Probability Essentials {#sec-probability}</span></span>
-<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
-<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
-<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a>This appendix reviews the probability concepts that underpin mixed strategies, Bayesian games, and the simulation chapters. The emphasis is on intuition and R implementation rather than measure-theoretic rigour.</span>
-<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-22"><a href="#cb55-22" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sample spaces and events</span></span>
-<span id="cb55-23"><a href="#cb55-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-24"><a href="#cb55-24" aria-hidden="true" tabindex="-1"></a>A **sample space** $\Omega$ is the set of all possible outcomes of a random experiment. An **event** $E \subseteq \Omega$ is a subset of outcomes. A **probability measure** $P$ assigns a number $P(E) \in <span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span>$ to every event, with $P(\Omega) = 1$.</span>
-<span id="cb55-25"><a href="#cb55-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-26"><a href="#cb55-26" aria-hidden="true" tabindex="-1"></a>In game theory, the sample space often corresponds to the set of action profiles or the set of player types.</span>
-<span id="cb55-27"><a href="#cb55-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-28"><a href="#cb55-28" aria-hidden="true" tabindex="-1"></a><span class="fu">## Discrete distributions</span></span>
-<span id="cb55-29"><a href="#cb55-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-30"><a href="#cb55-30" aria-hidden="true" tabindex="-1"></a>A **discrete random variable** $X$ takes values in a countable set $<span class="sc">\{</span>x_1, x_2, \ldots<span class="sc">\}</span>$ with probability mass function $p(x_i) = P(X = x_i)$.</span>
-<span id="cb55-31"><a href="#cb55-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-32"><a href="#cb55-32" aria-hidden="true" tabindex="-1"></a><span class="fu">### Common discrete distributions</span></span>
-<span id="cb55-33"><a href="#cb55-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-36"><a href="#cb55-36" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-37"><a href="#cb55-37" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: discrete-dists</span></span>
-<span id="cb55-38"><a href="#cb55-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Bernoulli: coin flip (used in mixed strategies)</span></span>
-<span id="cb55-39"><a href="#cb55-39" aria-hidden="true" tabindex="-1"></a><span class="fu">rbinom</span>(<span class="dv">10</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> <span class="fl">0.5</span>)</span>
-<span id="cb55-40"><a href="#cb55-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-41"><a href="#cb55-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Binomial: number of cooperators in n rounds</span></span>
-<span id="cb55-42"><a href="#cb55-42" aria-hidden="true" tabindex="-1"></a><span class="fu">dbinom</span>(<span class="dv">3</span>, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">prob =</span> <span class="fl">0.6</span>)  <span class="co"># P(X = 3)</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="an">other-links:</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a><span class="co">  - text: Download Chapter PDF</span></span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a><span class="co">    href: ../downloads/probability-essentials.pdf</span></span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a><span class="co">    icon: file-pdf</span></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># Probability Essentials {#sec-probability}</span></span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-22"><a href="#cb55-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-23"><a href="#cb55-23" aria-hidden="true" tabindex="-1"></a>This appendix reviews the probability concepts that underpin mixed strategies, Bayesian games, and the simulation chapters. The emphasis is on intuition and R implementation rather than measure-theoretic rigour.</span>
+<span id="cb55-24"><a href="#cb55-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-25"><a href="#cb55-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sample spaces and events</span></span>
+<span id="cb55-26"><a href="#cb55-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-27"><a href="#cb55-27" aria-hidden="true" tabindex="-1"></a>A **sample space** $\Omega$ is the set of all possible outcomes of a random experiment. An **event** $E \subseteq \Omega$ is a subset of outcomes. A **probability measure** $P$ assigns a number $P(E) \in <span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span>$ to every event, with $P(\Omega) = 1$.</span>
+<span id="cb55-28"><a href="#cb55-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-29"><a href="#cb55-29" aria-hidden="true" tabindex="-1"></a>In game theory, the sample space often corresponds to the set of action profiles or the set of player types.</span>
+<span id="cb55-30"><a href="#cb55-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-31"><a href="#cb55-31" aria-hidden="true" tabindex="-1"></a><span class="fu">## Discrete distributions</span></span>
+<span id="cb55-32"><a href="#cb55-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-33"><a href="#cb55-33" aria-hidden="true" tabindex="-1"></a>A **discrete random variable** $X$ takes values in a countable set $<span class="sc">\{</span>x_1, x_2, \ldots<span class="sc">\}</span>$ with probability mass function $p(x_i) = P(X = x_i)$.</span>
+<span id="cb55-34"><a href="#cb55-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-35"><a href="#cb55-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### Common discrete distributions</span></span>
+<span id="cb55-36"><a href="#cb55-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-39"><a href="#cb55-39" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-40"><a href="#cb55-40" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: discrete-dists</span></span>
+<span id="cb55-41"><a href="#cb55-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Bernoulli: coin flip (used in mixed strategies)</span></span>
+<span id="cb55-42"><a href="#cb55-42" aria-hidden="true" tabindex="-1"></a><span class="fu">rbinom</span>(<span class="dv">10</span>, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> <span class="fl">0.5</span>)</span>
 <span id="cb55-43"><a href="#cb55-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-44"><a href="#cb55-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Uniform: equally likely strategies</span></span>
-<span id="cb55-45"><a href="#cb55-45" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span>), <span class="at">size =</span> <span class="dv">1</span>)</span>
+<span id="cb55-44"><a href="#cb55-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Binomial: number of cooperators in n rounds</span></span>
+<span id="cb55-45"><a href="#cb55-45" aria-hidden="true" tabindex="-1"></a><span class="fu">dbinom</span>(<span class="dv">3</span>, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">prob =</span> <span class="fl">0.6</span>)  <span class="co"># P(X = 3)</span></span>
 <span id="cb55-46"><a href="#cb55-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-47"><a href="#cb55-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Poisson: arrival counts (used in some mechanism design models)</span></span>
-<span id="cb55-48"><a href="#cb55-48" aria-hidden="true" tabindex="-1"></a><span class="fu">rpois</span>(<span class="dv">10</span>, <span class="at">lambda =</span> <span class="dv">3</span>)</span>
-<span id="cb55-49"><a href="#cb55-49" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-50"><a href="#cb55-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-51"><a href="#cb55-51" aria-hidden="true" tabindex="-1"></a><span class="fu">### Probability mass function and CDF</span></span>
-<span id="cb55-52"><a href="#cb55-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-55"><a href="#cb55-55" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-56"><a href="#cb55-56" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pmf-cdf</span></span>
-<span id="cb55-57"><a href="#cb55-57" aria-hidden="true" tabindex="-1"></a><span class="co"># PMF and CDF of Binomial(10, 0.4)</span></span>
-<span id="cb55-58"><a href="#cb55-58" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span></span>
-<span id="cb55-59"><a href="#cb55-59" aria-hidden="true" tabindex="-1"></a>pmf <span class="ot">&lt;-</span> <span class="fu">dbinom</span>(x, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">prob =</span> <span class="fl">0.4</span>)</span>
-<span id="cb55-60"><a href="#cb55-60" aria-hidden="true" tabindex="-1"></a>cdf <span class="ot">&lt;-</span> <span class="fu">pbinom</span>(x, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">prob =</span> <span class="fl">0.4</span>)</span>
-<span id="cb55-61"><a href="#cb55-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-62"><a href="#cb55-62" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">x =</span> x, <span class="at">pmf =</span> pmf, <span class="at">cdf =</span> cdf) <span class="sc">|&gt;</span></span>
-<span id="cb55-63"><a href="#cb55-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">6</span>)</span>
-<span id="cb55-64"><a href="#cb55-64" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-65"><a href="#cb55-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-66"><a href="#cb55-66" aria-hidden="true" tabindex="-1"></a><span class="fu">## Continuous distributions</span></span>
-<span id="cb55-67"><a href="#cb55-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-68"><a href="#cb55-68" aria-hidden="true" tabindex="-1"></a>A **continuous random variable** $X$ has a probability density function $f(x)$ such that $P(a \leq X \leq b) = \int_a^b f(x)\, dx$.</span>
-<span id="cb55-69"><a href="#cb55-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-70"><a href="#cb55-70" aria-hidden="true" tabindex="-1"></a><span class="fu">### Common continuous distributions</span></span>
-<span id="cb55-71"><a href="#cb55-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-74"><a href="#cb55-74" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-75"><a href="#cb55-75" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: continuous-dists</span></span>
-<span id="cb55-76"><a href="#cb55-76" aria-hidden="true" tabindex="-1"></a><span class="co"># Uniform on [0, 1]: used for types in Bayesian games</span></span>
-<span id="cb55-77"><a href="#cb55-77" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">5</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">1</span>)</span>
-<span id="cb55-78"><a href="#cb55-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-79"><a href="#cb55-79" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal: payoff noise, error terms</span></span>
-<span id="cb55-80"><a href="#cb55-80" aria-hidden="true" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="dv">5</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb55-47"><a href="#cb55-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Uniform: equally likely strategies</span></span>
+<span id="cb55-48"><a href="#cb55-48" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span>), <span class="at">size =</span> <span class="dv">1</span>)</span>
+<span id="cb55-49"><a href="#cb55-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-50"><a href="#cb55-50" aria-hidden="true" tabindex="-1"></a><span class="co"># Poisson: arrival counts (used in some mechanism design models)</span></span>
+<span id="cb55-51"><a href="#cb55-51" aria-hidden="true" tabindex="-1"></a><span class="fu">rpois</span>(<span class="dv">10</span>, <span class="at">lambda =</span> <span class="dv">3</span>)</span>
+<span id="cb55-52"><a href="#cb55-52" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-53"><a href="#cb55-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-54"><a href="#cb55-54" aria-hidden="true" tabindex="-1"></a><span class="fu">### Probability mass function and CDF</span></span>
+<span id="cb55-55"><a href="#cb55-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-58"><a href="#cb55-58" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-59"><a href="#cb55-59" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pmf-cdf</span></span>
+<span id="cb55-60"><a href="#cb55-60" aria-hidden="true" tabindex="-1"></a><span class="co"># PMF and CDF of Binomial(10, 0.4)</span></span>
+<span id="cb55-61"><a href="#cb55-61" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span></span>
+<span id="cb55-62"><a href="#cb55-62" aria-hidden="true" tabindex="-1"></a>pmf <span class="ot">&lt;-</span> <span class="fu">dbinom</span>(x, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">prob =</span> <span class="fl">0.4</span>)</span>
+<span id="cb55-63"><a href="#cb55-63" aria-hidden="true" tabindex="-1"></a>cdf <span class="ot">&lt;-</span> <span class="fu">pbinom</span>(x, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">prob =</span> <span class="fl">0.4</span>)</span>
+<span id="cb55-64"><a href="#cb55-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-65"><a href="#cb55-65" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">x =</span> x, <span class="at">pmf =</span> pmf, <span class="at">cdf =</span> cdf) <span class="sc">|&gt;</span></span>
+<span id="cb55-66"><a href="#cb55-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">6</span>)</span>
+<span id="cb55-67"><a href="#cb55-67" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-68"><a href="#cb55-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-69"><a href="#cb55-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## Continuous distributions</span></span>
+<span id="cb55-70"><a href="#cb55-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-71"><a href="#cb55-71" aria-hidden="true" tabindex="-1"></a>A **continuous random variable** $X$ has a probability density function $f(x)$ such that $P(a \leq X \leq b) = \int_a^b f(x)\, dx$.</span>
+<span id="cb55-72"><a href="#cb55-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-73"><a href="#cb55-73" aria-hidden="true" tabindex="-1"></a><span class="fu">### Common continuous distributions</span></span>
+<span id="cb55-74"><a href="#cb55-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-77"><a href="#cb55-77" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-78"><a href="#cb55-78" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: continuous-dists</span></span>
+<span id="cb55-79"><a href="#cb55-79" aria-hidden="true" tabindex="-1"></a><span class="co"># Uniform on [0, 1]: used for types in Bayesian games</span></span>
+<span id="cb55-80"><a href="#cb55-80" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">5</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">1</span>)</span>
 <span id="cb55-81"><a href="#cb55-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-82"><a href="#cb55-82" aria-hidden="true" tabindex="-1"></a><span class="co"># Exponential: waiting times, discount factors</span></span>
-<span id="cb55-83"><a href="#cb55-83" aria-hidden="true" tabindex="-1"></a><span class="fu">rexp</span>(<span class="dv">5</span>, <span class="at">rate =</span> <span class="dv">1</span>)</span>
-<span id="cb55-84"><a href="#cb55-84" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-85"><a href="#cb55-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-86"><a href="#cb55-86" aria-hidden="true" tabindex="-1"></a><span class="fu">### Density, CDF, and quantiles</span></span>
-<span id="cb55-87"><a href="#cb55-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-88"><a href="#cb55-88" aria-hidden="true" tabindex="-1"></a>R uses a consistent naming convention: <span class="in">`d`</span> for density, <span class="in">`p`</span> for CDF, <span class="in">`q`</span> for quantile, and <span class="in">`r`</span> for random draws.</span>
-<span id="cb55-89"><a href="#cb55-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-92"><a href="#cb55-92" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-93"><a href="#cb55-93" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: dpqr</span></span>
-<span id="cb55-94"><a href="#cb55-94" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal distribution</span></span>
-<span id="cb55-95"><a href="#cb55-95" aria-hidden="true" tabindex="-1"></a><span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)   <span class="co"># density at 0</span></span>
-<span id="cb55-96"><a href="#cb55-96" aria-hidden="true" tabindex="-1"></a><span class="fu">pnorm</span>(<span class="fl">1.96</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) <span class="co"># P(X &lt;= 1.96)</span></span>
-<span id="cb55-97"><a href="#cb55-97" aria-hidden="true" tabindex="-1"></a><span class="fu">qnorm</span>(<span class="fl">0.975</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) <span class="co"># 97.5th percentile</span></span>
-<span id="cb55-98"><a href="#cb55-98" aria-hidden="true" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="dv">3</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)    <span class="co"># three random draws</span></span>
-<span id="cb55-99"><a href="#cb55-99" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-100"><a href="#cb55-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-101"><a href="#cb55-101" aria-hidden="true" tabindex="-1"></a><span class="fu">## Expected value and variance</span></span>
-<span id="cb55-102"><a href="#cb55-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-103"><a href="#cb55-103" aria-hidden="true" tabindex="-1"></a>The **expected value** of a discrete random variable is $E<span class="co">[</span><span class="ot">X</span><span class="co">]</span> = \sum_i x_i \, p(x_i)$. For a continuous variable, $E<span class="co">[</span><span class="ot">X</span><span class="co">]</span> = \int x \, f(x) \, dx$. In game theory, the expected payoff under a mixed strategy $\mathbf{p}$ is:</span>
-<span id="cb55-104"><a href="#cb55-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-105"><a href="#cb55-105" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-106"><a href="#cb55-106" aria-hidden="true" tabindex="-1"></a>E<span class="co">[</span><span class="ot">u_i</span><span class="co">]</span> = \sum_{a \in A} p(a) \, u_i(a)</span>
-<span id="cb55-107"><a href="#cb55-107" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-108"><a href="#cb55-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-109"><a href="#cb55-109" aria-hidden="true" tabindex="-1"></a>The **variance** $\text{Var}(X) = E<span class="co">[</span><span class="ot">(X - E[X])^2</span><span class="co">]</span> = E<span class="co">[</span><span class="ot">X^2</span><span class="co">]</span> - (E<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)^2$ measures the spread of outcomes.</span>
-<span id="cb55-110"><a href="#cb55-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-113"><a href="#cb55-113" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-114"><a href="#cb55-114" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: expected-value</span></span>
-<span id="cb55-115"><a href="#cb55-115" aria-hidden="true" tabindex="-1"></a><span class="co"># Expected payoff under a mixed strategy</span></span>
-<span id="cb55-116"><a href="#cb55-116" aria-hidden="true" tabindex="-1"></a>payoffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>)</span>
-<span id="cb55-117"><a href="#cb55-117" aria-hidden="true" tabindex="-1"></a>probs   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.4</span>)</span>
-<span id="cb55-118"><a href="#cb55-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-119"><a href="#cb55-119" aria-hidden="true" tabindex="-1"></a><span class="co"># Expected value</span></span>
-<span id="cb55-120"><a href="#cb55-120" aria-hidden="true" tabindex="-1"></a>ev <span class="ot">&lt;-</span> <span class="fu">sum</span>(payoffs <span class="sc">*</span> probs)</span>
-<span id="cb55-121"><a href="#cb55-121" aria-hidden="true" tabindex="-1"></a>ev</span>
-<span id="cb55-122"><a href="#cb55-122" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-123"><a href="#cb55-123" aria-hidden="true" tabindex="-1"></a><span class="co"># Variance</span></span>
-<span id="cb55-124"><a href="#cb55-124" aria-hidden="true" tabindex="-1"></a>variance <span class="ot">&lt;-</span> <span class="fu">sum</span>(probs <span class="sc">*</span> (payoffs <span class="sc">-</span> ev)<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb55-125"><a href="#cb55-125" aria-hidden="true" tabindex="-1"></a>variance</span>
-<span id="cb55-126"><a href="#cb55-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-127"><a href="#cb55-127" aria-hidden="true" tabindex="-1"></a><span class="co"># Using simulation to verify</span></span>
-<span id="cb55-128"><a href="#cb55-128" aria-hidden="true" tabindex="-1"></a>simulated <span class="ot">&lt;-</span> <span class="fu">sample</span>(payoffs, <span class="at">size =</span> <span class="dv">100000</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> probs)</span>
-<span id="cb55-129"><a href="#cb55-129" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(simulated)</span>
-<span id="cb55-130"><a href="#cb55-130" aria-hidden="true" tabindex="-1"></a><span class="fu">var</span>(simulated)</span>
-<span id="cb55-131"><a href="#cb55-131" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-132"><a href="#cb55-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-133"><a href="#cb55-133" aria-hidden="true" tabindex="-1"></a><span class="fu">### Linearity of expectation</span></span>
-<span id="cb55-134"><a href="#cb55-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-135"><a href="#cb55-135" aria-hidden="true" tabindex="-1"></a>A key property: $E<span class="co">[</span><span class="ot">aX + bY</span><span class="co">]</span> = aE<span class="co">[</span><span class="ot">X</span><span class="co">]</span> + bE<span class="co">[</span><span class="ot">Y</span><span class="co">]</span>$, regardless of whether $X$ and $Y$ are independent. This is used constantly when computing expected payoffs in multi-player games.</span>
-<span id="cb55-136"><a href="#cb55-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-137"><a href="#cb55-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Conditional probability</span></span>
-<span id="cb55-138"><a href="#cb55-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-139"><a href="#cb55-139" aria-hidden="true" tabindex="-1"></a>The **conditional probability** of $A$ given $B$ is:</span>
-<span id="cb55-140"><a href="#cb55-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-141"><a href="#cb55-141" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-142"><a href="#cb55-142" aria-hidden="true" tabindex="-1"></a>P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad P(B) &gt; 0</span>
-<span id="cb55-143"><a href="#cb55-143" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-144"><a href="#cb55-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-145"><a href="#cb55-145" aria-hidden="true" tabindex="-1"></a>Two events are **independent** if $P(A \cap B) = P(A) P(B)$, equivalently $P(A \mid B) = P(A)$.</span>
-<span id="cb55-146"><a href="#cb55-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-149"><a href="#cb55-149" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-150"><a href="#cb55-150" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: conditional</span></span>
-<span id="cb55-151"><a href="#cb55-151" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulation: P(both cooperate | Player 1 cooperates)</span></span>
-<span id="cb55-152"><a href="#cb55-152" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100000</span></span>
-<span id="cb55-153"><a href="#cb55-153" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"D"</span>), n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.4</span>))</span>
-<span id="cb55-154"><a href="#cb55-154" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"D"</span>), n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>))</span>
-<span id="cb55-155"><a href="#cb55-155" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-156"><a href="#cb55-156" aria-hidden="true" tabindex="-1"></a><span class="co"># Joint and conditional (assuming independence here)</span></span>
-<span id="cb55-157"><a href="#cb55-157" aria-hidden="true" tabindex="-1"></a>p_both_C <span class="ot">&lt;-</span> <span class="fu">mean</span>(p1 <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">&amp;</span> p2 <span class="sc">==</span> <span class="st">"C"</span>)</span>
-<span id="cb55-158"><a href="#cb55-158" aria-hidden="true" tabindex="-1"></a>p_p1_C   <span class="ot">&lt;-</span> <span class="fu">mean</span>(p1 <span class="sc">==</span> <span class="st">"C"</span>)</span>
-<span id="cb55-159"><a href="#cb55-159" aria-hidden="true" tabindex="-1"></a>p_both_C <span class="sc">/</span> p_p1_C  <span class="co"># should be approx 0.5</span></span>
-<span id="cb55-160"><a href="#cb55-160" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-161"><a href="#cb55-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-162"><a href="#cb55-162" aria-hidden="true" tabindex="-1"></a><span class="fu">## Bayes' theorem</span></span>
-<span id="cb55-163"><a href="#cb55-163" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-164"><a href="#cb55-164" aria-hidden="true" tabindex="-1"></a>**Bayes' theorem** is the foundation of Bayesian games (@sec-bayesian-games). It tells us how to update beliefs about a player's type after observing their action:</span>
-<span id="cb55-165"><a href="#cb55-165" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-166"><a href="#cb55-166" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-167"><a href="#cb55-167" aria-hidden="true" tabindex="-1"></a>P(\theta \mid a) = \frac{P(a \mid \theta) \, P(\theta)}{P(a)}</span>
-<span id="cb55-168"><a href="#cb55-168" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-169"><a href="#cb55-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-170"><a href="#cb55-170" aria-hidden="true" tabindex="-1"></a>where $\theta$ is the player's type, $a$ is the observed action, $P(\theta)$ is the prior, $P(a \mid \theta)$ is the likelihood, and $P(a) = \sum_{\theta'} P(a \mid \theta') P(\theta')$ is the marginal likelihood.</span>
-<span id="cb55-171"><a href="#cb55-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-174"><a href="#cb55-174" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-175"><a href="#cb55-175" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: bayes</span></span>
-<span id="cb55-176"><a href="#cb55-176" aria-hidden="true" tabindex="-1"></a><span class="co"># Signaling game: worker chooses Education or No Education</span></span>
-<span id="cb55-177"><a href="#cb55-177" aria-hidden="true" tabindex="-1"></a><span class="co"># Types: High (prob 0.6), Low (prob 0.4)</span></span>
-<span id="cb55-178"><a href="#cb55-178" aria-hidden="true" tabindex="-1"></a><span class="co"># P(Education | High) = 0.9, P(Education | Low) = 0.2</span></span>
-<span id="cb55-179"><a href="#cb55-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-180"><a href="#cb55-180" aria-hidden="true" tabindex="-1"></a>prior_high <span class="ot">&lt;-</span> <span class="fl">0.6</span></span>
-<span id="cb55-181"><a href="#cb55-181" aria-hidden="true" tabindex="-1"></a>prior_low  <span class="ot">&lt;-</span> <span class="fl">0.4</span></span>
+<span id="cb55-82"><a href="#cb55-82" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal: payoff noise, error terms</span></span>
+<span id="cb55-83"><a href="#cb55-83" aria-hidden="true" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="dv">5</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb55-84"><a href="#cb55-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-85"><a href="#cb55-85" aria-hidden="true" tabindex="-1"></a><span class="co"># Exponential: waiting times, discount factors</span></span>
+<span id="cb55-86"><a href="#cb55-86" aria-hidden="true" tabindex="-1"></a><span class="fu">rexp</span>(<span class="dv">5</span>, <span class="at">rate =</span> <span class="dv">1</span>)</span>
+<span id="cb55-87"><a href="#cb55-87" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-88"><a href="#cb55-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-89"><a href="#cb55-89" aria-hidden="true" tabindex="-1"></a><span class="fu">### Density, CDF, and quantiles</span></span>
+<span id="cb55-90"><a href="#cb55-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-91"><a href="#cb55-91" aria-hidden="true" tabindex="-1"></a>R uses a consistent naming convention: <span class="in">`d`</span> for density, <span class="in">`p`</span> for CDF, <span class="in">`q`</span> for quantile, and <span class="in">`r`</span> for random draws.</span>
+<span id="cb55-92"><a href="#cb55-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-95"><a href="#cb55-95" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-96"><a href="#cb55-96" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: dpqr</span></span>
+<span id="cb55-97"><a href="#cb55-97" aria-hidden="true" tabindex="-1"></a><span class="co"># Normal distribution</span></span>
+<span id="cb55-98"><a href="#cb55-98" aria-hidden="true" tabindex="-1"></a><span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)   <span class="co"># density at 0</span></span>
+<span id="cb55-99"><a href="#cb55-99" aria-hidden="true" tabindex="-1"></a><span class="fu">pnorm</span>(<span class="fl">1.96</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) <span class="co"># P(X &lt;= 1.96)</span></span>
+<span id="cb55-100"><a href="#cb55-100" aria-hidden="true" tabindex="-1"></a><span class="fu">qnorm</span>(<span class="fl">0.975</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) <span class="co"># 97.5th percentile</span></span>
+<span id="cb55-101"><a href="#cb55-101" aria-hidden="true" tabindex="-1"></a><span class="fu">rnorm</span>(<span class="dv">3</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>)    <span class="co"># three random draws</span></span>
+<span id="cb55-102"><a href="#cb55-102" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-103"><a href="#cb55-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-104"><a href="#cb55-104" aria-hidden="true" tabindex="-1"></a><span class="fu">## Expected value and variance</span></span>
+<span id="cb55-105"><a href="#cb55-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-106"><a href="#cb55-106" aria-hidden="true" tabindex="-1"></a>The **expected value** of a discrete random variable is $E<span class="co">[</span><span class="ot">X</span><span class="co">]</span> = \sum_i x_i \, p(x_i)$. For a continuous variable, $E<span class="co">[</span><span class="ot">X</span><span class="co">]</span> = \int x \, f(x) \, dx$. In game theory, the expected payoff under a mixed strategy $\mathbf{p}$ is:</span>
+<span id="cb55-107"><a href="#cb55-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-108"><a href="#cb55-108" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-109"><a href="#cb55-109" aria-hidden="true" tabindex="-1"></a>E<span class="co">[</span><span class="ot">u_i</span><span class="co">]</span> = \sum_{a \in A} p(a) \, u_i(a)</span>
+<span id="cb55-110"><a href="#cb55-110" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-111"><a href="#cb55-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-112"><a href="#cb55-112" aria-hidden="true" tabindex="-1"></a>The **variance** $\text{Var}(X) = E<span class="co">[</span><span class="ot">(X - E[X])^2</span><span class="co">]</span> = E<span class="co">[</span><span class="ot">X^2</span><span class="co">]</span> - (E<span class="co">[</span><span class="ot">X</span><span class="co">]</span>)^2$ measures the spread of outcomes.</span>
+<span id="cb55-113"><a href="#cb55-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-116"><a href="#cb55-116" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-117"><a href="#cb55-117" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: expected-value</span></span>
+<span id="cb55-118"><a href="#cb55-118" aria-hidden="true" tabindex="-1"></a><span class="co"># Expected payoff under a mixed strategy</span></span>
+<span id="cb55-119"><a href="#cb55-119" aria-hidden="true" tabindex="-1"></a>payoffs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>)</span>
+<span id="cb55-120"><a href="#cb55-120" aria-hidden="true" tabindex="-1"></a>probs   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.4</span>)</span>
+<span id="cb55-121"><a href="#cb55-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-122"><a href="#cb55-122" aria-hidden="true" tabindex="-1"></a><span class="co"># Expected value</span></span>
+<span id="cb55-123"><a href="#cb55-123" aria-hidden="true" tabindex="-1"></a>ev <span class="ot">&lt;-</span> <span class="fu">sum</span>(payoffs <span class="sc">*</span> probs)</span>
+<span id="cb55-124"><a href="#cb55-124" aria-hidden="true" tabindex="-1"></a>ev</span>
+<span id="cb55-125"><a href="#cb55-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-126"><a href="#cb55-126" aria-hidden="true" tabindex="-1"></a><span class="co"># Variance</span></span>
+<span id="cb55-127"><a href="#cb55-127" aria-hidden="true" tabindex="-1"></a>variance <span class="ot">&lt;-</span> <span class="fu">sum</span>(probs <span class="sc">*</span> (payoffs <span class="sc">-</span> ev)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb55-128"><a href="#cb55-128" aria-hidden="true" tabindex="-1"></a>variance</span>
+<span id="cb55-129"><a href="#cb55-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-130"><a href="#cb55-130" aria-hidden="true" tabindex="-1"></a><span class="co"># Using simulation to verify</span></span>
+<span id="cb55-131"><a href="#cb55-131" aria-hidden="true" tabindex="-1"></a>simulated <span class="ot">&lt;-</span> <span class="fu">sample</span>(payoffs, <span class="at">size =</span> <span class="dv">100000</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> probs)</span>
+<span id="cb55-132"><a href="#cb55-132" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(simulated)</span>
+<span id="cb55-133"><a href="#cb55-133" aria-hidden="true" tabindex="-1"></a><span class="fu">var</span>(simulated)</span>
+<span id="cb55-134"><a href="#cb55-134" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-135"><a href="#cb55-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-136"><a href="#cb55-136" aria-hidden="true" tabindex="-1"></a><span class="fu">### Linearity of expectation</span></span>
+<span id="cb55-137"><a href="#cb55-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-138"><a href="#cb55-138" aria-hidden="true" tabindex="-1"></a>A key property: $E<span class="co">[</span><span class="ot">aX + bY</span><span class="co">]</span> = aE<span class="co">[</span><span class="ot">X</span><span class="co">]</span> + bE<span class="co">[</span><span class="ot">Y</span><span class="co">]</span>$, regardless of whether $X$ and $Y$ are independent. This is used constantly when computing expected payoffs in multi-player games.</span>
+<span id="cb55-139"><a href="#cb55-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-140"><a href="#cb55-140" aria-hidden="true" tabindex="-1"></a><span class="fu">## Conditional probability</span></span>
+<span id="cb55-141"><a href="#cb55-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-142"><a href="#cb55-142" aria-hidden="true" tabindex="-1"></a>The **conditional probability** of $A$ given $B$ is:</span>
+<span id="cb55-143"><a href="#cb55-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-144"><a href="#cb55-144" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-145"><a href="#cb55-145" aria-hidden="true" tabindex="-1"></a>P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad P(B) &gt; 0</span>
+<span id="cb55-146"><a href="#cb55-146" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-147"><a href="#cb55-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-148"><a href="#cb55-148" aria-hidden="true" tabindex="-1"></a>Two events are **independent** if $P(A \cap B) = P(A) P(B)$, equivalently $P(A \mid B) = P(A)$.</span>
+<span id="cb55-149"><a href="#cb55-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-152"><a href="#cb55-152" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-153"><a href="#cb55-153" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: conditional</span></span>
+<span id="cb55-154"><a href="#cb55-154" aria-hidden="true" tabindex="-1"></a><span class="co"># Simulation: P(both cooperate | Player 1 cooperates)</span></span>
+<span id="cb55-155"><a href="#cb55-155" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">100000</span></span>
+<span id="cb55-156"><a href="#cb55-156" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"D"</span>), n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="fl">0.4</span>))</span>
+<span id="cb55-157"><a href="#cb55-157" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"D"</span>), n, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>))</span>
+<span id="cb55-158"><a href="#cb55-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-159"><a href="#cb55-159" aria-hidden="true" tabindex="-1"></a><span class="co"># Joint and conditional (assuming independence here)</span></span>
+<span id="cb55-160"><a href="#cb55-160" aria-hidden="true" tabindex="-1"></a>p_both_C <span class="ot">&lt;-</span> <span class="fu">mean</span>(p1 <span class="sc">==</span> <span class="st">"C"</span> <span class="sc">&amp;</span> p2 <span class="sc">==</span> <span class="st">"C"</span>)</span>
+<span id="cb55-161"><a href="#cb55-161" aria-hidden="true" tabindex="-1"></a>p_p1_C   <span class="ot">&lt;-</span> <span class="fu">mean</span>(p1 <span class="sc">==</span> <span class="st">"C"</span>)</span>
+<span id="cb55-162"><a href="#cb55-162" aria-hidden="true" tabindex="-1"></a>p_both_C <span class="sc">/</span> p_p1_C  <span class="co"># should be approx 0.5</span></span>
+<span id="cb55-163"><a href="#cb55-163" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-164"><a href="#cb55-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-165"><a href="#cb55-165" aria-hidden="true" tabindex="-1"></a><span class="fu">## Bayes' theorem</span></span>
+<span id="cb55-166"><a href="#cb55-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-167"><a href="#cb55-167" aria-hidden="true" tabindex="-1"></a>**Bayes' theorem** is the foundation of Bayesian games (@sec-bayesian-games). It tells us how to update beliefs about a player's type after observing their action:</span>
+<span id="cb55-168"><a href="#cb55-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-169"><a href="#cb55-169" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-170"><a href="#cb55-170" aria-hidden="true" tabindex="-1"></a>P(\theta \mid a) = \frac{P(a \mid \theta) \, P(\theta)}{P(a)}</span>
+<span id="cb55-171"><a href="#cb55-171" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-172"><a href="#cb55-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-173"><a href="#cb55-173" aria-hidden="true" tabindex="-1"></a>where $\theta$ is the player's type, $a$ is the observed action, $P(\theta)$ is the prior, $P(a \mid \theta)$ is the likelihood, and $P(a) = \sum_{\theta'} P(a \mid \theta') P(\theta')$ is the marginal likelihood.</span>
+<span id="cb55-174"><a href="#cb55-174" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-177"><a href="#cb55-177" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-178"><a href="#cb55-178" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: bayes</span></span>
+<span id="cb55-179"><a href="#cb55-179" aria-hidden="true" tabindex="-1"></a><span class="co"># Signaling game: worker chooses Education or No Education</span></span>
+<span id="cb55-180"><a href="#cb55-180" aria-hidden="true" tabindex="-1"></a><span class="co"># Types: High (prob 0.6), Low (prob 0.4)</span></span>
+<span id="cb55-181"><a href="#cb55-181" aria-hidden="true" tabindex="-1"></a><span class="co"># P(Education | High) = 0.9, P(Education | Low) = 0.2</span></span>
 <span id="cb55-182"><a href="#cb55-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-183"><a href="#cb55-183" aria-hidden="true" tabindex="-1"></a>p_edu_given_high <span class="ot">&lt;-</span> <span class="fl">0.9</span></span>
-<span id="cb55-184"><a href="#cb55-184" aria-hidden="true" tabindex="-1"></a>p_edu_given_low  <span class="ot">&lt;-</span> <span class="fl">0.2</span></span>
+<span id="cb55-183"><a href="#cb55-183" aria-hidden="true" tabindex="-1"></a>prior_high <span class="ot">&lt;-</span> <span class="fl">0.6</span></span>
+<span id="cb55-184"><a href="#cb55-184" aria-hidden="true" tabindex="-1"></a>prior_low  <span class="ot">&lt;-</span> <span class="fl">0.4</span></span>
 <span id="cb55-185"><a href="#cb55-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-186"><a href="#cb55-186" aria-hidden="true" tabindex="-1"></a><span class="co"># P(Education)</span></span>
-<span id="cb55-187"><a href="#cb55-187" aria-hidden="true" tabindex="-1"></a>p_edu <span class="ot">&lt;-</span> p_edu_given_high <span class="sc">*</span> prior_high <span class="sc">+</span> p_edu_given_low <span class="sc">*</span> prior_low</span>
-<span id="cb55-188"><a href="#cb55-188" aria-hidden="true" tabindex="-1"></a>p_edu</span>
-<span id="cb55-189"><a href="#cb55-189" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-190"><a href="#cb55-190" aria-hidden="true" tabindex="-1"></a><span class="co"># P(High | Education) by Bayes' theorem</span></span>
-<span id="cb55-191"><a href="#cb55-191" aria-hidden="true" tabindex="-1"></a>p_high_given_edu <span class="ot">&lt;-</span> (p_edu_given_high <span class="sc">*</span> prior_high) <span class="sc">/</span> p_edu</span>
-<span id="cb55-192"><a href="#cb55-192" aria-hidden="true" tabindex="-1"></a>p_high_given_edu</span>
-<span id="cb55-193"><a href="#cb55-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-194"><a href="#cb55-194" aria-hidden="true" tabindex="-1"></a><span class="co"># P(High | No Education)</span></span>
-<span id="cb55-195"><a href="#cb55-195" aria-hidden="true" tabindex="-1"></a>p_no_edu <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> p_edu</span>
-<span id="cb55-196"><a href="#cb55-196" aria-hidden="true" tabindex="-1"></a>p_high_given_no_edu <span class="ot">&lt;-</span> ((<span class="dv">1</span> <span class="sc">-</span> p_edu_given_high) <span class="sc">*</span> prior_high) <span class="sc">/</span> p_no_edu</span>
-<span id="cb55-197"><a href="#cb55-197" aria-hidden="true" tabindex="-1"></a>p_high_given_no_edu</span>
-<span id="cb55-198"><a href="#cb55-198" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-199"><a href="#cb55-199" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-200"><a href="#cb55-200" aria-hidden="true" tabindex="-1"></a><span class="fu">### Sequential updating</span></span>
-<span id="cb55-201"><a href="#cb55-201" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-202"><a href="#cb55-202" aria-hidden="true" tabindex="-1"></a>When multiple signals are observed, Bayes' theorem can be applied sequentially: the posterior from one update becomes the prior for the next. This is used in repeated Bayesian games where players learn about opponents over time.</span>
-<span id="cb55-203"><a href="#cb55-203" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-206"><a href="#cb55-206" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-207"><a href="#cb55-207" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: sequential-bayes</span></span>
-<span id="cb55-208"><a href="#cb55-208" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequential Bayesian updating: observe actions round by round</span></span>
-<span id="cb55-209"><a href="#cb55-209" aria-hidden="true" tabindex="-1"></a><span class="co"># Prior: P(Cooperator type) = 0.5</span></span>
-<span id="cb55-210"><a href="#cb55-210" aria-hidden="true" tabindex="-1"></a><span class="co"># P(C action | Cooperator type) = 0.9</span></span>
-<span id="cb55-211"><a href="#cb55-211" aria-hidden="true" tabindex="-1"></a><span class="co"># P(C action | Defector type) = 0.1</span></span>
-<span id="cb55-212"><a href="#cb55-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-213"><a href="#cb55-213" aria-hidden="true" tabindex="-1"></a>update_belief <span class="ot">&lt;-</span> <span class="cf">function</span>(prior, likelihood_coop, likelihood_defect, action) {</span>
-<span id="cb55-214"><a href="#cb55-214" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (action <span class="sc">==</span> <span class="st">"C"</span>) {</span>
-<span id="cb55-215"><a href="#cb55-215" aria-hidden="true" tabindex="-1"></a>    l_coop <span class="ot">&lt;-</span> likelihood_coop</span>
-<span id="cb55-216"><a href="#cb55-216" aria-hidden="true" tabindex="-1"></a>    l_defect <span class="ot">&lt;-</span> likelihood_defect</span>
-<span id="cb55-217"><a href="#cb55-217" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb55-218"><a href="#cb55-218" aria-hidden="true" tabindex="-1"></a>    l_coop <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> likelihood_coop</span>
-<span id="cb55-219"><a href="#cb55-219" aria-hidden="true" tabindex="-1"></a>    l_defect <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> likelihood_defect</span>
-<span id="cb55-220"><a href="#cb55-220" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb55-221"><a href="#cb55-221" aria-hidden="true" tabindex="-1"></a>  numerator   <span class="ot">&lt;-</span> l_coop <span class="sc">*</span> prior</span>
-<span id="cb55-222"><a href="#cb55-222" aria-hidden="true" tabindex="-1"></a>  denominator <span class="ot">&lt;-</span> l_coop <span class="sc">*</span> prior <span class="sc">+</span> l_defect <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prior)</span>
-<span id="cb55-223"><a href="#cb55-223" aria-hidden="true" tabindex="-1"></a>  numerator <span class="sc">/</span> denominator</span>
-<span id="cb55-224"><a href="#cb55-224" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb55-225"><a href="#cb55-225" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-226"><a href="#cb55-226" aria-hidden="true" tabindex="-1"></a>prior <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
-<span id="cb55-227"><a href="#cb55-227" aria-hidden="true" tabindex="-1"></a>actions <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"C"</span>)</span>
+<span id="cb55-186"><a href="#cb55-186" aria-hidden="true" tabindex="-1"></a>p_edu_given_high <span class="ot">&lt;-</span> <span class="fl">0.9</span></span>
+<span id="cb55-187"><a href="#cb55-187" aria-hidden="true" tabindex="-1"></a>p_edu_given_low  <span class="ot">&lt;-</span> <span class="fl">0.2</span></span>
+<span id="cb55-188"><a href="#cb55-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-189"><a href="#cb55-189" aria-hidden="true" tabindex="-1"></a><span class="co"># P(Education)</span></span>
+<span id="cb55-190"><a href="#cb55-190" aria-hidden="true" tabindex="-1"></a>p_edu <span class="ot">&lt;-</span> p_edu_given_high <span class="sc">*</span> prior_high <span class="sc">+</span> p_edu_given_low <span class="sc">*</span> prior_low</span>
+<span id="cb55-191"><a href="#cb55-191" aria-hidden="true" tabindex="-1"></a>p_edu</span>
+<span id="cb55-192"><a href="#cb55-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-193"><a href="#cb55-193" aria-hidden="true" tabindex="-1"></a><span class="co"># P(High | Education) by Bayes' theorem</span></span>
+<span id="cb55-194"><a href="#cb55-194" aria-hidden="true" tabindex="-1"></a>p_high_given_edu <span class="ot">&lt;-</span> (p_edu_given_high <span class="sc">*</span> prior_high) <span class="sc">/</span> p_edu</span>
+<span id="cb55-195"><a href="#cb55-195" aria-hidden="true" tabindex="-1"></a>p_high_given_edu</span>
+<span id="cb55-196"><a href="#cb55-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-197"><a href="#cb55-197" aria-hidden="true" tabindex="-1"></a><span class="co"># P(High | No Education)</span></span>
+<span id="cb55-198"><a href="#cb55-198" aria-hidden="true" tabindex="-1"></a>p_no_edu <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> p_edu</span>
+<span id="cb55-199"><a href="#cb55-199" aria-hidden="true" tabindex="-1"></a>p_high_given_no_edu <span class="ot">&lt;-</span> ((<span class="dv">1</span> <span class="sc">-</span> p_edu_given_high) <span class="sc">*</span> prior_high) <span class="sc">/</span> p_no_edu</span>
+<span id="cb55-200"><a href="#cb55-200" aria-hidden="true" tabindex="-1"></a>p_high_given_no_edu</span>
+<span id="cb55-201"><a href="#cb55-201" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-202"><a href="#cb55-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-203"><a href="#cb55-203" aria-hidden="true" tabindex="-1"></a><span class="fu">### Sequential updating</span></span>
+<span id="cb55-204"><a href="#cb55-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-205"><a href="#cb55-205" aria-hidden="true" tabindex="-1"></a>When multiple signals are observed, Bayes' theorem can be applied sequentially: the posterior from one update becomes the prior for the next. This is used in repeated Bayesian games where players learn about opponents over time.</span>
+<span id="cb55-206"><a href="#cb55-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-209"><a href="#cb55-209" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-210"><a href="#cb55-210" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: sequential-bayes</span></span>
+<span id="cb55-211"><a href="#cb55-211" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequential Bayesian updating: observe actions round by round</span></span>
+<span id="cb55-212"><a href="#cb55-212" aria-hidden="true" tabindex="-1"></a><span class="co"># Prior: P(Cooperator type) = 0.5</span></span>
+<span id="cb55-213"><a href="#cb55-213" aria-hidden="true" tabindex="-1"></a><span class="co"># P(C action | Cooperator type) = 0.9</span></span>
+<span id="cb55-214"><a href="#cb55-214" aria-hidden="true" tabindex="-1"></a><span class="co"># P(C action | Defector type) = 0.1</span></span>
+<span id="cb55-215"><a href="#cb55-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-216"><a href="#cb55-216" aria-hidden="true" tabindex="-1"></a>update_belief <span class="ot">&lt;-</span> <span class="cf">function</span>(prior, likelihood_coop, likelihood_defect, action) {</span>
+<span id="cb55-217"><a href="#cb55-217" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (action <span class="sc">==</span> <span class="st">"C"</span>) {</span>
+<span id="cb55-218"><a href="#cb55-218" aria-hidden="true" tabindex="-1"></a>    l_coop <span class="ot">&lt;-</span> likelihood_coop</span>
+<span id="cb55-219"><a href="#cb55-219" aria-hidden="true" tabindex="-1"></a>    l_defect <span class="ot">&lt;-</span> likelihood_defect</span>
+<span id="cb55-220"><a href="#cb55-220" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb55-221"><a href="#cb55-221" aria-hidden="true" tabindex="-1"></a>    l_coop <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> likelihood_coop</span>
+<span id="cb55-222"><a href="#cb55-222" aria-hidden="true" tabindex="-1"></a>    l_defect <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> likelihood_defect</span>
+<span id="cb55-223"><a href="#cb55-223" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb55-224"><a href="#cb55-224" aria-hidden="true" tabindex="-1"></a>  numerator   <span class="ot">&lt;-</span> l_coop <span class="sc">*</span> prior</span>
+<span id="cb55-225"><a href="#cb55-225" aria-hidden="true" tabindex="-1"></a>  denominator <span class="ot">&lt;-</span> l_coop <span class="sc">*</span> prior <span class="sc">+</span> l_defect <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> prior)</span>
+<span id="cb55-226"><a href="#cb55-226" aria-hidden="true" tabindex="-1"></a>  numerator <span class="sc">/</span> denominator</span>
+<span id="cb55-227"><a href="#cb55-227" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb55-228"><a href="#cb55-228" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-229"><a href="#cb55-229" aria-hidden="true" tabindex="-1"></a>beliefs <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">length</span>(actions))</span>
-<span id="cb55-230"><a href="#cb55-230" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(actions)) {</span>
-<span id="cb55-231"><a href="#cb55-231" aria-hidden="true" tabindex="-1"></a>  prior <span class="ot">&lt;-</span> <span class="fu">update_belief</span>(prior, <span class="fl">0.9</span>, <span class="fl">0.1</span>, actions[i])</span>
-<span id="cb55-232"><a href="#cb55-232" aria-hidden="true" tabindex="-1"></a>  beliefs[i] <span class="ot">&lt;-</span> prior</span>
-<span id="cb55-233"><a href="#cb55-233" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb55-234"><a href="#cb55-234" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-235"><a href="#cb55-235" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">round =</span> <span class="fu">seq_along</span>(actions), <span class="at">action =</span> actions, <span class="at">belief =</span> beliefs)</span>
-<span id="cb55-236"><a href="#cb55-236" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-229"><a href="#cb55-229" aria-hidden="true" tabindex="-1"></a>prior <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb55-230"><a href="#cb55-230" aria-hidden="true" tabindex="-1"></a>actions <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"C"</span>)</span>
+<span id="cb55-231"><a href="#cb55-231" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-232"><a href="#cb55-232" aria-hidden="true" tabindex="-1"></a>beliefs <span class="ot">&lt;-</span> <span class="fu">numeric</span>(<span class="fu">length</span>(actions))</span>
+<span id="cb55-233"><a href="#cb55-233" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(actions)) {</span>
+<span id="cb55-234"><a href="#cb55-234" aria-hidden="true" tabindex="-1"></a>  prior <span class="ot">&lt;-</span> <span class="fu">update_belief</span>(prior, <span class="fl">0.9</span>, <span class="fl">0.1</span>, actions[i])</span>
+<span id="cb55-235"><a href="#cb55-235" aria-hidden="true" tabindex="-1"></a>  beliefs[i] <span class="ot">&lt;-</span> prior</span>
+<span id="cb55-236"><a href="#cb55-236" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb55-237"><a href="#cb55-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-238"><a href="#cb55-238" aria-hidden="true" tabindex="-1"></a><span class="fu">## Law of large numbers and Monte Carlo</span></span>
-<span id="cb55-239"><a href="#cb55-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-240"><a href="#cb55-240" aria-hidden="true" tabindex="-1"></a>The **law of large numbers** guarantees that the sample mean converges to the true mean as the sample size grows. This justifies the Monte Carlo methods used extensively in @sec-monte-carlo.</span>
-<span id="cb55-241"><a href="#cb55-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-244"><a href="#cb55-244" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-245"><a href="#cb55-245" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: lln</span></span>
-<span id="cb55-246"><a href="#cb55-246" aria-hidden="true" tabindex="-1"></a><span class="co"># Demonstrate convergence of sample mean</span></span>
-<span id="cb55-247"><a href="#cb55-247" aria-hidden="true" tabindex="-1"></a>n_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>, <span class="dv">10000</span>, <span class="dv">100000</span>)</span>
-<span id="cb55-248"><a href="#cb55-248" aria-hidden="true" tabindex="-1"></a>true_mean <span class="ot">&lt;-</span> <span class="fl">3.5</span>  <span class="co"># E[Uniform die roll]</span></span>
-<span id="cb55-249"><a href="#cb55-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-250"><a href="#cb55-250" aria-hidden="true" tabindex="-1"></a>estimates <span class="ot">&lt;-</span> <span class="fu">vapply</span>(n_values, <span class="cf">function</span>(n) {</span>
-<span id="cb55-251"><a href="#cb55-251" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, n, <span class="at">replace =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb55-252"><a href="#cb55-252" aria-hidden="true" tabindex="-1"></a>}, <span class="fu">numeric</span>(<span class="dv">1</span>))</span>
-<span id="cb55-253"><a href="#cb55-253" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-254"><a href="#cb55-254" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">n =</span> n_values, <span class="at">estimate =</span> estimates, <span class="at">true_mean =</span> true_mean)</span>
-<span id="cb55-255"><a href="#cb55-255" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-238"><a href="#cb55-238" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">round =</span> <span class="fu">seq_along</span>(actions), <span class="at">action =</span> actions, <span class="at">belief =</span> beliefs)</span>
+<span id="cb55-239"><a href="#cb55-239" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-240"><a href="#cb55-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-241"><a href="#cb55-241" aria-hidden="true" tabindex="-1"></a><span class="fu">## Law of large numbers and Monte Carlo</span></span>
+<span id="cb55-242"><a href="#cb55-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-243"><a href="#cb55-243" aria-hidden="true" tabindex="-1"></a>The **law of large numbers** guarantees that the sample mean converges to the true mean as the sample size grows. This justifies the Monte Carlo methods used extensively in @sec-monte-carlo.</span>
+<span id="cb55-244"><a href="#cb55-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-247"><a href="#cb55-247" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-248"><a href="#cb55-248" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: lln</span></span>
+<span id="cb55-249"><a href="#cb55-249" aria-hidden="true" tabindex="-1"></a><span class="co"># Demonstrate convergence of sample mean</span></span>
+<span id="cb55-250"><a href="#cb55-250" aria-hidden="true" tabindex="-1"></a>n_values <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>, <span class="dv">10000</span>, <span class="dv">100000</span>)</span>
+<span id="cb55-251"><a href="#cb55-251" aria-hidden="true" tabindex="-1"></a>true_mean <span class="ot">&lt;-</span> <span class="fl">3.5</span>  <span class="co"># E[Uniform die roll]</span></span>
+<span id="cb55-252"><a href="#cb55-252" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-253"><a href="#cb55-253" aria-hidden="true" tabindex="-1"></a>estimates <span class="ot">&lt;-</span> <span class="fu">vapply</span>(n_values, <span class="cf">function</span>(n) {</span>
+<span id="cb55-254"><a href="#cb55-254" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mean</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, n, <span class="at">replace =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb55-255"><a href="#cb55-255" aria-hidden="true" tabindex="-1"></a>}, <span class="fu">numeric</span>(<span class="dv">1</span>))</span>
 <span id="cb55-256"><a href="#cb55-256" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-257"><a href="#cb55-257" aria-hidden="true" tabindex="-1"></a><span class="fu">### Monte Carlo estimation</span></span>
-<span id="cb55-258"><a href="#cb55-258" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-259"><a href="#cb55-259" aria-hidden="true" tabindex="-1"></a>To estimate a quantity $\theta = E<span class="co">[</span><span class="ot">g(X)</span><span class="co">]</span>$, draw $N$ independent samples $X_1, \ldots, X_N$ and compute:</span>
-<span id="cb55-260"><a href="#cb55-260" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-261"><a href="#cb55-261" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-262"><a href="#cb55-262" aria-hidden="true" tabindex="-1"></a>\hat{\theta}_N = \frac{1}{N} \sum_{i=1}^{N} g(X_i)</span>
-<span id="cb55-263"><a href="#cb55-263" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb55-264"><a href="#cb55-264" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-265"><a href="#cb55-265" aria-hidden="true" tabindex="-1"></a>The standard error of this estimate is $\text{SE} = \sigma / \sqrt{N}$, where $\sigma$ is the standard deviation of $g(X)$.</span>
-<span id="cb55-266"><a href="#cb55-266" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-269"><a href="#cb55-269" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-270"><a href="#cb55-270" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: monte-carlo</span></span>
-<span id="cb55-271"><a href="#cb55-271" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate P(at least one cooperator in 5 players) via Monte Carlo</span></span>
-<span id="cb55-272"><a href="#cb55-272" aria-hidden="true" tabindex="-1"></a><span class="co"># Each player cooperates independently with probability 0.3</span></span>
-<span id="cb55-273"><a href="#cb55-273" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-274"><a href="#cb55-274" aria-hidden="true" tabindex="-1"></a>estimate_prob <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sims, <span class="at">n_players =</span> <span class="dv">5</span>, <span class="at">p_coop =</span> <span class="fl">0.3</span>) {</span>
-<span id="cb55-275"><a href="#cb55-275" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">replicate</span>(n_sims, {</span>
-<span id="cb55-276"><a href="#cb55-276" aria-hidden="true" tabindex="-1"></a>    actions <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n_players, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p_coop)</span>
-<span id="cb55-277"><a href="#cb55-277" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.integer</span>(<span class="fu">sum</span>(actions) <span class="sc">&gt;=</span> <span class="dv">1</span>)</span>
-<span id="cb55-278"><a href="#cb55-278" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb55-279"><a href="#cb55-279" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="at">estimate =</span> <span class="fu">mean</span>(counts), <span class="at">se =</span> <span class="fu">sd</span>(counts) <span class="sc">/</span> <span class="fu">sqrt</span>(n_sims))</span>
-<span id="cb55-280"><a href="#cb55-280" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb55-281"><a href="#cb55-281" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-282"><a href="#cb55-282" aria-hidden="true" tabindex="-1"></a><span class="co"># Exact answer: 1 - (1 - 0.3)^5</span></span>
-<span id="cb55-283"><a href="#cb55-283" aria-hidden="true" tabindex="-1"></a>exact <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fl">0.7</span><span class="sc">^</span><span class="dv">5</span></span>
+<span id="cb55-257"><a href="#cb55-257" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">n =</span> n_values, <span class="at">estimate =</span> estimates, <span class="at">true_mean =</span> true_mean)</span>
+<span id="cb55-258"><a href="#cb55-258" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-259"><a href="#cb55-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-260"><a href="#cb55-260" aria-hidden="true" tabindex="-1"></a><span class="fu">### Monte Carlo estimation</span></span>
+<span id="cb55-261"><a href="#cb55-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-262"><a href="#cb55-262" aria-hidden="true" tabindex="-1"></a>To estimate a quantity $\theta = E<span class="co">[</span><span class="ot">g(X)</span><span class="co">]</span>$, draw $N$ independent samples $X_1, \ldots, X_N$ and compute:</span>
+<span id="cb55-263"><a href="#cb55-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-264"><a href="#cb55-264" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-265"><a href="#cb55-265" aria-hidden="true" tabindex="-1"></a>\hat{\theta}_N = \frac{1}{N} \sum_{i=1}^{N} g(X_i)</span>
+<span id="cb55-266"><a href="#cb55-266" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb55-267"><a href="#cb55-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-268"><a href="#cb55-268" aria-hidden="true" tabindex="-1"></a>The standard error of this estimate is $\text{SE} = \sigma / \sqrt{N}$, where $\sigma$ is the standard deviation of $g(X)$.</span>
+<span id="cb55-269"><a href="#cb55-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-272"><a href="#cb55-272" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-273"><a href="#cb55-273" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: monte-carlo</span></span>
+<span id="cb55-274"><a href="#cb55-274" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimate P(at least one cooperator in 5 players) via Monte Carlo</span></span>
+<span id="cb55-275"><a href="#cb55-275" aria-hidden="true" tabindex="-1"></a><span class="co"># Each player cooperates independently with probability 0.3</span></span>
+<span id="cb55-276"><a href="#cb55-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-277"><a href="#cb55-277" aria-hidden="true" tabindex="-1"></a>estimate_prob <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sims, <span class="at">n_players =</span> <span class="dv">5</span>, <span class="at">p_coop =</span> <span class="fl">0.3</span>) {</span>
+<span id="cb55-278"><a href="#cb55-278" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">replicate</span>(n_sims, {</span>
+<span id="cb55-279"><a href="#cb55-279" aria-hidden="true" tabindex="-1"></a>    actions <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n_players, <span class="at">size =</span> <span class="dv">1</span>, <span class="at">prob =</span> p_coop)</span>
+<span id="cb55-280"><a href="#cb55-280" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.integer</span>(<span class="fu">sum</span>(actions) <span class="sc">&gt;=</span> <span class="dv">1</span>)</span>
+<span id="cb55-281"><a href="#cb55-281" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb55-282"><a href="#cb55-282" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="at">estimate =</span> <span class="fu">mean</span>(counts), <span class="at">se =</span> <span class="fu">sd</span>(counts) <span class="sc">/</span> <span class="fu">sqrt</span>(n_sims))</span>
+<span id="cb55-283"><a href="#cb55-283" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb55-284"><a href="#cb55-284" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-285"><a href="#cb55-285" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb55-286"><a href="#cb55-286" aria-hidden="true" tabindex="-1"></a>mc <span class="ot">&lt;-</span> <span class="fu">estimate_prob</span>(<span class="dv">100000</span>)</span>
-<span id="cb55-287"><a href="#cb55-287" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
-<span id="cb55-288"><a href="#cb55-288" aria-hidden="true" tabindex="-1"></a>  <span class="at">method   =</span> <span class="fu">c</span>(<span class="st">"Monte Carlo"</span>, <span class="st">"Exact"</span>),</span>
-<span id="cb55-289"><a href="#cb55-289" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimate =</span> <span class="fu">c</span>(mc[<span class="st">"estimate"</span>], exact)</span>
-<span id="cb55-290"><a href="#cb55-290" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb55-291"><a href="#cb55-291" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-292"><a href="#cb55-292" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-293"><a href="#cb55-293" aria-hidden="true" tabindex="-1"></a><span class="fu">## Random sampling for games</span></span>
-<span id="cb55-294"><a href="#cb55-294" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-295"><a href="#cb55-295" aria-hidden="true" tabindex="-1"></a>Several chapters use random sampling to simulate strategic interactions. The key functions are:</span>
-<span id="cb55-296"><a href="#cb55-296" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-299"><a href="#cb55-299" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb55-300"><a href="#cb55-300" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: sampling</span></span>
-<span id="cb55-301"><a href="#cb55-301" aria-hidden="true" tabindex="-1"></a><span class="co"># sample(): draw from a discrete set</span></span>
-<span id="cb55-302"><a href="#cb55-302" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>), <span class="at">size =</span> <span class="dv">10</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>))</span>
-<span id="cb55-303"><a href="#cb55-303" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-304"><a href="#cb55-304" aria-hidden="true" tabindex="-1"></a><span class="co"># replicate(): repeat a simulation</span></span>
-<span id="cb55-305"><a href="#cb55-305" aria-hidden="true" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">5</span>, <span class="fu">sum</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="dv">2</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)))</span>
+<span id="cb55-285"><a href="#cb55-285" aria-hidden="true" tabindex="-1"></a><span class="co"># Exact answer: 1 - (1 - 0.3)^5</span></span>
+<span id="cb55-286"><a href="#cb55-286" aria-hidden="true" tabindex="-1"></a>exact <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fl">0.7</span><span class="sc">^</span><span class="dv">5</span></span>
+<span id="cb55-287"><a href="#cb55-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-288"><a href="#cb55-288" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb55-289"><a href="#cb55-289" aria-hidden="true" tabindex="-1"></a>mc <span class="ot">&lt;-</span> <span class="fu">estimate_prob</span>(<span class="dv">100000</span>)</span>
+<span id="cb55-290"><a href="#cb55-290" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb55-291"><a href="#cb55-291" aria-hidden="true" tabindex="-1"></a>  <span class="at">method   =</span> <span class="fu">c</span>(<span class="st">"Monte Carlo"</span>, <span class="st">"Exact"</span>),</span>
+<span id="cb55-292"><a href="#cb55-292" aria-hidden="true" tabindex="-1"></a>  <span class="at">estimate =</span> <span class="fu">c</span>(mc[<span class="st">"estimate"</span>], exact)</span>
+<span id="cb55-293"><a href="#cb55-293" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb55-294"><a href="#cb55-294" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-295"><a href="#cb55-295" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-296"><a href="#cb55-296" aria-hidden="true" tabindex="-1"></a><span class="fu">## Random sampling for games</span></span>
+<span id="cb55-297"><a href="#cb55-297" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-298"><a href="#cb55-298" aria-hidden="true" tabindex="-1"></a>Several chapters use random sampling to simulate strategic interactions. The key functions are:</span>
+<span id="cb55-299"><a href="#cb55-299" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-302"><a href="#cb55-302" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb55-303"><a href="#cb55-303" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: sampling</span></span>
+<span id="cb55-304"><a href="#cb55-304" aria-hidden="true" tabindex="-1"></a><span class="co"># sample(): draw from a discrete set</span></span>
+<span id="cb55-305"><a href="#cb55-305" aria-hidden="true" tabindex="-1"></a><span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"Hawk"</span>, <span class="st">"Dove"</span>), <span class="at">size =</span> <span class="dv">10</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.6</span>))</span>
 <span id="cb55-306"><a href="#cb55-306" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-307"><a href="#cb55-307" aria-hidden="true" tabindex="-1"></a><span class="co"># set.seed(): ensure reproducibility</span></span>
-<span id="cb55-308"><a href="#cb55-308" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb55-309"><a href="#cb55-309" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">3</span>)</span>
-<span id="cb55-310"><a href="#cb55-310" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb55-311"><a href="#cb55-311" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">3</span>)  <span class="co"># identical output</span></span>
-<span id="cb55-312"><a href="#cb55-312" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb55-313"><a href="#cb55-313" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-314"><a href="#cb55-314" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary of R probability functions</span></span>
-<span id="cb55-315"><a href="#cb55-315" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-316"><a href="#cb55-316" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Distribution <span class="pp">|</span> PMF/PDF <span class="pp">|</span> CDF <span class="pp">|</span> Quantile <span class="pp">|</span> Random <span class="pp">|</span></span>
-<span id="cb55-317"><a href="#cb55-317" aria-hidden="true" tabindex="-1"></a><span class="pp">|:-------------|:--------|:----|:---------|:-------|</span></span>
-<span id="cb55-318"><a href="#cb55-318" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Binomial <span class="pp">|</span> <span class="in">`dbinom()`</span> <span class="pp">|</span> <span class="in">`pbinom()`</span> <span class="pp">|</span> <span class="in">`qbinom()`</span> <span class="pp">|</span> <span class="in">`rbinom()`</span> <span class="pp">|</span></span>
-<span id="cb55-319"><a href="#cb55-319" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Poisson <span class="pp">|</span> <span class="in">`dpois()`</span> <span class="pp">|</span> <span class="in">`ppois()`</span> <span class="pp">|</span> <span class="in">`qpois()`</span> <span class="pp">|</span> <span class="in">`rpois()`</span> <span class="pp">|</span></span>
-<span id="cb55-320"><a href="#cb55-320" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Uniform <span class="pp">|</span> <span class="in">`dunif()`</span> <span class="pp">|</span> <span class="in">`punif()`</span> <span class="pp">|</span> <span class="in">`qunif()`</span> <span class="pp">|</span> <span class="in">`runif()`</span> <span class="pp">|</span></span>
-<span id="cb55-321"><a href="#cb55-321" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Normal <span class="pp">|</span> <span class="in">`dnorm()`</span> <span class="pp">|</span> <span class="in">`pnorm()`</span> <span class="pp">|</span> <span class="in">`qnorm()`</span> <span class="pp">|</span> <span class="in">`rnorm()`</span> <span class="pp">|</span></span>
-<span id="cb55-322"><a href="#cb55-322" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Exponential <span class="pp">|</span> <span class="in">`dexp()`</span> <span class="pp">|</span> <span class="in">`pexp()`</span> <span class="pp">|</span> <span class="in">`qexp()`</span> <span class="pp">|</span> <span class="in">`rexp()`</span> <span class="pp">|</span></span>
-<span id="cb55-323"><a href="#cb55-323" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-324"><a href="#cb55-324" aria-hidden="true" tabindex="-1"></a>: R functions for common probability distributions {#tbl-prob-functions}</span>
+<span id="cb55-307"><a href="#cb55-307" aria-hidden="true" tabindex="-1"></a><span class="co"># replicate(): repeat a simulation</span></span>
+<span id="cb55-308"><a href="#cb55-308" aria-hidden="true" tabindex="-1"></a><span class="fu">replicate</span>(<span class="dv">5</span>, <span class="fu">sum</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>, <span class="dv">2</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>)))</span>
+<span id="cb55-309"><a href="#cb55-309" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-310"><a href="#cb55-310" aria-hidden="true" tabindex="-1"></a><span class="co"># set.seed(): ensure reproducibility</span></span>
+<span id="cb55-311"><a href="#cb55-311" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb55-312"><a href="#cb55-312" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">3</span>)</span>
+<span id="cb55-313"><a href="#cb55-313" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb55-314"><a href="#cb55-314" aria-hidden="true" tabindex="-1"></a><span class="fu">runif</span>(<span class="dv">3</span>)  <span class="co"># identical output</span></span>
+<span id="cb55-315"><a href="#cb55-315" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb55-316"><a href="#cb55-316" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-317"><a href="#cb55-317" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary of R probability functions</span></span>
+<span id="cb55-318"><a href="#cb55-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-319"><a href="#cb55-319" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Distribution <span class="pp">|</span> PMF/PDF <span class="pp">|</span> CDF <span class="pp">|</span> Quantile <span class="pp">|</span> Random <span class="pp">|</span></span>
+<span id="cb55-320"><a href="#cb55-320" aria-hidden="true" tabindex="-1"></a><span class="pp">|:-------------|:--------|:----|:---------|:-------|</span></span>
+<span id="cb55-321"><a href="#cb55-321" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Binomial <span class="pp">|</span> <span class="in">`dbinom()`</span> <span class="pp">|</span> <span class="in">`pbinom()`</span> <span class="pp">|</span> <span class="in">`qbinom()`</span> <span class="pp">|</span> <span class="in">`rbinom()`</span> <span class="pp">|</span></span>
+<span id="cb55-322"><a href="#cb55-322" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Poisson <span class="pp">|</span> <span class="in">`dpois()`</span> <span class="pp">|</span> <span class="in">`ppois()`</span> <span class="pp">|</span> <span class="in">`qpois()`</span> <span class="pp">|</span> <span class="in">`rpois()`</span> <span class="pp">|</span></span>
+<span id="cb55-323"><a href="#cb55-323" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Uniform <span class="pp">|</span> <span class="in">`dunif()`</span> <span class="pp">|</span> <span class="in">`punif()`</span> <span class="pp">|</span> <span class="in">`qunif()`</span> <span class="pp">|</span> <span class="in">`runif()`</span> <span class="pp">|</span></span>
+<span id="cb55-324"><a href="#cb55-324" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Normal <span class="pp">|</span> <span class="in">`dnorm()`</span> <span class="pp">|</span> <span class="in">`pnorm()`</span> <span class="pp">|</span> <span class="in">`qnorm()`</span> <span class="pp">|</span> <span class="in">`rnorm()`</span> <span class="pp">|</span></span>
+<span id="cb55-325"><a href="#cb55-325" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Exponential <span class="pp">|</span> <span class="in">`dexp()`</span> <span class="pp">|</span> <span class="in">`pexp()`</span> <span class="pp">|</span> <span class="in">`qexp()`</span> <span class="pp">|</span> <span class="in">`rexp()`</span> <span class="pp">|</span></span>
+<span id="cb55-326"><a href="#cb55-326" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-327"><a href="#cb55-327" aria-hidden="true" tabindex="-1"></a>: R functions for common probability distributions {#tbl-prob-functions}</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

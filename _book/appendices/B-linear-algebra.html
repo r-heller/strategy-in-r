@@ -773,7 +773,7 @@ window.Quarto = {
   <li><a href="#summary-of-r-linear-algebra-functions" id="toc-summary-of-r-linear-algebra-functions" class="nav-link" data-scroll-target="#summary-of-r-linear-algebra-functions"><span class="header-section-number">C.8</span> Summary of R linear algebra functions</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/appendices/B-linear-algebra.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/appendices/B-linear-algebra.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/r-heller/strategy-in-r/edit/main/appendices/B-linear-algebra.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/r-heller/strategy-in-r/blob/main/appendices/B-linear-algebra.qmd" class="toc-action"><i class="bi empty"></i>View source</a></li><li><a href="https://github.com/r-heller/strategy-in-r/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div><div class="quarto-other-links"><h2>Other Links</h2><ul><li><a href="../downloads/linear-algebra-essentials.pdf"><i class="bi bi-file-pdf"></i>Download Chapter PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -1715,271 +1715,274 @@ Strang, G. (2022). <em>Introduction to linear algebra</em> (6th ed.). Wellesley-
 <span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a><span class="an">date-modified:</span><span class="co"> today</span></span>
 <span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a><span class="an">abstract:</span><span class="co"> "Vectors, matrices, eigenvalues, and the linear algebra used throughout this book."</span></span>
 <span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a><span class="an">keywords:</span><span class="co"> ["linear algebra", "matrices", "eigenvalues", "vectors"]</span></span>
-<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a><span class="fu"># Linear Algebra Essentials {#sec-linear-algebra}</span></span>
-<span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-15"><a href="#cb65-15" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
-<span id="cb65-16"><a href="#cb65-16" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
-<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
-<span id="cb65-18"><a href="#cb65-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-19"><a href="#cb65-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-20"><a href="#cb65-20" aria-hidden="true" tabindex="-1"></a>This appendix reviews the linear algebra that appears most often in game theory. The focus is on concepts rather than proofs, with R implementations alongside each topic. For a thorough mathematical treatment, see @strang2022.</span>
-<span id="cb65-21"><a href="#cb65-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-22"><a href="#cb65-22" aria-hidden="true" tabindex="-1"></a><span class="fu">## Vectors and vector operations</span></span>
-<span id="cb65-23"><a href="#cb65-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-24"><a href="#cb65-24" aria-hidden="true" tabindex="-1"></a>A vector in $\mathbb{R}^n$ is an ordered list of $n$ real numbers. In game theory, vectors represent strategy profiles, probability distributions over actions, and payoff allocations.</span>
-<span id="cb65-25"><a href="#cb65-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-28"><a href="#cb65-28" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-29"><a href="#cb65-29" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: vector-ops</span></span>
-<span id="cb65-30"><a href="#cb65-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Define vectors</span></span>
-<span id="cb65-31"><a href="#cb65-31" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">4</span>)</span>
-<span id="cb65-32"><a href="#cb65-32" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
-<span id="cb65-33"><a href="#cb65-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-34"><a href="#cb65-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Scalar multiplication and addition</span></span>
-<span id="cb65-35"><a href="#cb65-35" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="sc">*</span> x</span>
-<span id="cb65-36"><a href="#cb65-36" aria-hidden="true" tabindex="-1"></a>x <span class="sc">+</span> y</span>
-<span id="cb65-37"><a href="#cb65-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-38"><a href="#cb65-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Dot (inner) product</span></span>
-<span id="cb65-39"><a href="#cb65-39" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(x <span class="sc">*</span> y)</span>
-<span id="cb65-40"><a href="#cb65-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Or equivalently:</span></span>
-<span id="cb65-41"><a href="#cb65-41" aria-hidden="true" tabindex="-1"></a>x <span class="sc">%*%</span> y</span>
-<span id="cb65-42"><a href="#cb65-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-43"><a href="#cb65-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Euclidean norm (length)</span></span>
-<span id="cb65-44"><a href="#cb65-44" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>(x<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb65-45"><a href="#cb65-45" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-46"><a href="#cb65-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-47"><a href="#cb65-47" aria-hidden="true" tabindex="-1"></a>The **dot product** $\mathbf{x} \cdot \mathbf{y} = \sum_{i} x_i y_i$ appears whenever we compute expected payoffs: if $\mathbf{p}$ is a probability vector and $\mathbf{u}$ is a payoff vector, then $\mathbf{p} \cdot \mathbf{u}$ is the expected payoff.</span>
-<span id="cb65-48"><a href="#cb65-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-49"><a href="#cb65-49" aria-hidden="true" tabindex="-1"></a><span class="fu">## Matrices</span></span>
-<span id="cb65-50"><a href="#cb65-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-51"><a href="#cb65-51" aria-hidden="true" tabindex="-1"></a>A matrix $A \in \mathbb{R}^{m \times n}$ is a rectangular array of numbers. In game theory, the primary use is the payoff matrix of a normal-form game.</span>
-<span id="cb65-52"><a href="#cb65-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-53"><a href="#cb65-53" aria-hidden="true" tabindex="-1"></a><span class="fu">### Matrix arithmetic in R</span></span>
-<span id="cb65-54"><a href="#cb65-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-57"><a href="#cb65-57" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-58"><a href="#cb65-58" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: matrix-arith</span></span>
-<span id="cb65-59"><a href="#cb65-59" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-60"><a href="#cb65-60" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-61"><a href="#cb65-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-62"><a href="#cb65-62" aria-hidden="true" tabindex="-1"></a><span class="co"># Element-wise operations</span></span>
-<span id="cb65-63"><a href="#cb65-63" aria-hidden="true" tabindex="-1"></a>A <span class="sc">+</span> B</span>
-<span id="cb65-64"><a href="#cb65-64" aria-hidden="true" tabindex="-1"></a>A <span class="sc">*</span> B  <span class="co"># Hadamard (element-wise) product</span></span>
-<span id="cb65-65"><a href="#cb65-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-66"><a href="#cb65-66" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrix multiplication</span></span>
-<span id="cb65-67"><a href="#cb65-67" aria-hidden="true" tabindex="-1"></a>A <span class="sc">%*%</span> B</span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a><span class="an">other-links:</span></span>
+<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a><span class="co">  - text: Download Chapter PDF</span></span>
+<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a><span class="co">    href: ../downloads/linear-algebra-essentials.pdf</span></span>
+<span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a><span class="co">    icon: file-pdf</span></span>
+<span id="cb65-12"><a href="#cb65-12" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb65-13"><a href="#cb65-13" aria-hidden="true" tabindex="-1"></a><span class="fu"># Linear Algebra Essentials {#sec-linear-algebra}</span></span>
+<span id="cb65-14"><a href="#cb65-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-17"><a href="#cb65-17" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-18"><a href="#cb65-18" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: setup</span></span>
+<span id="cb65-19"><a href="#cb65-19" aria-hidden="true" tabindex="-1"></a><span class="co">#| include: false</span></span>
+<span id="cb65-20"><a href="#cb65-20" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"R"</span>, <span class="st">"_common.R"</span>))</span>
+<span id="cb65-21"><a href="#cb65-21" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-22"><a href="#cb65-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-23"><a href="#cb65-23" aria-hidden="true" tabindex="-1"></a>This appendix reviews the linear algebra that appears most often in game theory. The focus is on concepts rather than proofs, with R implementations alongside each topic. For a thorough mathematical treatment, see @strang2022.</span>
+<span id="cb65-24"><a href="#cb65-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-25"><a href="#cb65-25" aria-hidden="true" tabindex="-1"></a><span class="fu">## Vectors and vector operations</span></span>
+<span id="cb65-26"><a href="#cb65-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-27"><a href="#cb65-27" aria-hidden="true" tabindex="-1"></a>A vector in $\mathbb{R}^n$ is an ordered list of $n$ real numbers. In game theory, vectors represent strategy profiles, probability distributions over actions, and payoff allocations.</span>
+<span id="cb65-28"><a href="#cb65-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-31"><a href="#cb65-31" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-32"><a href="#cb65-32" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: vector-ops</span></span>
+<span id="cb65-33"><a href="#cb65-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Define vectors</span></span>
+<span id="cb65-34"><a href="#cb65-34" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">4</span>)</span>
+<span id="cb65-35"><a href="#cb65-35" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
+<span id="cb65-36"><a href="#cb65-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-37"><a href="#cb65-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Scalar multiplication and addition</span></span>
+<span id="cb65-38"><a href="#cb65-38" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="sc">*</span> x</span>
+<span id="cb65-39"><a href="#cb65-39" aria-hidden="true" tabindex="-1"></a>x <span class="sc">+</span> y</span>
+<span id="cb65-40"><a href="#cb65-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-41"><a href="#cb65-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Dot (inner) product</span></span>
+<span id="cb65-42"><a href="#cb65-42" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(x <span class="sc">*</span> y)</span>
+<span id="cb65-43"><a href="#cb65-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Or equivalently:</span></span>
+<span id="cb65-44"><a href="#cb65-44" aria-hidden="true" tabindex="-1"></a>x <span class="sc">%*%</span> y</span>
+<span id="cb65-45"><a href="#cb65-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-46"><a href="#cb65-46" aria-hidden="true" tabindex="-1"></a><span class="co"># Euclidean norm (length)</span></span>
+<span id="cb65-47"><a href="#cb65-47" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(<span class="fu">sum</span>(x<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb65-48"><a href="#cb65-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-49"><a href="#cb65-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-50"><a href="#cb65-50" aria-hidden="true" tabindex="-1"></a>The **dot product** $\mathbf{x} \cdot \mathbf{y} = \sum_{i} x_i y_i$ appears whenever we compute expected payoffs: if $\mathbf{p}$ is a probability vector and $\mathbf{u}$ is a payoff vector, then $\mathbf{p} \cdot \mathbf{u}$ is the expected payoff.</span>
+<span id="cb65-51"><a href="#cb65-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-52"><a href="#cb65-52" aria-hidden="true" tabindex="-1"></a><span class="fu">## Matrices</span></span>
+<span id="cb65-53"><a href="#cb65-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-54"><a href="#cb65-54" aria-hidden="true" tabindex="-1"></a>A matrix $A \in \mathbb{R}^{m \times n}$ is a rectangular array of numbers. In game theory, the primary use is the payoff matrix of a normal-form game.</span>
+<span id="cb65-55"><a href="#cb65-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-56"><a href="#cb65-56" aria-hidden="true" tabindex="-1"></a><span class="fu">### Matrix arithmetic in R</span></span>
+<span id="cb65-57"><a href="#cb65-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-60"><a href="#cb65-60" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-61"><a href="#cb65-61" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: matrix-arith</span></span>
+<span id="cb65-62"><a href="#cb65-62" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb65-63"><a href="#cb65-63" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb65-64"><a href="#cb65-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-65"><a href="#cb65-65" aria-hidden="true" tabindex="-1"></a><span class="co"># Element-wise operations</span></span>
+<span id="cb65-66"><a href="#cb65-66" aria-hidden="true" tabindex="-1"></a>A <span class="sc">+</span> B</span>
+<span id="cb65-67"><a href="#cb65-67" aria-hidden="true" tabindex="-1"></a>A <span class="sc">*</span> B  <span class="co"># Hadamard (element-wise) product</span></span>
 <span id="cb65-68"><a href="#cb65-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-69"><a href="#cb65-69" aria-hidden="true" tabindex="-1"></a><span class="co"># Transpose</span></span>
-<span id="cb65-70"><a href="#cb65-70" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(A)</span>
-<span id="cb65-71"><a href="#cb65-71" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-72"><a href="#cb65-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-73"><a href="#cb65-73" aria-hidden="true" tabindex="-1"></a><span class="fu">### Key matrix operations</span></span>
-<span id="cb65-74"><a href="#cb65-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-77"><a href="#cb65-77" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-78"><a href="#cb65-78" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: matrix-ops</span></span>
-<span id="cb65-79"><a href="#cb65-79" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-80"><a href="#cb65-80" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-81"><a href="#cb65-81" aria-hidden="true" tabindex="-1"></a><span class="co"># Determinant</span></span>
-<span id="cb65-82"><a href="#cb65-82" aria-hidden="true" tabindex="-1"></a><span class="fu">det</span>(M)</span>
+<span id="cb65-69"><a href="#cb65-69" aria-hidden="true" tabindex="-1"></a><span class="co"># Matrix multiplication</span></span>
+<span id="cb65-70"><a href="#cb65-70" aria-hidden="true" tabindex="-1"></a>A <span class="sc">%*%</span> B</span>
+<span id="cb65-71"><a href="#cb65-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-72"><a href="#cb65-72" aria-hidden="true" tabindex="-1"></a><span class="co"># Transpose</span></span>
+<span id="cb65-73"><a href="#cb65-73" aria-hidden="true" tabindex="-1"></a><span class="fu">t</span>(A)</span>
+<span id="cb65-74"><a href="#cb65-74" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-75"><a href="#cb65-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-76"><a href="#cb65-76" aria-hidden="true" tabindex="-1"></a><span class="fu">### Key matrix operations</span></span>
+<span id="cb65-77"><a href="#cb65-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-80"><a href="#cb65-80" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-81"><a href="#cb65-81" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: matrix-ops</span></span>
+<span id="cb65-82"><a href="#cb65-82" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb65-83"><a href="#cb65-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-84"><a href="#cb65-84" aria-hidden="true" tabindex="-1"></a><span class="co"># Inverse (only if det != 0)</span></span>
-<span id="cb65-85"><a href="#cb65-85" aria-hidden="true" tabindex="-1"></a><span class="fu">solve</span>(M)</span>
+<span id="cb65-84"><a href="#cb65-84" aria-hidden="true" tabindex="-1"></a><span class="co"># Determinant</span></span>
+<span id="cb65-85"><a href="#cb65-85" aria-hidden="true" tabindex="-1"></a><span class="fu">det</span>(M)</span>
 <span id="cb65-86"><a href="#cb65-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-87"><a href="#cb65-87" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify: M %*% M^{-1} = I</span></span>
-<span id="cb65-88"><a href="#cb65-88" aria-hidden="true" tabindex="-1"></a>M <span class="sc">%*%</span> <span class="fu">solve</span>(M)</span>
-<span id="cb65-89"><a href="#cb65-89" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-90"><a href="#cb65-90" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-91"><a href="#cb65-91" aria-hidden="true" tabindex="-1"></a><span class="fu">## Systems of linear equations</span></span>
-<span id="cb65-92"><a href="#cb65-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-93"><a href="#cb65-93" aria-hidden="true" tabindex="-1"></a>Many game-theoretic computations reduce to solving a system $A\mathbf{x} = \mathbf{b}$. For example, finding a mixed Nash equilibrium in a 2x2 game requires solving the indifference equations (see @sec-mixed-strategies).</span>
-<span id="cb65-94"><a href="#cb65-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-95"><a href="#cb65-95" aria-hidden="true" tabindex="-1"></a><span class="fu">### Solving $A\mathbf{x} = \mathbf{b}$</span></span>
-<span id="cb65-96"><a href="#cb65-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-99"><a href="#cb65-99" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-100"><a href="#cb65-100" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: solve-system</span></span>
-<span id="cb65-101"><a href="#cb65-101" aria-hidden="true" tabindex="-1"></a><span class="co"># System: 2x + y = 5, x + 3y = 7</span></span>
-<span id="cb65-102"><a href="#cb65-102" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-103"><a href="#cb65-103" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">7</span>)</span>
-<span id="cb65-104"><a href="#cb65-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-105"><a href="#cb65-105" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">solve</span>(A, b)</span>
-<span id="cb65-106"><a href="#cb65-106" aria-hidden="true" tabindex="-1"></a>x</span>
+<span id="cb65-87"><a href="#cb65-87" aria-hidden="true" tabindex="-1"></a><span class="co"># Inverse (only if det != 0)</span></span>
+<span id="cb65-88"><a href="#cb65-88" aria-hidden="true" tabindex="-1"></a><span class="fu">solve</span>(M)</span>
+<span id="cb65-89"><a href="#cb65-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-90"><a href="#cb65-90" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify: M %*% M^{-1} = I</span></span>
+<span id="cb65-91"><a href="#cb65-91" aria-hidden="true" tabindex="-1"></a>M <span class="sc">%*%</span> <span class="fu">solve</span>(M)</span>
+<span id="cb65-92"><a href="#cb65-92" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-93"><a href="#cb65-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-94"><a href="#cb65-94" aria-hidden="true" tabindex="-1"></a><span class="fu">## Systems of linear equations</span></span>
+<span id="cb65-95"><a href="#cb65-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-96"><a href="#cb65-96" aria-hidden="true" tabindex="-1"></a>Many game-theoretic computations reduce to solving a system $A\mathbf{x} = \mathbf{b}$. For example, finding a mixed Nash equilibrium in a 2x2 game requires solving the indifference equations (see @sec-mixed-strategies).</span>
+<span id="cb65-97"><a href="#cb65-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-98"><a href="#cb65-98" aria-hidden="true" tabindex="-1"></a><span class="fu">### Solving $A\mathbf{x} = \mathbf{b}$</span></span>
+<span id="cb65-99"><a href="#cb65-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-102"><a href="#cb65-102" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-103"><a href="#cb65-103" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: solve-system</span></span>
+<span id="cb65-104"><a href="#cb65-104" aria-hidden="true" tabindex="-1"></a><span class="co"># System: 2x + y = 5, x + 3y = 7</span></span>
+<span id="cb65-105"><a href="#cb65-105" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb65-106"><a href="#cb65-106" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">7</span>)</span>
 <span id="cb65-107"><a href="#cb65-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-108"><a href="#cb65-108" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify</span></span>
-<span id="cb65-109"><a href="#cb65-109" aria-hidden="true" tabindex="-1"></a>A <span class="sc">%*%</span> x</span>
-<span id="cb65-110"><a href="#cb65-110" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-111"><a href="#cb65-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-112"><a href="#cb65-112" aria-hidden="true" tabindex="-1"></a><span class="fu">### Application: mixed Nash equilibrium</span></span>
-<span id="cb65-113"><a href="#cb65-113" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-114"><a href="#cb65-114" aria-hidden="true" tabindex="-1"></a>In a 2x2 game, finding the mixed Nash equilibrium reduces to making each player indifferent between their pure strategies. If Player 2 mixes with probability $q$ on the first action, Player 1's indifference condition is:</span>
-<span id="cb65-115"><a href="#cb65-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-116"><a href="#cb65-116" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb65-117"><a href="#cb65-117" aria-hidden="true" tabindex="-1"></a>a_{11} q + a_{12}(1-q) = a_{21} q + a_{22}(1-q)</span>
-<span id="cb65-118"><a href="#cb65-118" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb65-119"><a href="#cb65-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-120"><a href="#cb65-120" aria-hidden="true" tabindex="-1"></a>This is a single linear equation in $q$. For larger games, mixed equilibria require solving systems of such equations simultaneously.</span>
-<span id="cb65-121"><a href="#cb65-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-124"><a href="#cb65-124" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-125"><a href="#cb65-125" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: mixed-ne-linalg</span></span>
-<span id="cb65-126"><a href="#cb65-126" aria-hidden="true" tabindex="-1"></a><span class="co"># Prisoner's Dilemma payoffs for Player 1</span></span>
-<span id="cb65-127"><a href="#cb65-127" aria-hidden="true" tabindex="-1"></a><span class="co"># Row player payoffs: A[i,j]</span></span>
-<span id="cb65-128"><a href="#cb65-128" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-129"><a href="#cb65-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-130"><a href="#cb65-130" aria-hidden="true" tabindex="-1"></a><span class="co"># Indifference: A[1,1]*q + A[1,2]*(1-q) = A[2,1]*q + A[2,2]*(1-q)</span></span>
-<span id="cb65-131"><a href="#cb65-131" aria-hidden="true" tabindex="-1"></a><span class="co"># Rearranging: q*(A[1,1] - A[1,2] - A[2,1] + A[2,2]) = A[2,2] - A[1,2]</span></span>
-<span id="cb65-132"><a href="#cb65-132" aria-hidden="true" tabindex="-1"></a>denom <span class="ot">&lt;-</span> A[<span class="dv">1</span>, <span class="dv">1</span>] <span class="sc">-</span> A[<span class="dv">1</span>, <span class="dv">2</span>] <span class="sc">-</span> A[<span class="dv">2</span>, <span class="dv">1</span>] <span class="sc">+</span> A[<span class="dv">2</span>, <span class="dv">2</span>]</span>
-<span id="cb65-133"><a href="#cb65-133" aria-hidden="true" tabindex="-1"></a>q_star <span class="ot">&lt;-</span> (A[<span class="dv">2</span>, <span class="dv">2</span>] <span class="sc">-</span> A[<span class="dv">1</span>, <span class="dv">2</span>]) <span class="sc">/</span> denom</span>
-<span id="cb65-134"><a href="#cb65-134" aria-hidden="true" tabindex="-1"></a>q_star</span>
-<span id="cb65-135"><a href="#cb65-135" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-136"><a href="#cb65-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-137"><a href="#cb65-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Eigenvalues and eigenvectors</span></span>
-<span id="cb65-138"><a href="#cb65-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-139"><a href="#cb65-139" aria-hidden="true" tabindex="-1"></a>An eigenvector $\mathbf{v}$ of a square matrix $A$ satisfies $A\mathbf{v} = \lambda \mathbf{v}$ for some scalar $\lambda$ (the eigenvalue). Eigenvalues appear in several places in this book:</span>
-<span id="cb65-140"><a href="#cb65-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-141"><a href="#cb65-141" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Replicator dynamics** (@sec-replicator-dynamics): the stability of fixed points is determined by the eigenvalues of the Jacobian matrix.</span>
-<span id="cb65-142"><a href="#cb65-142" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Markov chains**: the stationary distribution is the eigenvector corresponding to eigenvalue 1.</span>
+<span id="cb65-108"><a href="#cb65-108" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">solve</span>(A, b)</span>
+<span id="cb65-109"><a href="#cb65-109" aria-hidden="true" tabindex="-1"></a>x</span>
+<span id="cb65-110"><a href="#cb65-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-111"><a href="#cb65-111" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify</span></span>
+<span id="cb65-112"><a href="#cb65-112" aria-hidden="true" tabindex="-1"></a>A <span class="sc">%*%</span> x</span>
+<span id="cb65-113"><a href="#cb65-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-114"><a href="#cb65-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-115"><a href="#cb65-115" aria-hidden="true" tabindex="-1"></a><span class="fu">### Application: mixed Nash equilibrium</span></span>
+<span id="cb65-116"><a href="#cb65-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-117"><a href="#cb65-117" aria-hidden="true" tabindex="-1"></a>In a 2x2 game, finding the mixed Nash equilibrium reduces to making each player indifferent between their pure strategies. If Player 2 mixes with probability $q$ on the first action, Player 1's indifference condition is:</span>
+<span id="cb65-118"><a href="#cb65-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-119"><a href="#cb65-119" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb65-120"><a href="#cb65-120" aria-hidden="true" tabindex="-1"></a>a_{11} q + a_{12}(1-q) = a_{21} q + a_{22}(1-q)</span>
+<span id="cb65-121"><a href="#cb65-121" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb65-122"><a href="#cb65-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-123"><a href="#cb65-123" aria-hidden="true" tabindex="-1"></a>This is a single linear equation in $q$. For larger games, mixed equilibria require solving systems of such equations simultaneously.</span>
+<span id="cb65-124"><a href="#cb65-124" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-127"><a href="#cb65-127" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-128"><a href="#cb65-128" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: mixed-ne-linalg</span></span>
+<span id="cb65-129"><a href="#cb65-129" aria-hidden="true" tabindex="-1"></a><span class="co"># Prisoner's Dilemma payoffs for Player 1</span></span>
+<span id="cb65-130"><a href="#cb65-130" aria-hidden="true" tabindex="-1"></a><span class="co"># Row player payoffs: A[i,j]</span></span>
+<span id="cb65-131"><a href="#cb65-131" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">1</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb65-132"><a href="#cb65-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-133"><a href="#cb65-133" aria-hidden="true" tabindex="-1"></a><span class="co"># Indifference: A[1,1]*q + A[1,2]*(1-q) = A[2,1]*q + A[2,2]*(1-q)</span></span>
+<span id="cb65-134"><a href="#cb65-134" aria-hidden="true" tabindex="-1"></a><span class="co"># Rearranging: q*(A[1,1] - A[1,2] - A[2,1] + A[2,2]) = A[2,2] - A[1,2]</span></span>
+<span id="cb65-135"><a href="#cb65-135" aria-hidden="true" tabindex="-1"></a>denom <span class="ot">&lt;-</span> A[<span class="dv">1</span>, <span class="dv">1</span>] <span class="sc">-</span> A[<span class="dv">1</span>, <span class="dv">2</span>] <span class="sc">-</span> A[<span class="dv">2</span>, <span class="dv">1</span>] <span class="sc">+</span> A[<span class="dv">2</span>, <span class="dv">2</span>]</span>
+<span id="cb65-136"><a href="#cb65-136" aria-hidden="true" tabindex="-1"></a>q_star <span class="ot">&lt;-</span> (A[<span class="dv">2</span>, <span class="dv">2</span>] <span class="sc">-</span> A[<span class="dv">1</span>, <span class="dv">2</span>]) <span class="sc">/</span> denom</span>
+<span id="cb65-137"><a href="#cb65-137" aria-hidden="true" tabindex="-1"></a>q_star</span>
+<span id="cb65-138"><a href="#cb65-138" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-139"><a href="#cb65-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-140"><a href="#cb65-140" aria-hidden="true" tabindex="-1"></a><span class="fu">## Eigenvalues and eigenvectors</span></span>
+<span id="cb65-141"><a href="#cb65-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-142"><a href="#cb65-142" aria-hidden="true" tabindex="-1"></a>An eigenvector $\mathbf{v}$ of a square matrix $A$ satisfies $A\mathbf{v} = \lambda \mathbf{v}$ for some scalar $\lambda$ (the eigenvalue). Eigenvalues appear in several places in this book:</span>
 <span id="cb65-143"><a href="#cb65-143" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-146"><a href="#cb65-146" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-147"><a href="#cb65-147" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: eigen</span></span>
-<span id="cb65-148"><a href="#cb65-148" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-149"><a href="#cb65-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-150"><a href="#cb65-150" aria-hidden="true" tabindex="-1"></a>eig <span class="ot">&lt;-</span> <span class="fu">eigen</span>(M)</span>
-<span id="cb65-151"><a href="#cb65-151" aria-hidden="true" tabindex="-1"></a>eig<span class="sc">$</span>values</span>
-<span id="cb65-152"><a href="#cb65-152" aria-hidden="true" tabindex="-1"></a>eig<span class="sc">$</span>vectors</span>
-<span id="cb65-153"><a href="#cb65-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-154"><a href="#cb65-154" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify: M v = lambda v</span></span>
-<span id="cb65-155"><a href="#cb65-155" aria-hidden="true" tabindex="-1"></a>lambda_1 <span class="ot">&lt;-</span> eig<span class="sc">$</span>values[<span class="dv">1</span>]</span>
-<span id="cb65-156"><a href="#cb65-156" aria-hidden="true" tabindex="-1"></a>v_1 <span class="ot">&lt;-</span> eig<span class="sc">$</span>vectors[, <span class="dv">1</span>]</span>
-<span id="cb65-157"><a href="#cb65-157" aria-hidden="true" tabindex="-1"></a>M <span class="sc">%*%</span> v_1</span>
-<span id="cb65-158"><a href="#cb65-158" aria-hidden="true" tabindex="-1"></a>lambda_1 <span class="sc">*</span> v_1</span>
-<span id="cb65-159"><a href="#cb65-159" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-160"><a href="#cb65-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-161"><a href="#cb65-161" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stability and the Jacobian</span></span>
-<span id="cb65-162"><a href="#cb65-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-163"><a href="#cb65-163" aria-hidden="true" tabindex="-1"></a>For a dynamical system $\dot{\mathbf{x}} = f(\mathbf{x})$, a fixed point $\mathbf{x}^*$ is **stable** if all eigenvalues of the Jacobian matrix $J = \partial f / \partial \mathbf{x}$ evaluated at $\mathbf{x}^*$ have negative real parts.</span>
-<span id="cb65-164"><a href="#cb65-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-167"><a href="#cb65-167" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-168"><a href="#cb65-168" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: jacobian-stability</span></span>
-<span id="cb65-169"><a href="#cb65-169" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: Jacobian at a fixed point of a 2D system</span></span>
-<span id="cb65-170"><a href="#cb65-170" aria-hidden="true" tabindex="-1"></a>J <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="sc">-</span><span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-171"><a href="#cb65-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-172"><a href="#cb65-172" aria-hidden="true" tabindex="-1"></a>eig_J <span class="ot">&lt;-</span> <span class="fu">eigen</span>(J)</span>
-<span id="cb65-173"><a href="#cb65-173" aria-hidden="true" tabindex="-1"></a>eig_J<span class="sc">$</span>values</span>
+<span id="cb65-144"><a href="#cb65-144" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Replicator dynamics** (@sec-replicator-dynamics): the stability of fixed points is determined by the eigenvalues of the Jacobian matrix.</span>
+<span id="cb65-145"><a href="#cb65-145" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Markov chains**: the stationary distribution is the eigenvector corresponding to eigenvalue 1.</span>
+<span id="cb65-146"><a href="#cb65-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-149"><a href="#cb65-149" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-150"><a href="#cb65-150" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: eigen</span></span>
+<span id="cb65-151"><a href="#cb65-151" aria-hidden="true" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb65-152"><a href="#cb65-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-153"><a href="#cb65-153" aria-hidden="true" tabindex="-1"></a>eig <span class="ot">&lt;-</span> <span class="fu">eigen</span>(M)</span>
+<span id="cb65-154"><a href="#cb65-154" aria-hidden="true" tabindex="-1"></a>eig<span class="sc">$</span>values</span>
+<span id="cb65-155"><a href="#cb65-155" aria-hidden="true" tabindex="-1"></a>eig<span class="sc">$</span>vectors</span>
+<span id="cb65-156"><a href="#cb65-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-157"><a href="#cb65-157" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify: M v = lambda v</span></span>
+<span id="cb65-158"><a href="#cb65-158" aria-hidden="true" tabindex="-1"></a>lambda_1 <span class="ot">&lt;-</span> eig<span class="sc">$</span>values[<span class="dv">1</span>]</span>
+<span id="cb65-159"><a href="#cb65-159" aria-hidden="true" tabindex="-1"></a>v_1 <span class="ot">&lt;-</span> eig<span class="sc">$</span>vectors[, <span class="dv">1</span>]</span>
+<span id="cb65-160"><a href="#cb65-160" aria-hidden="true" tabindex="-1"></a>M <span class="sc">%*%</span> v_1</span>
+<span id="cb65-161"><a href="#cb65-161" aria-hidden="true" tabindex="-1"></a>lambda_1 <span class="sc">*</span> v_1</span>
+<span id="cb65-162"><a href="#cb65-162" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-163"><a href="#cb65-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-164"><a href="#cb65-164" aria-hidden="true" tabindex="-1"></a><span class="fu">### Stability and the Jacobian</span></span>
+<span id="cb65-165"><a href="#cb65-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-166"><a href="#cb65-166" aria-hidden="true" tabindex="-1"></a>For a dynamical system $\dot{\mathbf{x}} = f(\mathbf{x})$, a fixed point $\mathbf{x}^*$ is **stable** if all eigenvalues of the Jacobian matrix $J = \partial f / \partial \mathbf{x}$ evaluated at $\mathbf{x}^*$ have negative real parts.</span>
+<span id="cb65-167"><a href="#cb65-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-170"><a href="#cb65-170" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-171"><a href="#cb65-171" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: jacobian-stability</span></span>
+<span id="cb65-172"><a href="#cb65-172" aria-hidden="true" tabindex="-1"></a><span class="co"># Example: Jacobian at a fixed point of a 2D system</span></span>
+<span id="cb65-173"><a href="#cb65-173" aria-hidden="true" tabindex="-1"></a>J <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="sc">-</span><span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb65-174"><a href="#cb65-174" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-175"><a href="#cb65-175" aria-hidden="true" tabindex="-1"></a><span class="co"># Both eigenvalues are negative =&gt; stable fixed point</span></span>
-<span id="cb65-176"><a href="#cb65-176" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">Re</span>(eig_J<span class="sc">$</span>values) <span class="sc">&lt;</span> <span class="dv">0</span>)</span>
-<span id="cb65-177"><a href="#cb65-177" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-178"><a href="#cb65-178" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-179"><a href="#cb65-179" aria-hidden="true" tabindex="-1"></a><span class="fu">## Positive definite matrices</span></span>
-<span id="cb65-180"><a href="#cb65-180" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-181"><a href="#cb65-181" aria-hidden="true" tabindex="-1"></a>A symmetric matrix $A$ is **positive definite** if $\mathbf{x}^T A \mathbf{x} &gt; 0$ for all nonzero $\mathbf{x}$. Equivalently, all eigenvalues are positive. Positive definiteness arises in quadratic payoff functions and in verifying second-order conditions for optimisation problems.</span>
-<span id="cb65-182"><a href="#cb65-182" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-185"><a href="#cb65-185" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-186"><a href="#cb65-186" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pos-def</span></span>
-<span id="cb65-187"><a href="#cb65-187" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-188"><a href="#cb65-188" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-189"><a href="#cb65-189" aria-hidden="true" tabindex="-1"></a><span class="co"># Check via eigenvalues</span></span>
-<span id="cb65-190"><a href="#cb65-190" aria-hidden="true" tabindex="-1"></a><span class="fu">eigen</span>(A)<span class="sc">$</span>values</span>
-<span id="cb65-191"><a href="#cb65-191" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">eigen</span>(A)<span class="sc">$</span>values <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb65-192"><a href="#cb65-192" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-193"><a href="#cb65-193" aria-hidden="true" tabindex="-1"></a><span class="co"># Check via Cholesky decomposition (succeeds only for positive definite matrices)</span></span>
-<span id="cb65-194"><a href="#cb65-194" aria-hidden="true" tabindex="-1"></a><span class="fu">chol</span>(A)</span>
-<span id="cb65-195"><a href="#cb65-195" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-196"><a href="#cb65-196" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-197"><a href="#cb65-197" aria-hidden="true" tabindex="-1"></a><span class="fu">## Convex sets and the simplex</span></span>
-<span id="cb65-198"><a href="#cb65-198" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-199"><a href="#cb65-199" aria-hidden="true" tabindex="-1"></a><span class="fu">### The probability simplex</span></span>
-<span id="cb65-200"><a href="#cb65-200" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-201"><a href="#cb65-201" aria-hidden="true" tabindex="-1"></a>A **mixed strategy** is a probability distribution over pure strategies. The set of all such distributions forms the **(probability) simplex**:</span>
-<span id="cb65-202"><a href="#cb65-202" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-203"><a href="#cb65-203" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb65-204"><a href="#cb65-204" aria-hidden="true" tabindex="-1"></a>\Delta_n = \left<span class="sc">\{</span> \mathbf{p} \in \mathbb{R}^n \;\middle|\; p_i \geq 0,\; \sum_{i=1}^{n} p_i = 1 \right<span class="sc">\}</span></span>
-<span id="cb65-205"><a href="#cb65-205" aria-hidden="true" tabindex="-1"></a>$$</span>
-<span id="cb65-206"><a href="#cb65-206" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-207"><a href="#cb65-207" aria-hidden="true" tabindex="-1"></a>For $n = 2$, the simplex is a line segment; for $n = 3$, it is a triangle.</span>
-<span id="cb65-208"><a href="#cb65-208" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-211"><a href="#cb65-211" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-212"><a href="#cb65-212" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: simplex-check</span></span>
-<span id="cb65-213"><a href="#cb65-213" aria-hidden="true" tabindex="-1"></a><span class="co"># Check whether a vector is a valid mixed strategy</span></span>
-<span id="cb65-214"><a href="#cb65-214" aria-hidden="true" tabindex="-1"></a>is_mixed_strategy <span class="ot">&lt;-</span> <span class="cf">function</span>(p, <span class="at">tol =</span> <span class="fl">1e-10</span>) {</span>
-<span id="cb65-215"><a href="#cb65-215" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(p <span class="sc">&gt;=</span> <span class="sc">-</span>tol) <span class="sc">&amp;&amp;</span> <span class="fu">abs</span>(<span class="fu">sum</span>(p) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&lt;</span> tol</span>
-<span id="cb65-216"><a href="#cb65-216" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb65-217"><a href="#cb65-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-218"><a href="#cb65-218" aria-hidden="true" tabindex="-1"></a><span class="fu">is_mixed_strategy</span>(<span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.2</span>))</span>
-<span id="cb65-219"><a href="#cb65-219" aria-hidden="true" tabindex="-1"></a><span class="fu">is_mixed_strategy</span>(<span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="sc">-</span><span class="fl">0.1</span>))</span>
-<span id="cb65-220"><a href="#cb65-220" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-221"><a href="#cb65-221" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-222"><a href="#cb65-222" aria-hidden="true" tabindex="-1"></a><span class="fu">### Convex sets and convex combinations</span></span>
-<span id="cb65-223"><a href="#cb65-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-224"><a href="#cb65-224" aria-hidden="true" tabindex="-1"></a>A set $C$ is **convex** if for any two points $\mathbf{x}, \mathbf{y} \in C$ and any $\lambda \in <span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span>$, the point $\lambda \mathbf{x} + (1 - \lambda) \mathbf{y}$ is also in $C$. Important convex sets in game theory include:</span>
-<span id="cb65-225"><a href="#cb65-225" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-226"><a href="#cb65-226" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The simplex $\Delta_n$ (the set of mixed strategies).</span>
-<span id="cb65-227"><a href="#cb65-227" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The **core** of a cooperative game (see @sec-cooperative-gt).</span>
-<span id="cb65-228"><a href="#cb65-228" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The **feasible payoff region** of a repeated game (see @sec-repeated-games).</span>
-<span id="cb65-229"><a href="#cb65-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-232"><a href="#cb65-232" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-233"><a href="#cb65-233" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: convex-combination</span></span>
-<span id="cb65-234"><a href="#cb65-234" aria-hidden="true" tabindex="-1"></a><span class="co"># Convex combination of two strategy vectors</span></span>
-<span id="cb65-235"><a href="#cb65-235" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>)</span>
-<span id="cb65-236"><a href="#cb65-236" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.4</span>)</span>
-<span id="cb65-237"><a href="#cb65-237" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> <span class="fl">0.6</span></span>
-<span id="cb65-238"><a href="#cb65-238" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-239"><a href="#cb65-239" aria-hidden="true" tabindex="-1"></a>p_mix <span class="ot">&lt;-</span> lambda <span class="sc">*</span> p1 <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> lambda) <span class="sc">*</span> p2</span>
-<span id="cb65-240"><a href="#cb65-240" aria-hidden="true" tabindex="-1"></a>p_mix</span>
-<span id="cb65-241"><a href="#cb65-241" aria-hidden="true" tabindex="-1"></a><span class="fu">is_mixed_strategy</span>(p_mix)</span>
-<span id="cb65-242"><a href="#cb65-242" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-243"><a href="#cb65-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-244"><a href="#cb65-244" aria-hidden="true" tabindex="-1"></a><span class="fu">### The support of a mixed strategy</span></span>
-<span id="cb65-245"><a href="#cb65-245" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-246"><a href="#cb65-246" aria-hidden="true" tabindex="-1"></a>The **support** of a mixed strategy $\mathbf{p}$ is the set of pure strategies that receive positive probability: $\text{supp}(\mathbf{p}) = <span class="sc">\{</span>i : p_i &gt; 0<span class="sc">\}</span>$. In a Nash equilibrium, every pure strategy in the support must yield the same expected payoff (the indifference principle from @sec-mixed-strategies).</span>
-<span id="cb65-247"><a href="#cb65-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-250"><a href="#cb65-250" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-251"><a href="#cb65-251" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: support</span></span>
-<span id="cb65-252"><a href="#cb65-252" aria-hidden="true" tabindex="-1"></a>support <span class="ot">&lt;-</span> <span class="cf">function</span>(p, <span class="at">tol =</span> <span class="fl">1e-10</span>) {</span>
-<span id="cb65-253"><a href="#cb65-253" aria-hidden="true" tabindex="-1"></a>  <span class="fu">which</span>(p <span class="sc">&gt;</span> tol)</span>
-<span id="cb65-254"><a href="#cb65-254" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb65-255"><a href="#cb65-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-256"><a href="#cb65-256" aria-hidden="true" tabindex="-1"></a><span class="fu">support</span>(<span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">0</span>))</span>
-<span id="cb65-257"><a href="#cb65-257" aria-hidden="true" tabindex="-1"></a><span class="fu">support</span>(<span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>))</span>
-<span id="cb65-258"><a href="#cb65-258" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-259"><a href="#cb65-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-260"><a href="#cb65-260" aria-hidden="true" tabindex="-1"></a><span class="fu">## Matrix decompositions</span></span>
-<span id="cb65-261"><a href="#cb65-261" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-262"><a href="#cb65-262" aria-hidden="true" tabindex="-1"></a><span class="fu">### LU decomposition</span></span>
-<span id="cb65-263"><a href="#cb65-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-264"><a href="#cb65-264" aria-hidden="true" tabindex="-1"></a>R does not expose LU decomposition directly in base, but <span class="in">`solve()`</span> uses it internally. For most game-theoretic applications, <span class="in">`solve()`</span> suffices.</span>
-<span id="cb65-265"><a href="#cb65-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-266"><a href="#cb65-266" aria-hidden="true" tabindex="-1"></a><span class="fu">### Singular value decomposition (SVD)</span></span>
-<span id="cb65-267"><a href="#cb65-267" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-268"><a href="#cb65-268" aria-hidden="true" tabindex="-1"></a>The SVD decomposes any $m \times n$ matrix as $A = U \Sigma V^T$. It is useful for low-rank approximations and for diagnosing near-singular payoff matrices.</span>
-<span id="cb65-269"><a href="#cb65-269" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-272"><a href="#cb65-272" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb65-273"><a href="#cb65-273" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: svd</span></span>
-<span id="cb65-274"><a href="#cb65-274" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb65-275"><a href="#cb65-275" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-276"><a href="#cb65-276" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">svd</span>(A)</span>
-<span id="cb65-277"><a href="#cb65-277" aria-hidden="true" tabindex="-1"></a>s<span class="sc">$</span>d  <span class="co"># singular values</span></span>
+<span id="cb65-175"><a href="#cb65-175" aria-hidden="true" tabindex="-1"></a>eig_J <span class="ot">&lt;-</span> <span class="fu">eigen</span>(J)</span>
+<span id="cb65-176"><a href="#cb65-176" aria-hidden="true" tabindex="-1"></a>eig_J<span class="sc">$</span>values</span>
+<span id="cb65-177"><a href="#cb65-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-178"><a href="#cb65-178" aria-hidden="true" tabindex="-1"></a><span class="co"># Both eigenvalues are negative =&gt; stable fixed point</span></span>
+<span id="cb65-179"><a href="#cb65-179" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">Re</span>(eig_J<span class="sc">$</span>values) <span class="sc">&lt;</span> <span class="dv">0</span>)</span>
+<span id="cb65-180"><a href="#cb65-180" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-181"><a href="#cb65-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-182"><a href="#cb65-182" aria-hidden="true" tabindex="-1"></a><span class="fu">## Positive definite matrices</span></span>
+<span id="cb65-183"><a href="#cb65-183" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-184"><a href="#cb65-184" aria-hidden="true" tabindex="-1"></a>A symmetric matrix $A$ is **positive definite** if $\mathbf{x}^T A \mathbf{x} &gt; 0$ for all nonzero $\mathbf{x}$. Equivalently, all eigenvalues are positive. Positive definiteness arises in quadratic payoff functions and in verifying second-order conditions for optimisation problems.</span>
+<span id="cb65-185"><a href="#cb65-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-188"><a href="#cb65-188" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-189"><a href="#cb65-189" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: pos-def</span></span>
+<span id="cb65-190"><a href="#cb65-190" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">3</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb65-191"><a href="#cb65-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-192"><a href="#cb65-192" aria-hidden="true" tabindex="-1"></a><span class="co"># Check via eigenvalues</span></span>
+<span id="cb65-193"><a href="#cb65-193" aria-hidden="true" tabindex="-1"></a><span class="fu">eigen</span>(A)<span class="sc">$</span>values</span>
+<span id="cb65-194"><a href="#cb65-194" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">eigen</span>(A)<span class="sc">$</span>values <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb65-195"><a href="#cb65-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-196"><a href="#cb65-196" aria-hidden="true" tabindex="-1"></a><span class="co"># Check via Cholesky decomposition (succeeds only for positive definite matrices)</span></span>
+<span id="cb65-197"><a href="#cb65-197" aria-hidden="true" tabindex="-1"></a><span class="fu">chol</span>(A)</span>
+<span id="cb65-198"><a href="#cb65-198" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-199"><a href="#cb65-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-200"><a href="#cb65-200" aria-hidden="true" tabindex="-1"></a><span class="fu">## Convex sets and the simplex</span></span>
+<span id="cb65-201"><a href="#cb65-201" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-202"><a href="#cb65-202" aria-hidden="true" tabindex="-1"></a><span class="fu">### The probability simplex</span></span>
+<span id="cb65-203"><a href="#cb65-203" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-204"><a href="#cb65-204" aria-hidden="true" tabindex="-1"></a>A **mixed strategy** is a probability distribution over pure strategies. The set of all such distributions forms the **(probability) simplex**:</span>
+<span id="cb65-205"><a href="#cb65-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-206"><a href="#cb65-206" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb65-207"><a href="#cb65-207" aria-hidden="true" tabindex="-1"></a>\Delta_n = \left<span class="sc">\{</span> \mathbf{p} \in \mathbb{R}^n \;\middle|\; p_i \geq 0,\; \sum_{i=1}^{n} p_i = 1 \right<span class="sc">\}</span></span>
+<span id="cb65-208"><a href="#cb65-208" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb65-209"><a href="#cb65-209" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-210"><a href="#cb65-210" aria-hidden="true" tabindex="-1"></a>For $n = 2$, the simplex is a line segment; for $n = 3$, it is a triangle.</span>
+<span id="cb65-211"><a href="#cb65-211" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-214"><a href="#cb65-214" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-215"><a href="#cb65-215" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: simplex-check</span></span>
+<span id="cb65-216"><a href="#cb65-216" aria-hidden="true" tabindex="-1"></a><span class="co"># Check whether a vector is a valid mixed strategy</span></span>
+<span id="cb65-217"><a href="#cb65-217" aria-hidden="true" tabindex="-1"></a>is_mixed_strategy <span class="ot">&lt;-</span> <span class="cf">function</span>(p, <span class="at">tol =</span> <span class="fl">1e-10</span>) {</span>
+<span id="cb65-218"><a href="#cb65-218" aria-hidden="true" tabindex="-1"></a>  <span class="fu">all</span>(p <span class="sc">&gt;=</span> <span class="sc">-</span>tol) <span class="sc">&amp;&amp;</span> <span class="fu">abs</span>(<span class="fu">sum</span>(p) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">&lt;</span> tol</span>
+<span id="cb65-219"><a href="#cb65-219" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb65-220"><a href="#cb65-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-221"><a href="#cb65-221" aria-hidden="true" tabindex="-1"></a><span class="fu">is_mixed_strategy</span>(<span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.2</span>))</span>
+<span id="cb65-222"><a href="#cb65-222" aria-hidden="true" tabindex="-1"></a><span class="fu">is_mixed_strategy</span>(<span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.6</span>, <span class="sc">-</span><span class="fl">0.1</span>))</span>
+<span id="cb65-223"><a href="#cb65-223" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-224"><a href="#cb65-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-225"><a href="#cb65-225" aria-hidden="true" tabindex="-1"></a><span class="fu">### Convex sets and convex combinations</span></span>
+<span id="cb65-226"><a href="#cb65-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-227"><a href="#cb65-227" aria-hidden="true" tabindex="-1"></a>A set $C$ is **convex** if for any two points $\mathbf{x}, \mathbf{y} \in C$ and any $\lambda \in <span class="co">[</span><span class="ot">0, 1</span><span class="co">]</span>$, the point $\lambda \mathbf{x} + (1 - \lambda) \mathbf{y}$ is also in $C$. Important convex sets in game theory include:</span>
+<span id="cb65-228"><a href="#cb65-228" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-229"><a href="#cb65-229" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The simplex $\Delta_n$ (the set of mixed strategies).</span>
+<span id="cb65-230"><a href="#cb65-230" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The **core** of a cooperative game (see @sec-cooperative-gt).</span>
+<span id="cb65-231"><a href="#cb65-231" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>The **feasible payoff region** of a repeated game (see @sec-repeated-games).</span>
+<span id="cb65-232"><a href="#cb65-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-235"><a href="#cb65-235" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-236"><a href="#cb65-236" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: convex-combination</span></span>
+<span id="cb65-237"><a href="#cb65-237" aria-hidden="true" tabindex="-1"></a><span class="co"># Convex combination of two strategy vectors</span></span>
+<span id="cb65-238"><a href="#cb65-238" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>)</span>
+<span id="cb65-239"><a href="#cb65-239" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">0.4</span>)</span>
+<span id="cb65-240"><a href="#cb65-240" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> <span class="fl">0.6</span></span>
+<span id="cb65-241"><a href="#cb65-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-242"><a href="#cb65-242" aria-hidden="true" tabindex="-1"></a>p_mix <span class="ot">&lt;-</span> lambda <span class="sc">*</span> p1 <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">-</span> lambda) <span class="sc">*</span> p2</span>
+<span id="cb65-243"><a href="#cb65-243" aria-hidden="true" tabindex="-1"></a>p_mix</span>
+<span id="cb65-244"><a href="#cb65-244" aria-hidden="true" tabindex="-1"></a><span class="fu">is_mixed_strategy</span>(p_mix)</span>
+<span id="cb65-245"><a href="#cb65-245" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-246"><a href="#cb65-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-247"><a href="#cb65-247" aria-hidden="true" tabindex="-1"></a><span class="fu">### The support of a mixed strategy</span></span>
+<span id="cb65-248"><a href="#cb65-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-249"><a href="#cb65-249" aria-hidden="true" tabindex="-1"></a>The **support** of a mixed strategy $\mathbf{p}$ is the set of pure strategies that receive positive probability: $\text{supp}(\mathbf{p}) = <span class="sc">\{</span>i : p_i &gt; 0<span class="sc">\}</span>$. In a Nash equilibrium, every pure strategy in the support must yield the same expected payoff (the indifference principle from @sec-mixed-strategies).</span>
+<span id="cb65-250"><a href="#cb65-250" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-253"><a href="#cb65-253" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-254"><a href="#cb65-254" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: support</span></span>
+<span id="cb65-255"><a href="#cb65-255" aria-hidden="true" tabindex="-1"></a>support <span class="ot">&lt;-</span> <span class="cf">function</span>(p, <span class="at">tol =</span> <span class="fl">1e-10</span>) {</span>
+<span id="cb65-256"><a href="#cb65-256" aria-hidden="true" tabindex="-1"></a>  <span class="fu">which</span>(p <span class="sc">&gt;</span> tol)</span>
+<span id="cb65-257"><a href="#cb65-257" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb65-258"><a href="#cb65-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-259"><a href="#cb65-259" aria-hidden="true" tabindex="-1"></a><span class="fu">support</span>(<span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">0</span>))</span>
+<span id="cb65-260"><a href="#cb65-260" aria-hidden="true" tabindex="-1"></a><span class="fu">support</span>(<span class="fu">c</span>(<span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>, <span class="fl">0.25</span>))</span>
+<span id="cb65-261"><a href="#cb65-261" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-262"><a href="#cb65-262" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-263"><a href="#cb65-263" aria-hidden="true" tabindex="-1"></a><span class="fu">## Matrix decompositions</span></span>
+<span id="cb65-264"><a href="#cb65-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-265"><a href="#cb65-265" aria-hidden="true" tabindex="-1"></a><span class="fu">### LU decomposition</span></span>
+<span id="cb65-266"><a href="#cb65-266" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-267"><a href="#cb65-267" aria-hidden="true" tabindex="-1"></a>R does not expose LU decomposition directly in base, but <span class="in">`solve()`</span> uses it internally. For most game-theoretic applications, <span class="in">`solve()`</span> suffices.</span>
+<span id="cb65-268"><a href="#cb65-268" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-269"><a href="#cb65-269" aria-hidden="true" tabindex="-1"></a><span class="fu">### Singular value decomposition (SVD)</span></span>
+<span id="cb65-270"><a href="#cb65-270" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-271"><a href="#cb65-271" aria-hidden="true" tabindex="-1"></a>The SVD decomposes any $m \times n$ matrix as $A = U \Sigma V^T$. It is useful for low-rank approximations and for diagnosing near-singular payoff matrices.</span>
+<span id="cb65-272"><a href="#cb65-272" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-275"><a href="#cb65-275" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb65-276"><a href="#cb65-276" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: svd</span></span>
+<span id="cb65-277"><a href="#cb65-277" aria-hidden="true" tabindex="-1"></a>A <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>), <span class="at">nrow =</span> <span class="dv">2</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb65-278"><a href="#cb65-278" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-279"><a href="#cb65-279" aria-hidden="true" tabindex="-1"></a><span class="co"># Reconstruct: U %*% diag(d) %*% t(V) = A</span></span>
-<span id="cb65-280"><a href="#cb65-280" aria-hidden="true" tabindex="-1"></a>s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(s<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">t</span>(s<span class="sc">$</span>v)</span>
-<span id="cb65-281"><a href="#cb65-281" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb65-282"><a href="#cb65-282" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-283"><a href="#cb65-283" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary of R linear algebra functions</span></span>
-<span id="cb65-284"><a href="#cb65-284" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-285"><a href="#cb65-285" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Task <span class="pp">|</span> R function <span class="pp">|</span> Example <span class="pp">|</span></span>
-<span id="cb65-286"><a href="#cb65-286" aria-hidden="true" tabindex="-1"></a><span class="pp">|:-----|:-----------|:--------|</span></span>
-<span id="cb65-287"><a href="#cb65-287" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Matrix multiply <span class="pp">|</span> <span class="in">`%*%`</span> <span class="pp">|</span> <span class="in">`A %*% B`</span> <span class="pp">|</span></span>
-<span id="cb65-288"><a href="#cb65-288" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Transpose <span class="pp">|</span> <span class="in">`t()`</span> <span class="pp">|</span> <span class="in">`t(A)`</span> <span class="pp">|</span></span>
-<span id="cb65-289"><a href="#cb65-289" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Determinant <span class="pp">|</span> <span class="in">`det()`</span> <span class="pp">|</span> <span class="in">`det(A)`</span> <span class="pp">|</span></span>
-<span id="cb65-290"><a href="#cb65-290" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Inverse <span class="pp">|</span> <span class="in">`solve()`</span> <span class="pp">|</span> <span class="in">`solve(A)`</span> <span class="pp">|</span></span>
-<span id="cb65-291"><a href="#cb65-291" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Solve $Ax = b$ <span class="pp">|</span> <span class="in">`solve()`</span> <span class="pp">|</span> <span class="in">`solve(A, b)`</span> <span class="pp">|</span></span>
-<span id="cb65-292"><a href="#cb65-292" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Eigenvalues <span class="pp">|</span> <span class="in">`eigen()`</span> <span class="pp">|</span> <span class="in">`eigen(A)$values`</span> <span class="pp">|</span></span>
-<span id="cb65-293"><a href="#cb65-293" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> SVD <span class="pp">|</span> <span class="in">`svd()`</span> <span class="pp">|</span> <span class="in">`svd(A)$d`</span> <span class="pp">|</span></span>
-<span id="cb65-294"><a href="#cb65-294" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cholesky <span class="pp">|</span> <span class="in">`chol()`</span> <span class="pp">|</span> <span class="in">`chol(A)`</span> <span class="pp">|</span></span>
-<span id="cb65-295"><a href="#cb65-295" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cross product <span class="pp">|</span> <span class="in">`crossprod()`</span> <span class="pp">|</span> <span class="in">`crossprod(A)`</span> gives $A^T A$ <span class="pp">|</span></span>
-<span id="cb65-296"><a href="#cb65-296" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Outer product <span class="pp">|</span> <span class="in">`outer()`</span> or <span class="in">`%o%`</span> <span class="pp">|</span> <span class="in">`x %o% y`</span> <span class="pp">|</span></span>
-<span id="cb65-297"><a href="#cb65-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb65-298"><a href="#cb65-298" aria-hidden="true" tabindex="-1"></a>: R functions for linear algebra {#tbl-linalg-functions}</span>
+<span id="cb65-279"><a href="#cb65-279" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">svd</span>(A)</span>
+<span id="cb65-280"><a href="#cb65-280" aria-hidden="true" tabindex="-1"></a>s<span class="sc">$</span>d  <span class="co"># singular values</span></span>
+<span id="cb65-281"><a href="#cb65-281" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-282"><a href="#cb65-282" aria-hidden="true" tabindex="-1"></a><span class="co"># Reconstruct: U %*% diag(d) %*% t(V) = A</span></span>
+<span id="cb65-283"><a href="#cb65-283" aria-hidden="true" tabindex="-1"></a>s<span class="sc">$</span>u <span class="sc">%*%</span> <span class="fu">diag</span>(s<span class="sc">$</span>d) <span class="sc">%*%</span> <span class="fu">t</span>(s<span class="sc">$</span>v)</span>
+<span id="cb65-284"><a href="#cb65-284" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb65-285"><a href="#cb65-285" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-286"><a href="#cb65-286" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary of R linear algebra functions</span></span>
+<span id="cb65-287"><a href="#cb65-287" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-288"><a href="#cb65-288" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Task <span class="pp">|</span> R function <span class="pp">|</span> Example <span class="pp">|</span></span>
+<span id="cb65-289"><a href="#cb65-289" aria-hidden="true" tabindex="-1"></a><span class="pp">|:-----|:-----------|:--------|</span></span>
+<span id="cb65-290"><a href="#cb65-290" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Matrix multiply <span class="pp">|</span> <span class="in">`%*%`</span> <span class="pp">|</span> <span class="in">`A %*% B`</span> <span class="pp">|</span></span>
+<span id="cb65-291"><a href="#cb65-291" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Transpose <span class="pp">|</span> <span class="in">`t()`</span> <span class="pp">|</span> <span class="in">`t(A)`</span> <span class="pp">|</span></span>
+<span id="cb65-292"><a href="#cb65-292" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Determinant <span class="pp">|</span> <span class="in">`det()`</span> <span class="pp">|</span> <span class="in">`det(A)`</span> <span class="pp">|</span></span>
+<span id="cb65-293"><a href="#cb65-293" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Inverse <span class="pp">|</span> <span class="in">`solve()`</span> <span class="pp">|</span> <span class="in">`solve(A)`</span> <span class="pp">|</span></span>
+<span id="cb65-294"><a href="#cb65-294" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Solve $Ax = b$ <span class="pp">|</span> <span class="in">`solve()`</span> <span class="pp">|</span> <span class="in">`solve(A, b)`</span> <span class="pp">|</span></span>
+<span id="cb65-295"><a href="#cb65-295" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Eigenvalues <span class="pp">|</span> <span class="in">`eigen()`</span> <span class="pp">|</span> <span class="in">`eigen(A)$values`</span> <span class="pp">|</span></span>
+<span id="cb65-296"><a href="#cb65-296" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> SVD <span class="pp">|</span> <span class="in">`svd()`</span> <span class="pp">|</span> <span class="in">`svd(A)$d`</span> <span class="pp">|</span></span>
+<span id="cb65-297"><a href="#cb65-297" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cholesky <span class="pp">|</span> <span class="in">`chol()`</span> <span class="pp">|</span> <span class="in">`chol(A)`</span> <span class="pp">|</span></span>
+<span id="cb65-298"><a href="#cb65-298" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Cross product <span class="pp">|</span> <span class="in">`crossprod()`</span> <span class="pp">|</span> <span class="in">`crossprod(A)`</span> gives $A^T A$ <span class="pp">|</span></span>
+<span id="cb65-299"><a href="#cb65-299" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Outer product <span class="pp">|</span> <span class="in">`outer()`</span> or <span class="in">`%o%`</span> <span class="pp">|</span> <span class="in">`x %o% y`</span> <span class="pp">|</span></span>
+<span id="cb65-300"><a href="#cb65-300" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-301"><a href="#cb65-301" aria-hidden="true" tabindex="-1"></a>: R functions for linear algebra {#tbl-linalg-functions}</span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
