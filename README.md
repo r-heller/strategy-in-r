@@ -1,3 +1,5 @@
+<p align="center"><a href="https://r-heller.github.io/strategy-in-r/"><img src="images/cover.png" alt="Strategy in R cover" width="280"></a></p>
+
 # Strategy in R
 
 *Game Theory, Simulation, and Machine Intelligence*
