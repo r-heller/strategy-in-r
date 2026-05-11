@@ -1,0 +1,7 @@
+# Citing this Guide {-}
+
+The suggested citation is:
+
+> Heller, R. (2026). *Strategy in R: Game Theory, Simulation, and Machine Intelligence* (Version v0.1.0). Self-published via GitHub Pages. <https://r-heller.github.io/strategy-in-r/>.
+
+Download the reference as [BibTeX](citation-files/citation.bib) or [RIS](citation-files/citation.ris).
