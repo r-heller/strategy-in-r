@@ -24,8 +24,9 @@ jobs:
 
       - uses: r-lib/actions/setup-tinytex@v2
 
-      - name: Install bookdown
-        run: Rscript -e 'if (!requireNamespace("bookdown", quietly=TRUE)) install.packages("bookdown")'
+      - name: Install bookdown and bs4_book deps
+        run: |
+          Rscript -e 'pkgs <- c("bookdown", "downlit", "bslib", "rmarkdown", "knitr", "xml2"); install.packages(setdiff(pkgs, rownames(installed.packages())))'
 
       - name: Render book (HTML + PDF + EPUB)
         run: Rscript -e 'bookdown::render_book("index.Rmd", output_format = "all")'
