@@ -24,3 +24,20 @@ One line per Claude Code turn. Append-only.
 | 2026-05-11 | 9 | LLM-use acknowledgment | Added "Use of LLM tools" subsection to acknowledgments.Rmd (self-hosted Mistral Le Chat via Ollama/`ollamar` + GitHub Copilot in RStudio) and one-line pointer in 95-colophon.Rmd. Commit 8791834. |
 | 2026-05-11 | 8 | Add book cover | images/cover.png (rasterised from PDF), .github/social-preview.png (1280×640), embedded in index.Rmd preface, README.md header thumbnail, EPUB cover_image, OG/Twitter meta in style/header.html. Force-tracked style/header.html and style/per-chapter-pdf-button.html (were ignored by *.html rule, would have broken CI render). Commit 327331a. |
 | 2026-05-11 | 7 | Migrate Quarto → bookdown | Flattened 47 chapters from part-* subdirs to root with `# (PART)`/`# (APPENDIX)` dividers; converted 564 chunk-option blocks (`#\| key: val` → `{r label, key=val}`), ~250 cross-references (`@sec-/fig-/tbl-/eq-` → `\@ref()`), 57 callouts (`::: {.callout-X}` → `::: {.rmdX}`), all `$$ {#eq-X}` equation labels (→ `\begin{equation}…(\#eq:X)\end{equation}`); 69 `fig-`/`tbl-` chunk labels stripped of prefix and refs updated. Replaced `_quarto.yml` with `_bookdown.yml` + `_output.yml` (bs4_book + pdf_book + epub_book). Added front matter (impressum, how-to-use, notation, acknowledgments, about-the-author) and back matter (95-colophon, 99-references). Rewrote `_common.R` (preserved tidyverse/here/gt loads + theme/save sources). Wrote `style/style.css` (Hugo Coder palette, preserved .exercise/.definition/.theorem). Updated `style/preamble.tex` for xelatex with Inter/JetBrains Mono fallback. Renamed `references.bib` → `book.bib` (66 entries unchanged). Added CITATION.cff, citation.bib, scripts/{render-chapter-pdfs,verify-citations,toc-to-readme}.R. Consolidated 4 GH Actions workflows into single `render-book.yml`; rewrote `citation-check.yml` for `book.bib`. Removed pre-rendered `_book/` (CI now renders fresh to `docs/`). Rewrote README badge-free. Local render impossible (no R on Windows host); verification via CI. |
+
+## 2026-05-11 — Strict Harrer layout applied (Coder palette)
+
+- Pre-flight audit (AUDIT_HARRER_APPLY.md): style.css, header.html, after-body.html, Font Awesome 6, citation.bib/ris, render-chapter-pdfs.R all already present and correct; only the (PART) grouping and the strict Harrer landing-page structure were missing.
+- Added 7 part-*.Rmd marker files: foundations, r-toolkit, simulation, ai, applications, ethics, appendix.
+- Rewrote _bookdown.yml rmd_files: with explicit ordering interleaving the part markers between chapter clusters; part-appendix.Rmd uses (APPENDIX) so A-E render alphabetically.
+- Rewrote index.Rmd to the strict Harrer landing structure:
+  - YAML unchanged; body replaced from `# Welcome! {-}` onward.
+  - Cover floated right via raw `<img align="right" width="250" class="cover" />` (drops the prior knitr::include_graphics chunk).
+  - `---` separator above every `## ... {-}` section.
+  - `<br></br>` breathers between sections.
+  - Sections: About via the welcome paragraph, Open Source Repository, How To Use The Guide, Citing this Guide (boxempty card with BibTeX/RIS).
+  - Redundant `## License {-}` section removed (license already linked from the Open Source Repository paragraph and lives in impressum.Rmd).
+- scripts/render-chapter-pdfs.R: skip the part-*.Rmd marker files in addition to the existing skip list.
+- _common.R copy hook already present; no edit needed.
+- Toggle icon stays fa-circle-half-stroke; no color/font deviations.
+- Branch: feat/strict-harrer-layout. PR + CI render are next.
