@@ -18,7 +18,7 @@
 ```
 
 ```
-#>   Commit:   0e6379c
+#>   Commit:   b57010d
 ```
 
 LLM assistance (self-hosted Mistral Le Chat via Ollama/`ollamar`, plus GitHub Copilot in RStudio) was used for copyediting, formatting, and scaffolding tasks only — see Acknowledgments.
@@ -64,3 +64,5 @@ LLM assistance (self-hosted Mistral Le Chat via Ollama/`ollamar`, plus GitHub Co
 #> [29] vctrs_0.7.3        evaluate_1.0.5     farver_2.1.2       codetools_0.2-20  
 #> [33] rmarkdown_2.31     htmltools_0.5.9    tools_4.6.0        pkgconfig_2.0.3
 ```
+
+
