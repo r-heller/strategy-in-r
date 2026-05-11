@@ -18,8 +18,10 @@
 ```
 
 ```
-#>   Commit:   1c2f1e4
+#>   Commit:   0e6379c
 ```
+
+LLM assistance (self-hosted Mistral Le Chat via Ollama/`ollamar`, plus GitHub Copilot in RStudio) was used for copyediting, formatting, and scaffolding tasks only — see Acknowledgments.
 
 ## Session info {-}
 
