@@ -22,7 +22,7 @@ for (ch in chapters) {
   tryCatch(
     rmarkdown::render(
       input         = ch,
-      output_format = "pdf_document",
+      output_format = rmarkdown::pdf_document(latex_engine = "xelatex"),
       output_file   = out,
       output_dir    = out_dir,
       envir         = new.env(),
