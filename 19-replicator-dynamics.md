@@ -276,8 +276,8 @@ p_hd
 ```
 
 <div class="figure" style="text-align: center">
-<img src="19-replicator-dynamics_files/figure-epub3/hd-dynamics-1.png" alt="Hawk frequency over time for five different initial conditions. All trajectories converge to the ESS at x_H = 0.5 (dashed line), regardless of starting point. Initial conditions below the ESS see Hawk increase; those above see it decrease." width="80%" />
-<p class="caption">(\#fig:hd-dynamics)Hawk frequency over time for five different initial conditions. All trajectories converge to the ESS at x_H = 0.5 (dashed line), regardless of starting point. Initial conditions below the ESS see Hawk increase; those above see it decrease.</p>
+<img src="19-replicator-dynamics_files/figure-epub3/hd-dynamics-1.png" alt="Hawk frequency over time for five different initial conditions. All trajectories converge to the ESS at $x_H = 0.5$ (dashed line), regardless of starting point. Initial conditions below the ESS see Hawk increase; those above see it decrease." width="80%" />
+<p class="caption">(\#fig:hd-dynamics)Hawk frequency over time for five different initial conditions. All trajectories converge to the ESS at $x_H = 0.5$ (dashed line), regardless of starting point. Initial conditions below the ESS see Hawk increase; those above see it decrease.</p>
 </div>
 
 ``` r
