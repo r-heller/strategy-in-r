@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -259,7 +260,7 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <span class="header-section-number">15.3.1</span> Lemke–Howson sketch for 2x2 games<a class="anchor" aria-label="anchor" href="#lemkehowson-sketch-for-2x2-games"><i class="fas fa-link"></i></a>
 </h3>
 <p>The following function demonstrates the complementary pivoting logic for 2x2 games. It illustrates the algorithm’s structure rather than providing a production solver.</p>
-<div class="sourceCode" id="cb393"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb391"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lemke_howson_2x2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># For 2x2 games, the Lemke-Howson path is short enough</span></span>
 <span></span>
@@ -305,13 +306,13 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <span><span class="va">lh_result</span> <span class="op">&lt;-</span> <span class="fu">lemke_howson_2x2</span><span class="op">(</span><span class="va">A_mp</span>, <span class="va">B_mp</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Lemke-Howson result for Matching Pennies:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Lemke-Howson result for Matching Pennies:</code></pre>
-<div class="sourceCode" id="cb395"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb393"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">p</span>, <span class="st">"(type:"</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">type</span>, <span class="st">")\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   p = 0.5 0.5 (type: mixed )</code></pre>
-<div class="sourceCode" id="cb397"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb395"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  q ="</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">q</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   q = 0.5 0.5</code></pre>
-<div class="sourceCode" id="cb399"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb397"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.2f, %.2f)\n"</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Payoffs: (0.00, 0.00)</code></pre>
 </div>
@@ -319,7 +320,7 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <h3>
 <span class="header-section-number">15.3.2</span> Fictitious play implementation<a class="anchor" aria-label="anchor" href="#fictitious-play-implementation"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb401"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb399"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fictitious_play</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span>, <span class="va">n_iter</span> <span class="op">=</span> <span class="fl">1000</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">42</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
 <span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
@@ -394,20 +395,20 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <h3>
 <span class="header-section-number">15.3.3</span> Testing on Matching Pennies<a class="anchor" aria-label="anchor" href="#testing-on-matching-pennies"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb402"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb400"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fp_mp</span> <span class="op">&lt;-</span> <span class="fu">fictitious_play</span><span class="op">(</span><span class="va">A_mp</span>, <span class="va">B_mp</span>, n_iter <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Fictitious play result for Matching Pennies (2000 iterations):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Fictitious play result for Matching Pennies (2000 iterations):</code></pre>
-<div class="sourceCode" id="cb404"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb402"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_mp</span><span class="op">$</span><span class="va">p</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Empirical p = 0.513 0.487</code></pre>
-<div class="sourceCode" id="cb406"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb404"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_mp</span><span class="op">$</span><span class="va">q</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Empirical q = 0.498 0.501</code></pre>
-<div class="sourceCode" id="cb408"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb406"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  True NE: p = (0.5, 0.5), q = (0.5, 0.5)\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   True NE: p = (0.5, 0.5), q = (0.5, 0.5)</code></pre>
-<div class="sourceCode" id="cb410"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb408"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.4f, %.4f)\n"</span>, <span class="va">fp_mp</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">fp_mp</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Payoffs: (-0.0001, 0.0001)</code></pre>
 <p>The empirical frequencies are close to the true mixed Nash equilibrium <span class="math inline">\((0.5, 0.5)\)</span>, demonstrating convergence. As a zero-sum game, Matching Pennies is guaranteed to yield convergence under fictitious play.</p>
@@ -422,7 +423,7 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <h3>
 <span class="header-section-number">15.4.1</span> Setting up the game<a class="anchor" aria-label="anchor" href="#setting-up-the-game"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb412"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb410"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Battle of the Sexes</span></span>
 <span><span class="va">A_bos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -435,24 +436,24 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Battle of the Sexes payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Battle of the Sexes payoffs:</code></pre>
-<div class="sourceCode" id="cb414"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb412"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Player 1:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Player 1:</code></pre>
-<div class="sourceCode" id="cb416"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb414"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A_bos</span></span></code></pre></div>
 <pre><code>#&gt;          Opera Football
 #&gt; Opera        3        0
 #&gt; Football     0        2</code></pre>
-<div class="sourceCode" id="cb418"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb416"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPlayer 2:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Player 2:</code></pre>
-<div class="sourceCode" id="cb420"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb418"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">B_bos</span></span></code></pre></div>
 <pre><code>#&gt;          Opera Football
 #&gt; Opera        2        0
 #&gt; Football     0        3</code></pre>
-<div class="sourceCode" id="cb422"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb420"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nTrue mixed NE: p(Opera) = %.2f, q(Opera) = %.2f\n"</span>, <span class="va">true_p</span>, <span class="va">true_q</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; True mixed NE: p(Opera) = 0.60, q(Opera) = 0.40</code></pre>
@@ -461,28 +462,28 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <h3>
 <span class="header-section-number">15.4.2</span> Running fictitious play<a class="anchor" aria-label="anchor" href="#running-fictitious-play"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb424"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb422"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run fictitious play with many iterations</span></span>
 <span><span class="va">fp_bos</span> <span class="op">&lt;-</span> <span class="fu">fictitious_play</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span>, n_iter <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Battle of the Sexes --- Fictitious Play Results:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Battle of the Sexes --- Fictitious Play Results:</code></pre>
-<div class="sourceCode" id="cb426"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb424"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical p(Opera) ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">p</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span>,</span>
 <span>    <span class="st">"  (true:"</span>, <span class="va">true_p</span>, <span class="st">")\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Empirical p(Opera) = 1   (true: 0.6 )</code></pre>
-<div class="sourceCode" id="cb428"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb426"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical q(Opera) ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">q</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span>,</span>
 <span>    <span class="st">"  (true:"</span>, <span class="va">true_q</span>, <span class="st">")\n\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Empirical q(Opera) = 1   (true: 0.4 )</code></pre>
-<div class="sourceCode" id="cb430"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb428"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Expected payoffs at the mixed NE</span></span>
 <span><span class="va">mixed_payoff_1</span> <span class="op">&lt;-</span> <span class="va">true_p</span> <span class="op">*</span> <span class="va">true_q</span> <span class="op">*</span> <span class="fl">3</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">2</span></span>
 <span><span class="va">mixed_payoff_2</span> <span class="op">&lt;-</span> <span class="va">true_p</span> <span class="op">*</span> <span class="va">true_q</span> <span class="op">*</span> <span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">3</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Mixed NE expected payoffs:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">mixed_payoff_1</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">","</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">mixed_payoff_2</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Mixed NE expected payoffs: 1.2 , 1.2</code></pre>
-<div class="sourceCode" id="cb432"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb430"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Fictitious play payoffs:  "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">","</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_2</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Fictitious play payoffs:   3 , 2</code></pre>
@@ -492,7 +493,7 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 <h3>
 <span class="header-section-number">15.4.3</span> Publication figure: convergence trajectory<a class="anchor" aria-label="anchor" href="#publication-figure-convergence-trajectory"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb434"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb432"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Build trajectory data for the plot</span></span>
 <span><span class="va">trajectory</span> <span class="op">&lt;-</span> <span class="va">fp_bos</span><span class="op">$</span><span class="va">history</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
@@ -556,7 +557,7 @@ a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
 Figure 15.1: Fictitious play convergence in the Battle of the Sexes. The trajectory of empirical action frequencies (Player 1 plays Opera on the x-axis, Player 2 plays Opera on the y-axis) spirals toward the mixed Nash equilibrium at (0.6, 0.4). Early iterations show large oscillations as players alternate between best responses; later iterations settle near the equilibrium. The two pure Nash equilibria at (1, 1) and (0, 0) are shown as reference points.
 </p>
 </div>
-<div class="sourceCode" id="cb435"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb433"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_fp</span>, <span class="st">"fictitious-play-convergence"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 <p>The spiral pattern in the figure is characteristic of fictitious play in games with mixed equilibria. Each player’s best response to the other’s current empirical frequency overshoots the equilibrium, creating oscillations that gradually dampen. The early phase (orange) shows wild swings; the middle phase (blue) tightens the spiral; and the late phase (green) clusters near the mixed NE at <span class="math inline">\((0.6, 0.4)\)</span>.</p>
 <p>This convergence pattern explains why fictitious play, despite its simplicity, is useful as both a computational tool and a model of bounded rationality. Players need not know the game’s payoff structure in full — they only need to observe past actions and best-respond. The path to equilibrium emerges from this simple learning rule, without any explicit computation of the indifference conditions from <a href="sec-mixed-strategies.html#sec-mixed-strategies">5</a>.</p>
@@ -566,33 +567,33 @@ Figure 15.1: Fictitious play convergence in the Battle of the Sexes. The traject
 <span class="header-section-number">15.4.4</span> Comparing all three approaches<a class="anchor" aria-label="anchor" href="#comparing-all-three-approaches"><i class="fas fa-link"></i></a>
 </h3>
 <p>We now apply all three algorithms to Battle of the Sexes and compare their outputs.</p>
-<div class="sourceCode" id="cb436"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb434"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. Lemke-Howson sketch</span></span>
 <span><span class="va">lh_bos</span> <span class="op">&lt;-</span> <span class="fu">lemke_howson_2x2</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Lemke-Howson:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Lemke-Howson:</code></pre>
-<div class="sourceCode" id="cb438"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb436"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">lh_bos</span><span class="op">$</span><span class="va">p</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">" q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">lh_bos</span><span class="op">$</span><span class="va">q</span>, <span class="fl">4</span><span class="op">)</span>,</span>
 <span>    <span class="st">" type:"</span>, <span class="va">lh_bos</span><span class="op">$</span><span class="va">type</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   p = 1 0  q = 1 0  type: pure</code></pre>
-<div class="sourceCode" id="cb440"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb438"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.2f, %.2f)\n\n"</span>, <span class="va">lh_bos</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">lh_bos</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Payoffs: (3.00, 2.00)</code></pre>
-<div class="sourceCode" id="cb442"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb440"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 2. Fictitious play (already computed above)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Fictitious play (5000 iterations):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Fictitious play (5000 iterations):</code></pre>
-<div class="sourceCode" id="cb444"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb442"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">p</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">" q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">q</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   p = 1 0  q = 1 0</code></pre>
-<div class="sourceCode" id="cb446"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb444"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.2f, %.2f)\n\n"</span>, <span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Payoffs: (3.00, 2.00)</code></pre>
-<div class="sourceCode" id="cb448"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb446"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 3. Exact support enumeration (from \@ref(sec-nashpy-reticulate))</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Exact solutions (for reference):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Exact solutions (for reference):</code></pre>
-<div class="sourceCode" id="cb450"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb448"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pure_ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span><span class="op">)</span></span>
 <span><span class="va">mixed_ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">pure_ne</span><span class="op">)</span> <span class="op">{</span></span>
@@ -602,7 +603,7 @@ Figure 15.1: Fictitious play convergence in the Battle of the Sexes. The traject
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code>#&gt;   Pure NE: (Opera, Opera) -&gt; payoffs (3, 2)
 #&gt;   Pure NE: (Football, Football) -&gt; payoffs (2, 3)</code></pre>
-<div class="sourceCode" id="cb452"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb450"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">mixed_ne</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">p_exact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">mixed_ne</span><span class="op">$</span><span class="va">p</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">mixed_ne</span><span class="op">$</span><span class="va">p</span><span class="op">)</span></span>
 <span>  <span class="va">q_exact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">mixed_ne</span><span class="op">$</span><span class="va">q</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">mixed_ne</span><span class="op">$</span><span class="va">q</span><span class="op">)</span></span>
@@ -619,7 +620,7 @@ Figure 15.1: Fictitious play convergence in the Battle of the Sexes. The traject
 <h3>
 <span class="header-section-number">15.4.5</span> Convergence speed across games<a class="anchor" aria-label="anchor" href="#convergence-speed-across-games"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb454"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb452"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run fictitious play on two games and track convergence</span></span>
 <span><span class="va">games_for_fp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"Matching Pennies"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_mp</span>, B <span class="op">=</span> <span class="va">B_mp</span>, true_p <span class="op">=</span> <span class="fl">0.5</span>, true_q <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
@@ -705,7 +706,10 @@ Figure 15.1: Fictitious play convergence in the Battle of the Sexes. The traject
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></div>
 <div class="next"><a href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

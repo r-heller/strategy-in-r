@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -292,7 +293,7 @@
 </tbody>
 </table></div>
 <p>The characteristic function <span class="math inline">\(v(S)\)</span> measures cost <em>savings</em> relative to individual construction. We normalize <span class="math inline">\(v(\{i\}) = 0\)</span> for each individual player.</p>
-<div class="sourceCode" id="cb212"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb210"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define the 3-player TU game (cost savings)</span></span>
 <span><span class="va">players</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">players</span><span class="op">)</span></span>
@@ -313,7 +314,7 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Characteristic function v(S):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Characteristic function v(S):</code></pre>
-<div class="sourceCode" id="cb214"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb212"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">name</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">v</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op">!=</span> <span class="st">"0"</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  v({%s}) = %d\n"</span>,</span>
@@ -332,7 +333,7 @@
 <h3>
 <span class="header-section-number">9.3.2</span> Computing the Shapley value<a class="anchor" aria-label="anchor" href="#computing-the-shapley-value"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb216"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb214"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Permutation generator (no external dependencies)</span></span>
 <span><span class="va">permn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;=</span> <span class="fl">1</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
@@ -376,14 +377,14 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Shapley values:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Shapley values:</code></pre>
-<div class="sourceCode" id="cb218"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb216"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">p</span> <span class="kw">in</span> <span class="va">players</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  phi(%s) = %.4f\n"</span>, <span class="va">p</span>, <span class="va">shapley_vals</span><span class="op">[</span><span class="va">p</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code>#&gt;   phi(A) = 20.0000
 #&gt;   phi(B) = 20.0000
 #&gt;   phi(C) = 20.0000</code></pre>
-<div class="sourceCode" id="cb220"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb218"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nSum of Shapley values: %.4f (should equal v(N) = %d)\n"</span>,</span>
 <span>            <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">shapley_vals</span><span class="op">)</span>, <span class="va">v</span><span class="op">[</span><span class="st">"ABC"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
@@ -393,7 +394,7 @@
 <h3>
 <span class="header-section-number">9.3.3</span> Checking the core<a class="anchor" aria-label="anchor" href="#checking-the-core"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb222"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb220"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># An allocation is in the core if it satisfies all coalition constraints</span></span>
 <span><span class="va">check_core</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">players</span>, <span class="va">v_func</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">players</span><span class="op">)</span></span>
@@ -423,7 +424,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Is the Shapley value in the core? "</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">core_result</span><span class="op">$</span><span class="va">in_core</span>, <span class="st">"YES"</span>, <span class="st">"NO"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Is the Shapley value in the core?  YES</code></pre>
-<div class="sourceCode" id="cb224"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb222"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="va">core_result</span><span class="op">$</span><span class="va">in_core</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Violations:\n"</span><span class="op">)</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">viol</span> <span class="kw">in</span> <span class="va">core_result</span><span class="op">$</span><span class="va">violations</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  "</span>, <span class="va">viol</span>, <span class="st">"\n"</span><span class="op">)</span></span>
@@ -433,7 +434,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nCore constraints:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Core constraints:</code></pre>
-<div class="sourceCode" id="cb226"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb224"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">coalitions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"B"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"C"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span></span>
@@ -460,7 +461,7 @@
 <h3>
 <span class="header-section-number">9.3.4</span> Publication figure: Shapley value comparison<a class="anchor" aria-label="anchor" href="#publication-figure-shapley-value-comparison"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb228"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb226"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">shapley_df</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  player <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">players</span>, levels <span class="op">=</span> <span class="va">players</span><span class="op">)</span>,</span>
 <span>  shapley <span class="op">=</span> <span class="va">shapley_vals</span><span class="op">[</span><span class="va">players</span><span class="op">]</span></span>
@@ -485,14 +486,14 @@
 Figure 9.1: Shapley values for the three-player water treatment cost-sharing game. Each bar represents a municipality’s fair share of the total cost savings (60 units) based on average marginal contributions across all coalition formation orders. The Shapley value assigns equal shares (20 each) due to the symmetric structure of pair-wise savings in this game.
 </p>
 </div>
-<div class="sourceCode" id="cb229"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb227"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_shapley</span>, <span class="st">"shapley-values-3player"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div id="marginal-contributions-table" class="section level3" number="9.3.5">
 <h3>
 <span class="header-section-number">9.3.5</span> Marginal contributions table<a class="anchor" aria-label="anchor" href="#marginal-contributions-table"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb230"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb228"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Show marginal contributions in each ordering</span></span>
 <span><span class="va">perms</span> <span class="op">&lt;-</span> <span class="fu">permn</span><span class="op">(</span><span class="va">players</span><span class="op">)</span></span>
 <span></span>
@@ -1065,7 +1066,7 @@ Figure 9.1: Shapley values for the three-player water treatment cost-sharing gam
 <p><strong>Step 3: Average the marginal contributions.</strong></p>
 <p><span class="math display">\[\phi_A = \frac{0 + 0 + 40 + 40 + 20 + 20}{6} = \frac{120}{6} = 20\]</span></p>
 <p><strong>Step 4: Verify efficiency.</strong> By symmetry of the game (all two-player coalitions have the same value), <span class="math inline">\(\phi_A = \phi_B = \phi_C = 20\)</span>. The sum is <span class="math inline">\(20 + 20 + 20 = 60 = v(N)\)</span>, confirming efficiency.</p>
-<div class="sourceCode" id="cb231"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb229"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Verify step by step for player A</span></span>
 <span><span class="va">mc_A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
 <span>  <span class="va">v</span><span class="op">[</span><span class="st">"A"</span><span class="op">]</span> <span class="op">-</span> <span class="va">v</span><span class="op">[</span><span class="st">"0"</span><span class="op">]</span>,     <span class="co"># A first</span></span>
@@ -1078,11 +1079,11 @@ Figure 9.1: Shapley values for the three-player water treatment cost-sharing gam
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Player A marginal contributions:"</span>, <span class="va">mc_A</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Player A marginal contributions: 0 0 40 40 20 20</code></pre>
-<div class="sourceCode" id="cb233"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb231"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Shapley value for A: %.0f / 6 = %.4f\n"</span>,</span>
 <span>            <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">mc_A</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">mc_A</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Shapley value for A: 120 / 6 = 20.0000</code></pre>
-<div class="sourceCode" id="cb235"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb233"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Summary</span></span>
 <span><span class="va">final_allocation</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
 <span>  Municipality <span class="op">=</span> <span class="va">players</span>,</span>
@@ -1632,7 +1633,10 @@ Figure 9.1: Shapley values for the three-player water treatment cost-sharing gam
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></div>
 <div class="next"><a href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

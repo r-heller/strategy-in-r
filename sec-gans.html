@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -237,7 +238,7 @@ D^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + p_G(x)}
 <h3>
 <span class="header-section-number">30.3.1</span> Target and generator distributions<a class="anchor" aria-label="anchor" href="#target-and-generator-distributions"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb804"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb802"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Target: mixture of two Gaussians</span></span>
 <span><span class="va">target_density</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fl">0.5</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">dnorm</a></span><span class="op">(</span><span class="va">x</span>, mean <span class="op">=</span> <span class="op">-</span><span class="fl">2</span>, sd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">dnorm</a></span><span class="op">(</span><span class="va">x</span>, mean <span class="op">=</span> <span class="fl">2</span>, sd <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
@@ -261,7 +262,7 @@ D^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + p_G(x)}
 <h3>
 <span class="header-section-number">30.3.2</span> Discriminator on a grid<a class="anchor" aria-label="anchor" href="#discriminator-on-a-grid"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb805"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb803"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Discriminator: logistic function evaluated on grid bins</span></span>
 <span><span class="va">disc_output</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">weights</span>, <span class="va">grid_centers</span>, <span class="va">bandwidth</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># RBF-style discriminator: weighted sum of basis functions</span></span>
@@ -274,7 +275,7 @@ D^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + p_G(x)}
 <h3>
 <span class="header-section-number">30.3.3</span> Training loop<a class="anchor" aria-label="anchor" href="#training-loop"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb806"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb804"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">n_grid</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
 <span><span class="va">grid_centers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">5</span>, length.out <span class="op">=</span> <span class="va">n_grid</span><span class="op">)</span></span>
@@ -366,7 +367,7 @@ D^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + p_G(x)}
 <h3>
 <span class="header-section-number">30.3.4</span> Figure 1: Generator distribution evolution<a class="anchor" aria-label="anchor" href="#figure-1-generator-distribution-evolution"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb807"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb805"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">target_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x_grid</span>, density <span class="op">=</span> <span class="fu">target_density</span><span class="op">(</span><span class="va">x_grid</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">gen_snapshots</span> <span class="op">&lt;-</span> <span class="va">gen_snapshots</span> <span class="op">|&gt;</span></span>
@@ -396,14 +397,14 @@ D^*(x) = \frac{p_{\text{data}}(x)}{p_{\text{data}}(x) + p_G(x)}
 Figure 30.1: Evolution of the generator distribution during GAN training. The single Gaussian generator shifts and reshapes to approximate the bimodal target distribution. By epoch 300, the generator has moved toward one of the two target modes — illustrating how a unimodal generator is fundamentally limited.
 </p>
 </div>
-<div class="sourceCode" id="cb808"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb806"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_evolution</span>, <span class="st">"gan-distribution-evolution"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div id="figure-2-discriminator-accuracy" class="section level3" number="30.3.5">
 <h3>
 <span class="header-section-number">30.3.5</span> Figure 2: Discriminator accuracy<a class="anchor" aria-label="anchor" href="#figure-2-discriminator-accuracy"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb809"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb807"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d_long</span> <span class="op">&lt;-</span> <span class="va">history</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">epoch</span>, <span class="va">d_acc_real</span>, <span class="va">d_acc_fake</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="op">-</span><span class="va">epoch</span>, names_to <span class="op">=</span> <span class="st">"type"</span>, values_to <span class="op">=</span> <span class="st">"accuracy"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -429,7 +430,7 @@ Figure 30.1: Evolution of the generator distribution during GAN training. The si
 Figure 30.2: Discriminator accuracy on real and fake samples over training. As the generator improves, the discriminator’s ability to identify fake samples decreases, approaching the Nash equilibrium prediction of 50% accuracy on both.
 </p>
 </div>
-<div class="sourceCode" id="cb810"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb808"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_disc</span>, <span class="st">"gan-discriminator-accuracy"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">4.5</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -438,64 +439,64 @@ Figure 30.2: Discriminator accuracy on real and fake samples over training. As t
 <span class="header-section-number">30.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-26"><i class="fas fa-link"></i></a>
 </h2>
 <p>We trace the game-theoretic dynamics step by step.</p>
-<div class="sourceCode" id="cb811"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb809"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"GAN training as a minimax game:\n\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; GAN training as a minimax game:</code></pre>
-<div class="sourceCode" id="cb813"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb811"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Initial state:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Initial state:</code></pre>
-<div class="sourceCode" id="cb815"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb813"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Generator: N(%.2f, %.2f^2) — a broad Gaussian centered at 0\n"</span>,</span>
 <span>            <span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Generator: N(0.00, 2.00^2) — a broad Gaussian centered at 0</code></pre>
-<div class="sourceCode" id="cb817"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb815"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Target: 0.5 * N(-2, 0.8^2) + 0.5 * N(2, 0.8^2)\n\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Target: 0.5 * N(-2, 0.8^2) + 0.5 * N(2, 0.8^2)</code></pre>
-<div class="sourceCode" id="cb819"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb817"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"After training:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; After training:</code></pre>
-<div class="sourceCode" id="cb821"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb819"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Generator: N(%.2f, %.2f^2)\n"</span>, <span class="va">mu_g</span>, <span class="va">sigma_g</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Generator: N(0.14, 1.25^2)</code></pre>
-<div class="sourceCode" id="cb823"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb821"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Generator mean moved from 0 to %.2f\n"</span>, <span class="va">mu_g</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Generator mean moved from 0 to 0.14</code></pre>
-<div class="sourceCode" id="cb825"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb823"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Generator std dev changed from 2.00 to %.2f\n\n"</span>, <span class="va">sigma_g</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   Generator std dev changed from 2.00 to 1.25</code></pre>
-<div class="sourceCode" id="cb827"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb825"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">final_d_real</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">history</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">epoch</span> <span class="op">&gt;</span> <span class="va">n_epochs</span> <span class="op">-</span> <span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">d_acc_real</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">final_d_fake</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">history</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">epoch</span> <span class="op">&gt;</span> <span class="va">n_epochs</span> <span class="op">-</span> <span class="fl">20</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">d_acc_fake</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Final discriminator accuracy (last 20 epochs):\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Final discriminator accuracy (last 20 epochs):</code></pre>
-<div class="sourceCode" id="cb829"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb827"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  On real data: %.1f%%\n"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">final_d_real</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   On real data: 79.8%</code></pre>
-<div class="sourceCode" id="cb831"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb829"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  On fake data: %.1f%%\n\n"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">final_d_fake</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   On fake data: 73.0%</code></pre>
-<div class="sourceCode" id="cb833"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb831"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Game-theoretic interpretation:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Game-theoretic interpretation:</code></pre>
-<div class="sourceCode" id="cb835"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb833"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"- The generator found the best single Gaussian approximation.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; - The generator found the best single Gaussian approximation.</code></pre>
-<div class="sourceCode" id="cb837"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb835"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"- A unimodal generator cannot cover both modes of a bimodal target.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; - A unimodal generator cannot cover both modes of a bimodal target.</code></pre>
-<div class="sourceCode" id="cb839"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb837"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"- This is MODE COLLAPSE: the generator concentrates on one mode\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; - This is MODE COLLAPSE: the generator concentrates on one mode</code></pre>
-<div class="sourceCode" id="cb841"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb839"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  because it is the minimax-optimal strategy within its limited\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   because it is the minimax-optimal strategy within its limited</code></pre>
-<div class="sourceCode" id="cb843"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb841"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  parameterization.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   parameterization.</code></pre>
-<div class="sourceCode" id="cb845"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb843"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"- With a richer generator (e.g., a mixture model), CFR-like\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; - With a richer generator (e.g., a mixture model), CFR-like</code></pre>
-<div class="sourceCode" id="cb847"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb845"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  dynamics would converge to covering both modes.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   dynamics would converge to covering both modes.</code></pre>
 <p><strong>Key insight.</strong> The GAN game’s Nash equilibrium at <span class="math inline">\(p_G = p_{\text{data}}\)</span> is only achievable when the generator has sufficient capacity to represent the data distribution. When capacity is limited (as with our single Gaussian), the generator plays the best response it can — concentrating on one mode. This mirrors bounded rationality in game theory: players optimize within their constraints, and the resulting equilibrium may differ from the theoretical ideal.</p>
@@ -542,7 +543,10 @@ Figure 30.2: Discriminator accuracy on real and fake samples over training. As t
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></div>
 <div class="next"><a href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

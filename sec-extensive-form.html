@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -251,7 +252,7 @@
 <strong>Incumbent</strong> (Player 2), if entry occurs, chooses to <strong>Accommodate</strong> or <strong>Fight</strong>.</li>
 </ul>
 <p>The payoffs are: if the entrant stays out, the incumbent keeps the monopoly (Entrant: 0, Incumbent: 3). If the entrant enters and the incumbent accommodates, both share the market (Entrant: 2, Incumbent: 1). If the entrant enters and the incumbent fights, both suffer losses (Entrant: -1, Incumbent: -1).</p>
-<div class="sourceCode" id="cb137"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb135"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define the game tree as a data structure</span></span>
 <span><span class="co"># Each node: id, player, label, x/y position</span></span>
 <span><span class="va">nodes</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
@@ -276,7 +277,7 @@
 <h3>
 <span class="header-section-number">6.3.2</span> Drawing the game tree<a class="anchor" aria-label="anchor" href="#drawing-the-game-tree"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb138"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb136"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Backward induction result: at the incumbent's node, Accommodate (2,1)</span></span>
 <span><span class="co"># dominates Fight (-1,-1), so the incumbent accommodates.</span></span>
 <span><span class="co"># Knowing this, the entrant compares Enter -&gt; (2,1) vs Stay Out -&gt; (0,3):</span></span>
@@ -354,14 +355,14 @@
 Figure 6.1: Entry deterrence game solved by backward induction. Bold edges show the subgame perfect equilibrium path: the entrant enters and the incumbent accommodates. The struck-through branch (Fight) represents a non-credible threat.
 </p>
 </div>
-<div class="sourceCode" id="cb139"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb137"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_tree</span>, <span class="st">"entry-deterrence-backward-induction"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div id="backward-induction-algorithm" class="section level3" number="6.3.3">
 <h3>
 <span class="header-section-number">6.3.3</span> Backward induction algorithm<a class="anchor" aria-label="anchor" href="#backward-induction-algorithm"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb140"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb138"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># A general backward induction solver for binary game trees</span></span>
 <span><span class="co"># encoded as nested lists</span></span>
 <span></span>
@@ -409,10 +410,10 @@ Figure 6.1: Entry deterrence game solved by backward induction. Bold edges show 
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">backward_induction</span><span class="op">(</span><span class="va">entry_game</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"SPE outcome payoffs:"</span>, <span class="va">result</span><span class="op">$</span><span class="va">payoffs</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; SPE outcome payoffs: 2 1</code></pre>
-<div class="sourceCode" id="cb142"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb140"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"SPE path:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; SPE path:</code></pre>
-<div class="sourceCode" id="cb144"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb142"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">step</span> <span class="kw">in</span> <span class="va">result</span><span class="op">$</span><span class="va">path</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Player %d chooses: %s\n"</span>, <span class="va">step</span><span class="op">$</span><span class="va">player</span>, <span class="va">step</span><span class="op">$</span><span class="va">action</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
@@ -442,7 +443,7 @@ Figure 6.1: Entry deterrence game solved by backward induction. Bold edges show 
 </ul>
 <p>Since <span class="math inline">\(2 &gt; 0\)</span>, the entrant enters.</p>
 <p><strong>Step 3: The subgame perfect equilibrium.</strong> The SPE strategy profile is (Enter, Accommodate), yielding payoffs <span class="math inline">\((2, 1)\)</span>.</p>
-<div class="sourceCode" id="cb146"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb144"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Convert to normal form to show the Nash equilibrium issue</span></span>
 <span><span class="co"># Entrant: {Enter, Stay Out}</span></span>
 <span><span class="co"># Incumbent: {Accommodate, Fight}</span></span>
@@ -455,30 +456,30 @@ Figure 6.1: Entry deterrence game solved by backward induction. Bold edges show 
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Normal-form representation:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Normal-form representation:</code></pre>
-<div class="sourceCode" id="cb148"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb146"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Entrant payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Entrant payoffs:</code></pre>
-<div class="sourceCode" id="cb150"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb148"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A_entry</span></span></code></pre></div>
 <pre><code>#&gt;          Accommodate Fight
 #&gt; Enter              2    -1
 #&gt; Stay Out           0     0</code></pre>
-<div class="sourceCode" id="cb152"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb150"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nIncumbent payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Incumbent payoffs:</code></pre>
-<div class="sourceCode" id="cb154"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb152"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">B_entry</span></span></code></pre></div>
 <pre><code>#&gt;          Accommodate Fight
 #&gt; Enter              1    -1
 #&gt; Stay Out           3     3</code></pre>
-<div class="sourceCode" id="cb156"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb154"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"solvers.R"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span><span class="op">(</span><span class="va">A_entry</span>, <span class="va">B_entry</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPure-strategy Nash equilibria:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Pure-strategy Nash equilibria:</code></pre>
-<div class="sourceCode" id="cb158"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb156"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">ne</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  (%s, %s) -&gt; payoffs (%d, %d)\n"</span>,</span>
 <span>              <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">A_entry</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">A_entry</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>,</span>
@@ -533,7 +534,10 @@ Figure 6.1: Entry deterrence game solved by backward induction. Bold edges show 
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></div>
 <div class="next"><a href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

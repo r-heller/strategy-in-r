@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -242,7 +243,7 @@ u_i(s_i, s_{-i}) \geq u_i(s_i', s_{-i}) \quad \forall\; s_{-i}, \qquad \text{wit
 <span class="header-section-number">3.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#implementation-in-r-1"><i class="fas fa-link"></i></a>
 </h2>
 <p>We begin by building payoff matrices for the four classic games and writing a helper function to check for strictly dominated strategies.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define the four classic 2x2 games as named lists</span></span>
 <span><span class="co"># Each entry: list(A = Player 1 payoffs, B = Player 2 payoffs)</span></span>
 <span><span class="va">classic_games</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
@@ -275,7 +276,7 @@ u_i(s_i, s_{-i}) \geq u_i(s_i', s_{-i}) \quad \forall\; s_{-i}, \qquad \text{wit
 <h3>
 <span class="header-section-number">3.3.1</span> Checking for strict dominance<a class="anchor" aria-label="anchor" href="#checking-for-strict-dominance"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">find_strictly_dominated</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">payoff_matrix</span><span class="op">)</span> <span class="op">{</span></span>
 <span></span>
 <span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">payoff_matrix</span><span class="op">)</span></span>
@@ -309,7 +310,7 @@ u_i(s_i, s_{-i}) \geq u_i(s_i', s_{-i}) \quad \forall\; s_{-i}, \qquad \text{wit
 <h3>
 <span class="header-section-number">3.3.2</span> Publication figure: classic 2x2 payoff structures<a class="anchor" aria-label="anchor" href="#publication-figure-classic-2x2-payoff-structures"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Convert all four games into a long tibble for faceted plotting</span></span>
 <span><span class="va">games_long</span> <span class="op">&lt;-</span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">imap_dfr</a></span><span class="op">(</span><span class="va">classic_games</span>, <span class="kw">function</span><span class="op">(</span><span class="va">game</span>, <span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">mat</span> <span class="op">&lt;-</span> <span class="va">game</span><span class="op">$</span><span class="va">A</span></span>
@@ -359,7 +360,7 @@ u_i(s_i, s_{-i}) \geq u_i(s_i', s_{-i}) \quad \forall\; s_{-i}, \qquad \text{wit
 Figure 3.1: Payoff structures of four classic 2x2 games. Each cell shows Player 1’s payoff. The colour gradient highlights the incentive landscape: brighter cells are more attractive for the row player.
 </p>
 </div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_classic</span>, <span class="st">"classic-2x2-payoffs"</span>, width <span class="op">=</span> <span class="fl">8</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -369,7 +370,7 @@ Figure 3.1: Payoff structures of four classic 2x2 games. Each cell shows Player 
 </h2>
 <p>We apply IESDS step by step to a 3x3 game to illustrate how the procedure works.</p>
 <p>Consider the following game where Player 1 chooses a row (T, M, B) and Player 2 chooses a column (L, C, R):</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Player 1 payoff matrix</span></span>
 <span><span class="va">A3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">5</span>,</span>
@@ -390,119 +391,119 @@ Figure 3.1: Payoff structures of four classic 2x2 games. Each cell shows Player 
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Player 1 payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Player 1 payoffs:</code></pre>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A3</span></span></code></pre></div>
 <pre><code>#&gt;   L C R
 #&gt; T 1 2 5
 #&gt; M 4 3 3
 #&gt; B 3 0 2</code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPlayer 2 payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Player 2 payoffs:</code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">B3</span></span></code></pre></div>
 <pre><code>#&gt;   L C R
 #&gt; T 2 1 0
 #&gt; M 1 4 1
 #&gt; B 3 2 3</code></pre>
 <p><strong>Step 1.</strong> Check Player 1’s strategies for dominance. Compare row B with row M: <span class="math inline">\(M\)</span> gives <span class="math inline">\((4, 3, 3)\)</span> versus <span class="math inline">\(B\)</span>’s <span class="math inline">\((3, 0, 2)\)</span>. Since <span class="math inline">\(4 &gt; 3\)</span>, <span class="math inline">\(3 &gt; 0\)</span>, and <span class="math inline">\(3 &gt; 2\)</span>, strategy M strictly dominates B. Eliminate B.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Step 1: M strictly dominates B for Player 1.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Step 1: M strictly dominates B for Player 1.</code></pre>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  M payoffs: "</span>, <span class="va">A3</span><span class="op">[</span><span class="st">"M"</span>, <span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   M payoffs:  4 3 3</code></pre>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  B payoffs: "</span>, <span class="va">A3</span><span class="op">[</span><span class="st">"B"</span>, <span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   B payoffs:  3 0 2</code></pre>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  All M &gt; B? "</span>, <span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="va">A3</span><span class="op">[</span><span class="st">"M"</span>, <span class="op">]</span> <span class="op">&gt;</span> <span class="va">A3</span><span class="op">[</span><span class="st">"B"</span>, <span class="op">]</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   All M &gt; B?  TRUE</code></pre>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Reduce the game</span></span>
 <span><span class="va">A_r1</span> <span class="op">&lt;-</span> <span class="va">A3</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"T"</span>, <span class="st">"M"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="va">B_r1</span> <span class="op">&lt;-</span> <span class="va">B3</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"T"</span>, <span class="st">"M"</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nReduced game (Player 1 payoffs):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Reduced game (Player 1 payoffs):</code></pre>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A_r1</span></span></code></pre></div>
 <pre><code>#&gt;   L C R
 #&gt; T 1 2 5
 #&gt; M 4 3 3</code></pre>
 <p><strong>Step 2.</strong> In the reduced 2x3 game, check Player 2’s strategies. Compare column C with column R for Player 2: C gives <span class="math inline">\((1, 4)\)</span> versus R’s <span class="math inline">\((0, 1)\)</span>. Column C strictly dominates column R. Eliminate R.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Step 2: C strictly dominates R for Player 2.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Step 2: C strictly dominates R for Player 2.</code></pre>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  C payoffs (P2): "</span>, <span class="va">B_r1</span><span class="op">[</span>, <span class="st">"C"</span><span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   C payoffs (P2):  1 4</code></pre>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  R payoffs (P2): "</span>, <span class="va">B_r1</span><span class="op">[</span>, <span class="st">"R"</span><span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   R payoffs (P2):  0 1</code></pre>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  All C &gt; R? "</span>, <span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="va">B_r1</span><span class="op">[</span>, <span class="st">"C"</span><span class="op">]</span> <span class="op">&gt;</span> <span class="va">B_r1</span><span class="op">[</span>, <span class="st">"R"</span><span class="op">]</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   All C &gt; R?  TRUE</code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Reduce further</span></span>
 <span><span class="va">A_r2</span> <span class="op">&lt;-</span> <span class="va">A_r1</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"L"</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">B_r2</span> <span class="op">&lt;-</span> <span class="va">B_r1</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"L"</span>, <span class="st">"C"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nReduced game (Player 1 payoffs):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Reduced game (Player 1 payoffs):</code></pre>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A_r2</span></span></code></pre></div>
 <pre><code>#&gt;   L C
 #&gt; T 1 2
 #&gt; M 4 3</code></pre>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nReduced game (Player 2 payoffs):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Reduced game (Player 2 payoffs):</code></pre>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">B_r2</span></span></code></pre></div>
 <pre><code>#&gt;   L C
 #&gt; T 2 1
 #&gt; M 1 4</code></pre>
 <p><strong>Step 3.</strong> In the 2x2 game, check Player 1. Row M gives <span class="math inline">\((4, 3)\)</span> versus row T’s <span class="math inline">\((1, 2)\)</span>. M strictly dominates T. Eliminate T.</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Step 3: M strictly dominates T for Player 1.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Step 3: M strictly dominates T for Player 1.</code></pre>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  M payoffs: "</span>, <span class="va">A_r2</span><span class="op">[</span><span class="st">"M"</span>, <span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   M payoffs:  4 3</code></pre>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  T payoffs: "</span>, <span class="va">A_r2</span><span class="op">[</span><span class="st">"T"</span>, <span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   T payoffs:  1 2</code></pre>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  All M &gt; T? "</span>, <span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="va">A_r2</span><span class="op">[</span><span class="st">"M"</span>, <span class="op">]</span> <span class="op">&gt;</span> <span class="va">A_r2</span><span class="op">[</span><span class="st">"T"</span>, <span class="op">]</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   All M &gt; T?  TRUE</code></pre>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A_r3</span> <span class="op">&lt;-</span> <span class="va">A_r2</span><span class="op">[</span><span class="st">"M"</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span><span class="va">B_r3</span> <span class="op">&lt;-</span> <span class="va">B_r2</span><span class="op">[</span><span class="st">"M"</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nReduced game (Player 2 payoffs):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Reduced game (Player 2 payoffs):</code></pre>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">B_r3</span></span></code></pre></div>
 <pre><code>#&gt;   L C
 #&gt; M 1 4</code></pre>
 <p><strong>Step 4.</strong> Player 2 now chooses between L (payoff 1) and C (payoff 4). C strictly dominates L. The unique surviving profile is <strong>(M, C)</strong> with payoffs <strong>(3, 4)</strong>.</p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Step 4: C strictly dominates L for Player 2.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Step 4: C strictly dominates L for Player 2.</code></pre>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  C payoff: "</span>, <span class="va">B_r3</span><span class="op">[</span>, <span class="st">"C"</span><span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   C payoff:  4</code></pre>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  L payoff: "</span>, <span class="va">B_r3</span><span class="op">[</span>, <span class="st">"L"</span><span class="op">]</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;   L payoff:  1</code></pre>
-<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nIESDS solution: (M, C)\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; IESDS solution: (M, C)</code></pre>
-<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu">glue</span><span class="op">(</span><span class="st">"Payoffs: ({A3['M', 'C']}, {B3['M', 'C']})"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Payoffs: (3, 4)</code></pre>
 <p>The game is <strong>dominance solvable</strong>: IESDS reduces it to a unique strategy profile. This outcome must be a Nash equilibrium – in fact, IESDS can only eliminate strategies that are not part of any Nash equilibrium, so the surviving profile is always a Nash equilibrium <span class="citation">(<a href="references.html#ref-osborne2004">Osborne, 2004</a>)</span>.</p>
@@ -510,7 +511,7 @@ Figure 3.1: Payoff structures of four classic 2x2 games. Each cell shows Player 
 <h3>
 <span class="header-section-number">3.4.1</span> Displaying the full payoff matrix with <code>gt</code><a class="anchor" aria-label="anchor" href="#displaying-the-full-payoff-matrix-with-gt"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">payoff_tbl</span> <span class="op">&lt;-</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span><span class="op">(</span></span>
 <span>  Row <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">A3</span><span class="op">)</span>,</span>
 <span>  Col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">A3</span><span class="op">)</span></span>
@@ -1074,7 +1075,10 @@ B = \begin{pmatrix} 3 &amp; 1 &amp; 2 \\ 2 &amp; 3 &amp; 1 \\ 4 &amp; 2 &amp; 3 
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></div>
 <div class="next"><a href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

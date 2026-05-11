@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -243,7 +244,7 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 <h3>
 <span class="header-section-number">39.3.1</span> Simulating loan data<a class="anchor" aria-label="anchor" href="#simulating-loan-data"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1109"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1107"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">2000</span></span>
 <span></span>
@@ -261,7 +262,7 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Base rates:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Base rates:</code></pre>
-<div class="sourceCode" id="cb1111"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1109"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">loan_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>base_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>, n <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -275,7 +276,7 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 <h3>
 <span class="header-section-number">39.3.2</span> Unconstrained logistic regression<a class="anchor" aria-label="anchor" href="#unconstrained-logistic-regression"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1113"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1111"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Standard logistic regression (no fairness constraint)</span></span>
 <span><span class="va">model_unfair</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">loan_data</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span>
 <span><span class="va">loan_data</span><span class="op">$</span><span class="va">prob_unfair</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">model_unfair</span>, type <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span></span>
@@ -284,12 +285,12 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Unconstrained model accuracy:"</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">loan_data</span><span class="op">$</span><span class="va">pred_unfair</span> <span class="op">==</span> <span class="va">loan_data</span><span class="op">$</span><span class="va">y</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Unconstrained model accuracy: 0.733</code></pre>
-<div class="sourceCode" id="cb1115"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1113"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Acceptance rates by group</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nAcceptance rates (unconstrained):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Acceptance rates (unconstrained):</code></pre>
-<div class="sourceCode" id="cb1117"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1115"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">loan_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">group</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>accept_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">pred_unfair</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -303,7 +304,7 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 <h3>
 <span class="header-section-number">39.3.3</span> Fairness-penalized logistic regression<a class="anchor" aria-label="anchor" href="#fairness-penalized-logistic-regression"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1119"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1117"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Logistic regression with demographic parity penalty</span></span>
 <span><span class="co"># We add a penalty: lambda * |mean(pred|G=A) - mean(pred|G=B)|</span></span>
 <span><span class="co"># Implemented via gradient descent on penalized log-likelihood</span></span>
@@ -359,7 +360,7 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Accuracy-fairness trade-off:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Accuracy-fairness trade-off:</code></pre>
-<div class="sourceCode" id="cb1121"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1119"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">fair_results</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; # A tibble: 7 × 3
 #&gt;   lambda accuracy   dp_gap
@@ -376,7 +377,7 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 <h3>
 <span class="header-section-number">39.3.4</span> ROC curves by group<a class="anchor" aria-label="anchor" href="#roc-curves-by-group"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1123"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1121"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compute ROC data for a given probability vector</span></span>
 <span><span class="va">compute_roc</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">probs</span>, <span class="va">labels</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">probs</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -427,14 +428,14 @@ P(Y = 1 \mid \hat{p} = p, G = A) = P(Y = 1 \mid \hat{p} = p, G = B) = p
 Figure 39.1: ROC curves for the unconstrained (dashed) and fairness-penalized (solid) classifiers, separated by demographic group. The fairness-penalized model reduces the gap between groups at the cost of overall accuracy.
 </p>
 </div>
-<div class="sourceCode" id="cb1124"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1122"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p1</span>, <span class="st">"fairness-roc-curves"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div id="accuracy-fairness-trade-off-frontier" class="section level3" number="39.3.5">
 <h3>
 <span class="header-section-number">39.3.5</span> Accuracy-fairness trade-off frontier<a class="anchor" aria-label="anchor" href="#accuracy-fairness-trade-off-frontier"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1125"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1123"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">fair_results</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">dp_gap</span>, y <span class="op">=</span> <span class="va">accuracy</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_path</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"grey40"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
@@ -456,7 +457,7 @@ Figure 39.1: ROC curves for the unconstrained (dashed) and fairness-penalized (s
 Figure 39.2: Accuracy versus demographic parity gap across penalty strengths. Increasing the fairness penalty (lambda) reduces the gap between group acceptance rates but decreases overall accuracy. The frontier traces out the achievable trade-offs.
 </p>
 </div>
-<div class="sourceCode" id="cb1126"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1124"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p2</span>, <span class="st">"fairness-tradeoff-frontier"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -467,10 +468,10 @@ Figure 39.2: Accuracy versus demographic parity gap across penalty strengths. In
 <p>We walk through a concrete loan-approval scenario with two demographic groups.</p>
 <p><strong>Step 1 — Data.</strong> We simulated 2,000 loan applications. Group A has a higher base rate of repayment (the latent variable includes a group-correlated shift of <span class="math inline">\(\pm 0.4\)</span>). This difference in base rates is what triggers the impossibility theorem.</p>
 <p><strong>Step 2 — Unconstrained classifier.</strong> The standard logistic regression achieves high accuracy but exhibits a substantial gap in acceptance rates between groups. This gap arises because the model correctly captures the base-rate difference, but it means group B faces a systematically lower acceptance rate.</p>
-<div class="sourceCode" id="cb1127"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1125"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"=== Worked Example: Fair vs Unfair Classifier ===\n\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; === Worked Example: Fair vs Unfair Classifier ===</code></pre>
-<div class="sourceCode" id="cb1129"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1127"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Detailed metrics for unfair model</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">g</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">subset</span> <span class="op">&lt;-</span> <span class="va">loan_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">group</span> <span class="op">==</span> <span class="va">g</span><span class="op">)</span></span>
@@ -483,11 +484,11 @@ Figure 39.2: Accuracy versus demographic parity gap across penalty strengths. In
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code>#&gt; Group A (unfair):  TPR = 0.680  FPR = 0.201  Accept = 0.486
 #&gt; Group B (unfair):  TPR = 0.779  FPR = 0.292  Accept = 0.485</code></pre>
-<div class="sourceCode" id="cb1131"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1129"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Fair model predictions</span></span>
 <span><span class="va">pred_fair</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">loan_data</span><span class="op">$</span><span class="va">prob_fair</span> <span class="op">&gt;</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb1132"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1130"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">g</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">subset_idx</span> <span class="op">&lt;-</span> <span class="va">loan_data</span><span class="op">$</span><span class="va">group</span> <span class="op">==</span> <span class="va">g</span></span>
 <span>  <span class="va">tp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">pred_fair</span><span class="op">[</span><span class="va">subset_idx</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="va">loan_data</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="va">subset_idx</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
@@ -499,7 +500,7 @@ Figure 39.2: Accuracy versus demographic parity gap across penalty strengths. In
 <span><span class="op">}</span></span></code></pre></div>
 <pre><code>#&gt; Group A (fair):    TPR = 0.680  FPR = 0.213  Accept = 0.491
 #&gt; Group B (fair):    TPR = 0.782  FPR = 0.312  Accept = 0.498</code></pre>
-<div class="sourceCode" id="cb1134"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1132"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nAccuracy drop: %.3f -&gt; %.3f\n"</span>,</span>
 <span>            <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">loan_data</span><span class="op">$</span><span class="va">pred_unfair</span> <span class="op">==</span> <span class="va">loan_data</span><span class="op">$</span><span class="va">y</span><span class="op">)</span>,</span>
 <span>            <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">pred_fair</span> <span class="op">==</span> <span class="va">loan_data</span><span class="op">$</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -547,7 +548,10 @@ Figure 39.2: Accuracy versus demographic parity gap across penalty strengths. In
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></div>
 <div class="next"><a href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

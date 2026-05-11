@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -238,7 +239,7 @@ R_t^+(a) \,/\, \sum_{a'} R_t^+(a') &amp; \text{if } \sum_{a'} R_t^+(a') &gt; 0 \
 <h3>
 <span class="header-section-number">24.3.1</span> Regret matching for Rock-Paper-Scissors<a class="anchor" aria-label="anchor" href="#regret-matching-for-rock-paper-scissors"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb671"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb669"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">regret_matching</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_iterations</span> <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">actions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span><span class="op">)</span></span>
 <span>  <span class="va">n_actions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">actions</span><span class="op">)</span></span>
@@ -287,10 +288,10 @@ R_t^+(a) \,/\, \sum_{a'} R_t^+(a') &amp; \text{if } \sum_{a'} R_t^+(a') &gt; 0 \
 <span>    history <span class="op">=</span> <span class="va">strategy_history</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb672"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb670"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">rm_result</span> <span class="op">&lt;-</span> <span class="fu">regret_matching</span><span class="op">(</span>n_iterations <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb673"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb671"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rm_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
 <span>  iteration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5000</span>, <span class="fl">3</span><span class="op">)</span>,</span>
 <span>  action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span>,</span>
@@ -319,21 +320,21 @@ R_t^+(a) \,/\, \sum_{a'} R_t^+(a') &amp; \text{if } \sum_{a'} R_t^+(a') &gt; 0 \
 Figure 24.1: Regret matching convergence in Rock-Paper-Scissors. Player 1’s time-averaged strategy converges toward the Nash equilibrium of (1/3, 1/3, 1/3) for each action.
 </p>
 </div>
-<div class="sourceCode" id="cb674"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb672"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_regret</span>, <span class="st">"regret-matching-convergence"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <p>The average strategies converge to <span class="math inline">\((1/3, 1/3, 1/3)\)</span> — the unique Nash equilibrium of Rock-Paper-Scissors. This confirms the theoretical guarantee: regret matching is a no-regret algorithm, and when both players use it, the time-averaged play converges to NE.</p>
-<div class="sourceCode" id="cb675"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb673"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Player 1 average strategy:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Player 1 average strategy:</code></pre>
-<div class="sourceCode" id="cb677"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb675"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">rm_result</span><span class="op">$</span><span class="va">avg_strategy_1</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;     Rock    Paper Scissors 
 #&gt;    0.324    0.349    0.327</code></pre>
-<div class="sourceCode" id="cb679"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb677"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPlayer 2 average strategy:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Player 2 average strategy:</code></pre>
-<div class="sourceCode" id="cb681"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb679"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">rm_result</span><span class="op">$</span><span class="va">avg_strategy_2</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;     Rock    Paper Scissors 
 #&gt;    0.336    0.321    0.343</code></pre>
@@ -343,7 +344,7 @@ Figure 24.1: Regret matching convergence in Rock-Paper-Scissors. Player 1’s ti
 <span class="header-section-number">24.3.2</span> Decision boundary visualization<a class="anchor" aria-label="anchor" href="#decision-boundary-visualization"><i class="fas fa-link"></i></a>
 </h3>
 <p>To illustrate supervised learning in a game-theoretic context, consider a binary classification task: given two features derived from game play, predict an outcome. We fit a logistic regression model using <code>glm</code> and visualize the decision boundary.</p>
-<div class="sourceCode" id="cb683"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb681"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
 <span></span>
@@ -362,7 +363,7 @@ Figure 24.1: Regret matching convergence in Rock-Paper-Scissors. Player 1’s ti
 <span></span>
 <span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">cooperate</span> <span class="op">~</span> <span class="va">opp_coop_rate</span> <span class="op">+</span> <span class="va">normalized_round</span>,</span>
 <span>             data <span class="op">=</span> <span class="va">game_data</span>, family <span class="op">=</span> <span class="va">binomial</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb684"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb682"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create prediction grid</span></span>
 <span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html">expand.grid</a></span><span class="op">(</span></span>
 <span>  opp_coop_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.1</span>, <span class="fl">1.1</span>, length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>,</span>
@@ -391,7 +392,7 @@ Figure 24.1: Regret matching convergence in Rock-Paper-Scissors. Player 1’s ti
 Figure 24.2: Decision boundary for predicting cooperation. The logistic regression separates cooperators (orange) from defectors (blue) based on the opponent’s historical cooperation rate and normalized round number.
 </p>
 </div>
-<div class="sourceCode" id="cb685"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb683"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_boundary</span>, <span class="st">"decision-boundary-cooperation"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -404,7 +405,7 @@ Figure 24.2: Decision boundary for predicting cooperation. The logistic regressi
 <span class="header-section-number">24.4.1</span> Predicting cooperation in the iterated Prisoner’s Dilemma<a class="anchor" aria-label="anchor" href="#predicting-cooperation-in-the-iterated-prisoners-dilemma"><i class="fas fa-link"></i></a>
 </h3>
 <p>We simulate an iterated Prisoner’s Dilemma and use logistic regression to predict whether a player cooperates on a given round, based on observable features.</p>
-<div class="sourceCode" id="cb686"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb684"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">n_rounds</span> <span class="op">&lt;-</span> <span class="fl">200</span></span>
 <span><span class="va">n_pairs</span> <span class="op">&lt;-</span> <span class="fl">50</span></span>
@@ -446,7 +447,7 @@ Figure 24.2: Decision boundary for predicting cooperation. The logistic regressi
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">round</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb687"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb685"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Split train/test by pair (avoid data leakage)</span></span>
 <span><span class="va">train_pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">n_pairs</span>, <span class="fl">35</span><span class="op">)</span></span>
 <span><span class="va">train</span> <span class="op">&lt;-</span> <span class="va">ipd_features</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">pair</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">train_pairs</span><span class="op">)</span></span>
@@ -457,11 +458,11 @@ Figure 24.2: Decision boundary for predicting cooperation. The logistic regressi
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Logistic regression coefficients:\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Logistic regression coefficients:</code></pre>
-<div class="sourceCode" id="cb689"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb687"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html">coef</a></span><span class="op">(</span><span class="va">ipd_model</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt;    (Intercept) opp_coop_last3 own_coop_last3     round_norm 
 #&gt;         -1.346          2.678          0.018         -0.048</code></pre>
-<div class="sourceCode" id="cb691"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb689"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 5-fold cross-validation by pair</span></span>
 <span><span class="va">folds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/split.html">split</a></span><span class="op">(</span><span class="va">train_pairs</span>, <span class="fu"><a href="https://rdrr.io/r/base/cut.html">cut</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">train_pairs</span><span class="op">)</span>, <span class="fl">5</span>, labels <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -479,14 +480,14 @@ Figure 24.2: Decision boundary for predicting cooperation. The logistic regressi
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"5-fold CV accuracy: %.1f%% (SD: %.1f%%)\n"</span>,</span>
 <span>            <span class="fl">100</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">cv_accuracy</span><span class="op">)</span>, <span class="fl">100</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">cv_accuracy</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 5-fold CV accuracy: 66.6% (SD: 1.1%)</code></pre>
-<div class="sourceCode" id="cb693"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb691"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">test_preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html">predict</a></span><span class="op">(</span><span class="va">ipd_model</span>, newdata <span class="op">=</span> <span class="va">test</span>, type <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span></span>
 <span><span class="va">test_class</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">test_preds</span> <span class="op">&gt;</span> <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="va">test_accuracy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">test_class</span> <span class="op">==</span> <span class="va">test</span><span class="op">$</span><span class="va">p1_action</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Test set accuracy: %.1f%%\n"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">test_accuracy</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Test set accuracy: 68.2%</code></pre>
-<div class="sourceCode" id="cb695"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb693"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Baseline (always predict majority class): %.1f%%\n"</span>,</span>
 <span>            <span class="fl">100</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">p1_action</span><span class="op">)</span>, <span class="fl">1</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">test</span><span class="op">$</span><span class="va">p1_action</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Baseline (always predict majority class): 52.3%</code></pre>
@@ -534,7 +535,10 @@ Figure 24.2: Decision boundary for predicting cooperation. The logistic regressi
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></div>
 <div class="next"><a href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -262,7 +263,7 @@
 <h3>
 <span class="header-section-number">40.3.1</span> Signaling game payoffs<a class="anchor" aria-label="anchor" href="#signaling-game-payoffs"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1136"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1134"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Payoff structure</span></span>
 <span><span class="co"># Human: rows = trust decision, cols = AI type</span></span>
 <span><span class="va">human_payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -275,16 +276,16 @@
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Human payoffs (rows=decision, cols=AI type):\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Human payoffs (rows=decision, cols=AI type):</code></pre>
-<div class="sourceCode" id="cb1138"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1136"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">human_payoffs</span></span></code></pre></div>
 <pre><code>#&gt;          Aligned Misaligned
 #&gt; Trust          3         -2
 #&gt; NotTrust       0          0</code></pre>
-<div class="sourceCode" id="cb1140"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1138"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nAligned AI payoffs:   "</span>, <span class="va">ai_aligned_payoffs</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; 
 #&gt; Aligned AI payoffs:    3 1</code></pre>
-<div class="sourceCode" id="cb1142"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1140"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Misaligned AI payoffs:"</span>, <span class="va">ai_misaligned_payoffs</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Misaligned AI payoffs: 4 0</code></pre>
 </div>
@@ -292,19 +293,19 @@
 <h3>
 <span class="header-section-number">40.3.2</span> Equilibrium analysis<a class="anchor" aria-label="anchor" href="#equilibrium-analysis"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1144"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1142"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Human trusts if expected payoff from trusting &gt; 0:</span></span>
 <span><span class="co"># E[Trust] = pi * 3 + (1-pi) * (-2) = 5*pi - 2</span></span>
 <span><span class="co"># Trust iff pi &gt; 2/5 = 0.4</span></span>
 <span><span class="va">pi_threshold</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">5</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Human trusts iff prior pi &gt; %.2f\n\n"</span>, <span class="va">pi_threshold</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Human trusts iff prior pi &gt; 0.40</code></pre>
-<div class="sourceCode" id="cb1146"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1144"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># In separating equilibrium: human perfectly infers type</span></span>
 <span><span class="co"># In pooling equilibrium: human uses prior</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Separating equilibrium: Human trusts after aligned signal, rejects after misaligned signal.\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Separating equilibrium: Human trusts after aligned signal, rejects after misaligned signal.</code></pre>
-<div class="sourceCode" id="cb1148"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1146"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Pooling equilibrium: Human trusts iff prior pi &gt;"</span>, <span class="va">pi_threshold</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Pooling equilibrium: Human trusts iff prior pi &gt; 0.4</code></pre>
 </div>
@@ -312,7 +313,7 @@
 <h3>
 <span class="header-section-number">40.3.3</span> Signaling game tree visualization<a class="anchor" aria-label="anchor" href="#signaling-game-tree-visualization"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1150"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1148"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Build game tree as a data frame of nodes and edges</span></span>
 <span><span class="va">nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
 <span>  id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">11</span>,</span>
@@ -372,14 +373,14 @@
 Figure 40.1: Signaling game between a human principal and AI agent. Nature draws the AI’s type (aligned with probability pi, misaligned with 1-pi). The AI sends a signal, and the human decides whether to trust. Payoffs are shown as (Human, AI) pairs at terminal nodes.
 </p>
 </div>
-<div class="sourceCode" id="cb1151"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1149"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p1</span>, <span class="st">"alignment-signaling-tree"</span>, width <span class="op">=</span> <span class="fl">8</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div id="trust-dynamics-with-bayesian-updating" class="section level3" number="40.3.4">
 <h3>
 <span class="header-section-number">40.3.4</span> Trust dynamics with Bayesian updating<a class="anchor" aria-label="anchor" href="#trust-dynamics-with-bayesian-updating"><i class="fas fa-link"></i></a>
 </h3>
-<div class="sourceCode" id="cb1152"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1150"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Simulate repeated interactions under different AI strategies</span></span>
 <span><span class="va">bayesian_trust</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">prior</span>, <span class="va">n_rounds</span>, <span class="va">p_good_aligned</span>, <span class="va">p_good_misaligned</span>,</span>
 <span>                           <span class="va">true_type</span> <span class="op">=</span> <span class="st">"aligned"</span><span class="op">)</span> <span class="op">{</span></span>
@@ -431,7 +432,7 @@ Figure 40.1: Signaling game between a human principal and AI agent. Nature draws
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>strategy <span class="op">=</span> <span class="st">"Corrigible aligned"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">trust_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">trust_honest</span>, <span class="va">trust_deceptive</span>, <span class="va">trust_corrigible</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb1153"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1151"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">trust_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">round</span>, y <span class="op">=</span> <span class="va">belief</span>, colour <span class="op">=</span> <span class="va">strategy</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">pi_threshold</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -456,7 +457,7 @@ Figure 40.1: Signaling game between a human principal and AI agent. Nature draws
 Figure 40.2: Trust dynamics (posterior belief in alignment) over 30 interactions under three AI strategies. The honest aligned AI rapidly earns trust, the corrigible aligned AI builds trust more slowly but reliably, and the deceptive misaligned AI can fool the human when its deceptive capability is high.
 </p>
 </div>
-<div class="sourceCode" id="cb1154"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1152"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p2</span>, <span class="st">"alignment-trust-dynamics"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
@@ -465,16 +466,16 @@ Figure 40.2: Trust dynamics (posterior belief in alignment) over 30 interactions
 <span class="header-section-number">40.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-36"><i class="fas fa-link"></i></a>
 </h2>
 <p>We analyze a repeated trust game between a human and an AI over 30 rounds.</p>
-<div class="sourceCode" id="cb1155"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1153"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"=== Worked Example: Repeated Trust Game ===\n\n"</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; === Worked Example: Repeated Trust Game ===</code></pre>
-<div class="sourceCode" id="cb1157"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1155"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Prior belief (pi_0): %.2f\n"</span>, <span class="va">prior</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Prior belief (pi_0): 0.50</code></pre>
-<div class="sourceCode" id="cb1159"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1157"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Trust threshold: %.2f\n\n"</span>, <span class="va">pi_threshold</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code>#&gt; Trust threshold: 0.40</code></pre>
-<div class="sourceCode" id="cb1161"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1159"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">strat</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Honest aligned"</span>, <span class="st">"Deceptive misaligned"</span>, <span class="st">"Corrigible aligned"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">final</span> <span class="op">&lt;-</span> <span class="va">trust_data</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">strategy</span> <span class="op">==</span> <span class="va">strat</span>, <span class="va">round</span> <span class="op">==</span> <span class="va">n_rounds</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -548,7 +549,10 @@ Figure 40.2: Trust dynamics (posterior belief in alignment) over 30 interactions
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></div>
 <div class="next"><a href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">

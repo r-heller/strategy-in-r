@@ -82,9 +82,9 @@
 
       <nav aria-label="Table of contents"><h2>Table of contents</h2>
         <ul class="book-toc list-unstyled">
-<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="index.html">Welcome!</a></li>
 <li><a class="" href="impressum.html">Impressum</a></li>
-<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="how-to-use-this-book-1.html">How to use this book</a></li>
 <li><a class="" href="notation.html">Notation</a></li>
 <li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
 <li class="book-part">Part I — Foundations of Game Theory</li>
@@ -143,6 +143,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -273,7 +274,7 @@
 <span class="header-section-number">2.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#implementation-in-r"><i class="fas fa-link"></i></a>
 </h2>
 <p>We now build an R function to create and visualize any 2x2 payoff matrix. The function returns a tidy data frame suitable for plotting with <code>ggplot2</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Build a tidy data frame for a 2x2 payoff matrix</span></span>
 <span><span class="va">make_payoff_df</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">game_name</span>, <span class="va">row_actions</span>, <span class="va">col_actions</span>, <span class="va">payoffs</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># payoffs: list of four pairs c(u1, u2) in row-major order</span></span>
@@ -287,7 +288,7 @@
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Next we build data frames for our three canonical games and combine them into one tidy dataset.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu">make_payoff_df</span><span class="op">(</span></span>
 <span>  <span class="st">"Prisoner's Dilemma"</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span>,</span>
@@ -313,7 +314,7 @@
 <span>                                   <span class="st">"Matching Pennies"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
 <p>Now we produce a publication-quality heatmap of the three payoff matrices, using Player 1’s payoff for the fill colour.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p_heatmap</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="va">games</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">col_action</span>, y <span class="op">=</span> <span class="va">row_action</span>,</span>
 <span>                                fill <span class="op">=</span> <span class="va">payoff_1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">geom_tile</span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"white"</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
@@ -351,7 +352,7 @@ Figure 2.1: Payoff matrices for three canonical 2x2 games. Cell colour encodes P
 <p><strong>Step 1 — Identify the players.</strong> There are two players: Suspect 1 and Suspect 2.</p>
 <p><strong>Step 2 — List the actions.</strong> Each player can <em>Cooperate</em> (stay silent) or <em>Defect</em> (betray). So <span class="math inline">\(A_1 = A_2 = \{\text{Cooperate}, \text{Defect}\}\)</span>.</p>
 <p><strong>Step 3 — Specify payoffs.</strong> We read the matrix row by row:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pd</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span></span>
 <span>    `Player 1` <span class="op">=</span> <span class="va">row_action</span>,</span>
@@ -901,7 +902,10 @@ Figure 2.1: Payoff matrices for three canonical 2x2 games. Cell colour encodes P
       header.appendChild(btn);
     }
   });
-</script><div class="chapter-nav">
+</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+  This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
+</div>
+  <div class="chapter-nav">
 <div class="prev"><a href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></div>
 <div class="next"><a href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
