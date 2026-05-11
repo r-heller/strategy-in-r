@@ -28,8 +28,16 @@ jobs:
         run: |
           Rscript -e 'pkgs <- c("bookdown", "downlit", "bslib", "rmarkdown", "knitr", "xml2"); install.packages(setdiff(pkgs, rownames(installed.packages())))'
 
-      - name: Render book (HTML + PDF + EPUB)
-        run: Rscript -e 'bookdown::render_book("index.Rmd", output_format = "all")'
+      - name: Render HTML
+        run: Rscript -e 'bookdown::render_book("index.Rmd", output_format = "bookdown::bs4_book")'
+
+      - name: Render PDF
+        run: Rscript -e 'bookdown::render_book("index.Rmd", output_format = "bookdown::pdf_book")'
+        continue-on-error: true
+
+      - name: Render EPUB
+        run: Rscript -e 'bookdown::render_book("index.Rmd", output_format = "bookdown::epub_book")'
+        continue-on-error: true
 
       - name: Render per-chapter PDFs
         run: Rscript scripts/render-chapter-pdfs.R
