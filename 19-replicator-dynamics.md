@@ -25,7 +25,7 @@ The replicator equation connects game theory to biology (it arises from natural 
 Consider a large population where individuals play one of $n$ strategies. Let $x_i$ be the fraction of the population playing strategy $i$, so $\mathbf{x} = (x_1, \ldots, x_n)$ lies on the **simplex** $\Delta^{n-1} = \{ \mathbf{x} \geq 0 : \sum_i x_i = 1 \}$.
 
 The **fitness** of strategy $i$ against the current population is:
-\begin{equation}
+$$
 f_i(\mathbf{x}) = \sum_j a_{ij} x_j = (A\mathbf{x})_i
 $$
 where $A = (a_{ij})$ is the payoff matrix. The **average fitness** is:
