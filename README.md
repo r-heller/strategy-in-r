@@ -1,62 +1,69 @@
+<p align="center"><a href="https://r-heller.github.io/strategy-in-r/"><img src="images/cover.png" alt="Strategy in R cover" width="280"></a></p>
+
 # Strategy in R
 
-**Game Theory, Simulation, and Machine Intelligence — A Quarto Book**
+*Game Theory, Simulation, and Machine Intelligence*
 
-*Strategy in R* is an open-source book covering game theory, computational simulation, AI/ML for strategic interaction, and ethics — implemented end-to-end in R.
+A free, open-source book by **Raban Heller**.
 
-**Read online:** [r-heller.github.io/strategy-in-r](https://r-heller.github.io/strategy-in-r/)
+## Read it online
 
-## Build
+📖 **<https://r-heller.github.io/strategy-in-r/>**
 
-Requirements: [Quarto](https://quarto.org/) ≥ 1.4, R ≥ 4.3, `renv`.
+## Download
 
-```bash
-git clone https://github.com/r-heller/strategy-in-r.git
-cd strategy-in-r
-```
+- 📄 [Whole book (PDF)](https://r-heller.github.io/strategy-in-r/strategy-in-r.pdf)
+- 📚 [EPUB](https://r-heller.github.io/strategy-in-r/strategy-in-r.epub)
+- 📑 Per-chapter PDFs: every chapter has a download button at the top of its page.
 
-In R:
+## What this book covers
 
-```r
-renv::restore()
-```
+*Strategy in R* brings game theory and computation together in one place. It builds the foundations of strategic interaction from scratch (normal- and extensive-form games, Nash equilibrium, mixed strategies, Bayesian games, repeated games, cooperative game theory), then turns to the R toolkit and to simulation methods (Monte Carlo, agent-based models, Axelrod's tournament, replicator dynamics, network games). The second half covers reinforcement learning and modern AI through a game-theoretic lens — multi-agent RL, self-play, counterfactual regret minimisation, GANs as minimax games, and LLM agents — and closes with applications (auctions, mechanism design, matching, bargaining, empirical case studies) and a section on ethics and the future of strategic AI.
 
-Render:
+The book is for graduate students, researchers, and practitioners with working R fluency who want to apply it to strategic interaction. It is not a pure-mathematics textbook, not a general machine-learning textbook, and not a software-engineering manual.
 
-```bash
-quarto render            # HTML + PDF + EPUB
-quarto render --to html  # HTML only
-quarto render --to pdf   # PDF only (requires TinyTeX)
-```
+## Table of contents
 
-## Structure
+- Part I — Foundations of Game Theory
+- Part II — The R Toolkit
+- Part III — Simulation
+- Part IV — AI and Machine Learning
+- Part V — Applications
+- Part VI — Ethics and the Future
+- Appendices — R refresher, linear algebra, probability, exercise solutions, glossary
 
-| Part | Topic |
-|------|-------|
-| I | Foundations of Game Theory |
-| II | The R Toolkit |
-| III | Simulation |
-| IV | AI and Machine Learning |
-| V | Applications |
-| VI | Ethics and the Future |
+## How to cite
 
-## License
-
-- **Code:** [MIT](LICENSE)
-- **Content:** [CC-BY-SA 4.0](LICENSE-CONTENT)
-
-## Citation
+Heller, R. (2026). *Strategy in R: Game Theory, Simulation, and Machine Intelligence* (Version v0.1.0). <https://r-heller.github.io/strategy-in-r/>.
 
 ```bibtex
 @book{heller2026strategy,
   author    = {Heller, Raban},
   title     = {Strategy in R: Game Theory, Simulation, and Machine Intelligence},
   year      = {2026},
+  publisher = {Self-published via GitHub Pages},
   url       = {https://r-heller.github.io/strategy-in-r/},
-  note      = {Quarto book, DOI forthcoming via Zenodo}
+  note      = {Version v0.1.0}
 }
 ```
 
-## Author
+## Reproducibility
 
-Raban Heller ([ORCID: 0000-0001-8006-9742](https://orcid.org/0000-0001-8006-9742))
+Built with [bookdown](https://bookdown.org/), R, and `renv`. To rebuild locally:
+
+```bash
+git clone https://github.com/r-heller/strategy-in-r.git
+cd strategy-in-r
+R -e 'renv::restore()'
+R -e 'bookdown::render_book("index.Rmd", output_format = "all")'
+```
+
+A handful of chapters use Python via `reticulate`; see `python/requirements.txt`.
+
+## License
+
+Content: [CC BY 4.0](LICENSE-CONTENT) · Source code: [MIT](LICENSE).
+
+## Contributing
+
+Issues and PRs welcome. Please see [CONTRIBUTING.md](CONTRIBUTING.md).

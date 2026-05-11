@@ -1,0 +1,33 @@
+# Colophon {-}
+
+```{r colophon-info, echo=FALSE}
+cat("Built with:\n")
+cat("  bookdown: ", as.character(packageVersion("bookdown")), "\n", sep = "")
+cat("  R:        ", R.version.string, "\n", sep = "")
+cat("  Build date: ", as.character(Sys.Date()), "\n", sep = "")
+commit <- tryCatch(
+  system("git rev-parse --short HEAD", intern = TRUE),
+  error   = function(e) "unknown",
+  warning = function(w) "unknown"
+)
+cat("  Commit:   ", commit, "\n", sep = "")
+```
+
+LLM assistance (self-hosted Mistral Le Chat via Ollama/`ollamar`, plus GitHub Copilot in RStudio) was used for copyediting, formatting, and scaffolding tasks only — see Acknowledgments.
+
+## Session info {-}
+
+```{r session-info, echo=FALSE}
+if (requireNamespace("sessioninfo", quietly = TRUE)) {
+  print(sessioninfo::session_info(pkgs = "attached"))
+} else {
+  print(sessionInfo())
+}
+```
+
+```{r write-packages-bib, include=FALSE}
+knitr::write_bib(
+  c(.packages(), "bookdown", "knitr", "rmarkdown"),
+  file = "packages.bib"
+)
+```
