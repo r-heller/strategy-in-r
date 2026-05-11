@@ -8,6 +8,10 @@ Drafting and editorial assistance was provided by Claude (Anthropic). All techni
 
 <!-- TODO: thank specific reviewers once they have read the manuscript. -->
 
+## Inspiration {-}
+
+The structural and pedagogical model for this book draws heavily on Mathias Harrer, Pim Cuijpers, Toshi A. Furukawa, and David D. Ebert's [*Doing Meta-Analysis with R: A Hands-On Guide*](https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/) — both the book and its open-source repository at <https://github.com/MathiasHarrer/Doing-Meta-Analysis-in-R>. Their thorough, transparent, and beautifully laid-out bookdown setup — sidebar grouping, semantic callout boxes, the citation block, the dark/light toggle, MathJax-rendered formulas, downloadable BibTeX/RIS citations — set a clear standard for what a reproducible R-based research book can look like. Where the present book mirrors their conventions, it does so deliberately and gratefully. Where it diverges (colors, typography, individual icons), the divergence is cosmetic; the underlying craft is theirs to credit.
+
 ## Use of LLM tools {-}
 
 Portions of this book were prepared with assistance from large language model tooling for narrowly defined, non-authorial tasks: copyediting, prose smoothing, LaTeX/Markdown formatting, scaffolding of boilerplate files (CI configs, CSS, build scripts), code refactoring, and citation lookup against verified DOIs. The tools used were the latest Mistral Le Chat model run locally via [Ollama](https://ollama.com/) and the [`ollamar`](https://cran.r-project.org/package=ollamar) R package — all inference performed on local hardware, with no data sent to third-party services — and GitHub Copilot inside RStudio for code completion.
