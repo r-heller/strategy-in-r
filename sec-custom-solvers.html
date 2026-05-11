@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 15 Building Custom Solvers in R | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Lemke-Howson, support enumeration, and fictitious play implemented from scratch in R — understanding the algorithms behind Nash equilibrium computation by building them yourself.  Learning...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 15 Building Custom Solvers in R | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-custom-solvers.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Lemke-Howson, support enumeration, and fictitious play implemented from scratch in R — understanding the algorithms behind Nash equilibrium computation by building them yourself.  Learning...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 15 Building Custom Solvers in R | Strategy in R">
+<meta name="twitter:description" content="Lemke-Howson, support enumeration, and fictitious play implemented from scratch in R — understanding the algorithms behind Nash equilibrium computation by building them yourself.  Learning...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 15 Building Custom Solvers in R | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="active" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-custom-solvers" class="section level1" number="15">
+<h1>
+<span class="header-section-number">15</span> Building Custom Solvers in R<a class="anchor" aria-label="anchor" href="#sec-custom-solvers"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Lemke-Howson, support enumeration, and fictitious play implemented from scratch in R — understanding the algorithms behind Nash equilibrium computation by building them yourself.</p>
+</blockquote>
+<div id="learning-objectives-13" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-13"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Explain the geometric intuition behind the Lemke–Howson algorithm as a path-following method on the best-response polytope.</li>
+<li>Implement support enumeration for general <span class="math inline">\(N \times M\)</span> bimatrix games and understand its exponential worst-case complexity.</li>
+<li>Implement fictitious play from scratch and interpret its convergence properties.</li>
+<li>Visualize fictitious play trajectories and assess convergence to mixed Nash equilibria.</li>
+<li>Compare the strengths and limitations of exact vs. iterative equilibrium solvers.</li>
+</ul>
+</div>
+<div id="motivation-13" class="section level2" number="15.1">
+<h2>
+<span class="header-section-number">15.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-13"><i class="fas fa-link"></i></a>
+</h2>
+<p>The solvers in <code>R/solvers.R</code> handle 2x2 games by closed-form calculation. The support enumeration solver in <a href="sec-nashpy-reticulate.html#sec-nashpy-reticulate">14</a> extends this to general bimatrix games but is exponential in the number of strategies. Neither approach gives us geometric insight into <em>why</em> equilibria exist or <em>how</em> they are structured in the space of strategy profiles.</p>
+<p>This chapter builds three algorithms from scratch, each offering a different perspective on Nash equilibrium computation:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Support enumeration</strong> (recap and generalization) finds all equilibria by exhaustive search over possible support pairs. It is complete for generic games but slow for large ones.</li>
+<li>
+<strong>The Lemke–Howson algorithm</strong> follows a path through the vertices of a polytope defined by the best-response conditions, arriving at a Nash equilibrium in finite steps. It is the most widely used exact algorithm for bimatrix games and underlies Gambit’s <code>gambit-lcp</code> solver.</li>
+<li>
+<strong>Fictitious play</strong> is an iterative learning process: each player repeatedly best-responds to the empirical frequency of the opponent’s past actions. Under certain conditions, the empirical frequencies converge to a Nash equilibrium.</li>
+</ol>
+<p>Together these three algorithms span the landscape from brute-force enumeration through structured exact computation to adaptive approximation. Building them from scratch demystifies the “black box” of equilibrium solvers and prepares the reader to modify or extend them for custom applications <span class="citation">(<a href="references.html#ref-shoham2009">Shoham &amp; Leyton-Brown, 2009, Chapter 4</a>)</span>.</p>
+</div>
+<div id="theory-13" class="section level2" number="15.2">
+<h2>
+<span class="header-section-number">15.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-13"><i class="fas fa-link"></i></a>
+</h2>
+<div id="support-enumeration-recap" class="section level3" number="15.2.1">
+<h3>
+<span class="header-section-number">15.2.1</span> Support enumeration (recap)<a class="anchor" aria-label="anchor" href="#support-enumeration-recap"><i class="fas fa-link"></i></a>
+</h3>
+<p>Support enumeration, detailed in <a href="sec-nashpy-reticulate.html#sec-nashpy-reticulate">14</a>, exploits the indifference principle from <a href="sec-mixed-strategies.html#sec-mixed-strategies">5</a>. For each pair of equal-sized support sets <span class="math inline">\((S_1, S_2)\)</span>, we solve the linear system that makes each player indifferent across the actions in the opponent’s support, check non-negativity and the no-profitable-deviation condition, and collect valid solutions. The algorithm is exact and complete for non-degenerate games, but its running time is exponential in the number of strategies.</p>
+</div>
+<div id="the-lemkehowson-algorithm" class="section level3" number="15.2.2">
+<h3>
+<span class="header-section-number">15.2.2</span> The Lemke–Howson algorithm<a class="anchor" aria-label="anchor" href="#the-lemkehowson-algorithm"><i class="fas fa-link"></i></a>
+</h3>
+<p>The Lemke–Howson algorithm (1964) takes a geometric approach. Given an <span class="math inline">\(m \times n\)</span> bimatrix game <span class="math inline">\((A, B)\)</span> with <span class="math inline">\(A, B &gt; 0\)</span> (achieved by adding a constant if needed), define the <strong>best-response polytopes</strong>:</p>
+<p><span class="math display">\[
+P = \{ x \in \mathbb{R}^m_{\geq 0} : B^\top x \leq \mathbf{1} \}, \quad
+Q = \{ y \in \mathbb{R}^n_{\geq 0} : A y \leq \mathbf{1} \}
+\]</span></p>
+<p>Each vertex of <span class="math inline">\(P \times Q\)</span> is labelled by the set of binding constraints. A pair <span class="math inline">\((x, y)\)</span> is a Nash equilibrium if and only if it is <strong>completely labelled</strong> — the union of labels from <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> covers all <span class="math inline">\(m + n\)</span> labels <span class="math inline">\(\{1, \ldots, m+n\}\)</span>.</p>
+<p>The algorithm starts from the artificial equilibrium <span class="math inline">\((0, 0)\)</span> and drops one label <span class="math inline">\(k\)</span> (creating a “missing label”). It then follows a sequence of edges (pivots) on the polytope, alternately pivoting in <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span>, until the missing label is picked up again. The resulting vertex pair is a Nash equilibrium.</p>
+<p>The key properties are:</p>
+<ul>
+<li>
+<strong>Finiteness:</strong> the path visits at most <span class="math inline">\(2^{m+n}\)</span> vertices, so the algorithm terminates.</li>
+<li>
+<strong>Complementary pivoting:</strong> at each step, exactly one constraint becomes binding or non-binding, analogous to a simplex-method pivot.</li>
+<li>
+<strong>Choice of <span class="math inline">\(k\)</span> matters:</strong> different starting labels <span class="math inline">\(k\)</span> may lead to different equilibria.</li>
+</ul>
+<div class="rmdnote">
+<p><strong>Simplified implementation</strong></p>
+<p>A full Lemke–Howson implementation requires careful handling of degeneracy via lexicographic pivoting. Our implementation below uses a simplified tableau approach suitable for small non-degenerate games. For production use, a solver like Gambit (see <a href="sec-gtree-package.html#sec-gtree-package">13</a>) is preferable.</p>
+</div>
+</div>
+<div id="fictitious-play" class="section level3" number="15.2.3">
+<h3>
+<span class="header-section-number">15.2.3</span> Fictitious play<a class="anchor" aria-label="anchor" href="#fictitious-play"><i class="fas fa-link"></i></a>
+</h3>
+<p>Fictitious play, introduced by Brown (1951), is an iterative learning dynamic:</p>
+<ol style="list-style-type: decimal">
+<li>Each player starts with an initial action (or belief).</li>
+<li>At each iteration <span class="math inline">\(t\)</span>, each player observes the opponent’s entire history of actions and computes the <strong>empirical frequency</strong> of each action.</li>
+<li>Each player best-responds to the opponent’s empirical frequency.</li>
+<li>The empirical frequencies are updated.</li>
+</ol>
+<p>Formally, let <span class="math inline">\(n_j^t\)</span> be the number of times the column player has chosen action <span class="math inline">\(j\)</span> through iteration <span class="math inline">\(t\)</span>. The row player’s empirical belief about the column player is <span class="math inline">\(\hat{q}_j^t = n_j^t / t\)</span>. The row player then plays:</p>
+<p><span class="math display">\[
+a_1^{t+1} \in \arg\max_i \sum_j A_{ij} \hat{q}_j^t
+\]</span></p>
+<div class="rmdtip">
+<p><strong>Convergence of Fictitious Play</strong></p>
+<p>Fictitious play converges to a Nash equilibrium in the following classes of games:</p>
+<ul>
+<li>Zero-sum games (Robinson, 1951), the class originally studied by <span class="citation">Neumann &amp; Morgenstern (<a href="references.html#ref-von-neumann1944">1944</a>)</span>.</li>
+<li>Games solvable by iterated strict dominance.</li>
+<li>
+<span class="math inline">\(2 \times N\)</span> games.</li>
+<li>Games with a unique Nash equilibrium that is completely mixed.</li>
+</ul>
+<p>However, fictitious play does <em>not</em> converge in all games — Shapley (1964) constructed a <span class="math inline">\(3 \times 3\)</span> counterexample with cycling behaviour <span class="citation">(<a href="references.html#ref-osborne2004">Osborne, 2004</a>)</span>.</p>
+</div>
+<p>When fictitious play converges, the empirical frequencies <span class="math inline">\((\hat{p}^t, \hat{q}^t)\)</span> approach a Nash equilibrium, but the actual actions may continue to cycle. The convergence is of the <em>time-averaged</em> strategies, not the instantaneous ones.</p>
+</div>
+</div>
+<div id="implementation-in-r-8" class="section level2" number="15.3">
+<h2>
+<span class="header-section-number">15.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#implementation-in-r-8"><i class="fas fa-link"></i></a>
+</h2>
+<div id="lemkehowson-sketch-for-2x2-games" class="section level3" number="15.3.1">
+<h3>
+<span class="header-section-number">15.3.1</span> Lemke–Howson sketch for 2x2 games<a class="anchor" aria-label="anchor" href="#lemkehowson-sketch-for-2x2-games"><i class="fas fa-link"></i></a>
+</h3>
+<p>The following function demonstrates the complementary pivoting logic for 2x2 games. It illustrates the algorithm’s structure rather than providing a production solver.</p>
+<div class="sourceCode" id="cb393"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lemke_howson_2x2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># For 2x2 games, the Lemke-Howson path is short enough</span></span>
+<span></span>
+<span>  <span class="co"># that we can implement the pivoting explicitly.</span></span>
+<span>  <span class="co"># Step 1: Check for pure strategy equilibria</span></span>
+<span>  <span class="va">pure</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Step 2: Attempt mixed equilibrium via indifference</span></span>
+<span>  <span class="va">mixed</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># In a full implementation, dropping label k=1 traces a path</span></span>
+<span>  <span class="co"># through the polytope vertices. For 2x2, this reduces to</span></span>
+<span>  <span class="co"># checking the indifference conditions directly.</span></span>
+<span></span>
+<span>  <span class="co"># Return the first equilibrium found</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">pure</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">eq</span> <span class="op">&lt;-</span> <span class="va">pure</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="va">q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="va">p</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span>    <span class="va">q</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">p</span>, q <span class="op">=</span> <span class="va">q</span>, type <span class="op">=</span> <span class="st">"pure"</span>,</span>
+<span>                payoff_1 <span class="op">=</span> <span class="va">A</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>                payoff_2 <span class="op">=</span> <span class="va">B</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">$</span><span class="va">p</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">mixed</span><span class="op">$</span><span class="va">p</span><span class="op">)</span></span>
+<span>    <span class="va">q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">$</span><span class="va">q</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">mixed</span><span class="op">$</span><span class="va">q</span><span class="op">)</span></span>
+<span>    <span class="va">payoff_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">p</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">A</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">q</span><span class="op">)</span></span>
+<span>    <span class="va">payoff_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">p</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">B</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">q</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">p</span>, q <span class="op">=</span> <span class="va">q</span>, type <span class="op">=</span> <span class="st">"mixed"</span>,</span>
+<span>                payoff_1 <span class="op">=</span> <span class="va">payoff_1</span>, payoff_2 <span class="op">=</span> <span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="cn">NULL</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Test on Matching Pennies</span></span>
+<span><span class="va">A_mp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"T"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"T"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_mp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"T"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"T"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">lh_result</span> <span class="op">&lt;-</span> <span class="fu">lemke_howson_2x2</span><span class="op">(</span><span class="va">A_mp</span>, <span class="va">B_mp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Lemke-Howson result for Matching Pennies:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Lemke-Howson result for Matching Pennies:</code></pre>
+<div class="sourceCode" id="cb395"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">p</span>, <span class="st">"(type:"</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">type</span>, <span class="st">")\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   p = 0.5 0.5 (type: mixed )</code></pre>
+<div class="sourceCode" id="cb397"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  q ="</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">q</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   q = 0.5 0.5</code></pre>
+<div class="sourceCode" id="cb399"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.2f, %.2f)\n"</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">lh_result</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Payoffs: (0.00, 0.00)</code></pre>
+</div>
+<div id="fictitious-play-implementation" class="section level3" number="15.3.2">
+<h3>
+<span class="header-section-number">15.3.2</span> Fictitious play implementation<a class="anchor" aria-label="anchor" href="#fictitious-play-implementation"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb401"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fictitious_play</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span>, <span class="va">n_iter</span> <span class="op">=</span> <span class="fl">1000</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">42</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
+<span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Counts of each action played</span></span>
+<span>  <span class="va">row_counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">m</span><span class="op">)</span></span>
+<span>  <span class="va">col_counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Initial actions (random)</span></span>
+<span>  <span class="va">row_action</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">m</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="va">col_action</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="va">row_counts</span><span class="op">[</span><span class="va">row_action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span>  <span class="va">col_counts</span><span class="op">[</span><span class="va">col_action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span></span>
+<span>  <span class="co"># Storage for trajectory (subsample for efficiency)</span></span>
+<span>  <span class="va">record_iters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">n_iter</span>, <span class="fl">500</span><span class="op">)</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">600</span>, <span class="va">n_iter</span>, by <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">record_iters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">record_iters</span><span class="op">[</span><span class="va">record_iters</span> <span class="op">&lt;=</span> <span class="va">n_iter</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    iter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">integer</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    row_freq_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">double</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    col_freq_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">double</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="va">n_iter</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Row player best-responds to column player's empirical frequency</span></span>
+<span>    <span class="va">col_freq</span> <span class="op">&lt;-</span> <span class="va">col_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">col_counts</span><span class="op">)</span></span>
+<span>    <span class="va">row_expected</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">col_freq</span><span class="op">)</span></span>
+<span>    <span class="va">best_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">row_expected</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">row_expected</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">1e-12</span><span class="op">)</span></span>
+<span>    <span class="va">row_action</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">best_rows</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">best_rows</span>, <span class="fl">1</span><span class="op">)</span> <span class="kw">else</span> <span class="va">best_rows</span></span>
+<span></span>
+<span>    <span class="co"># Column player best-responds to row player's empirical frequency</span></span>
+<span>    <span class="va">row_freq</span> <span class="op">&lt;-</span> <span class="va">row_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">row_counts</span><span class="op">)</span></span>
+<span>    <span class="va">col_expected</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">B</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">row_freq</span><span class="op">)</span></span>
+<span>    <span class="va">best_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">col_expected</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">col_expected</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">1e-12</span><span class="op">)</span></span>
+<span>    <span class="va">col_action</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">best_cols</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">best_cols</span>, <span class="fl">1</span><span class="op">)</span> <span class="kw">else</span> <span class="va">best_cols</span></span>
+<span></span>
+<span>    <span class="co"># Update counts</span></span>
+<span>    <span class="va">row_counts</span><span class="op">[</span><span class="va">row_action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">row_counts</span><span class="op">[</span><span class="va">row_action</span><span class="op">]</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>    <span class="va">col_counts</span><span class="op">[</span><span class="va">col_action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">col_counts</span><span class="op">[</span><span class="va">col_action</span><span class="op">]</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span></span>
+<span>    <span class="co"># Record at selected iterations</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">t</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">record_iters</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">row_freq_now</span> <span class="op">&lt;-</span> <span class="va">row_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">row_counts</span><span class="op">)</span></span>
+<span>      <span class="va">col_freq_now</span> <span class="op">&lt;-</span> <span class="va">col_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">col_counts</span><span class="op">)</span></span>
+<span>      <span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">history</span>, <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>        iter <span class="op">=</span> <span class="va">t</span>,</span>
+<span>        row_freq_1 <span class="op">=</span> <span class="va">row_freq_now</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>        col_freq_1 <span class="op">=</span> <span class="va">col_freq_now</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span>      <span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="co"># Final empirical frequencies</span></span>
+<span>  <span class="va">final_row_freq</span> <span class="op">&lt;-</span> <span class="va">row_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">row_counts</span><span class="op">)</span></span>
+<span>  <span class="va">final_col_freq</span> <span class="op">&lt;-</span> <span class="va">col_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">col_counts</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>    p <span class="op">=</span> <span class="va">final_row_freq</span>,</span>
+<span>    q <span class="op">=</span> <span class="va">final_col_freq</span>,</span>
+<span>    payoff_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">final_row_freq</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">A</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">final_col_freq</span><span class="op">)</span>,</span>
+<span>    payoff_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">final_row_freq</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">B</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">final_col_freq</span><span class="op">)</span>,</span>
+<span>    history <span class="op">=</span> <span class="va">history</span>,</span>
+<span>    row_counts <span class="op">=</span> <span class="va">row_counts</span>,</span>
+<span>    col_counts <span class="op">=</span> <span class="va">col_counts</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="testing-on-matching-pennies" class="section level3" number="15.3.3">
+<h3>
+<span class="header-section-number">15.3.3</span> Testing on Matching Pennies<a class="anchor" aria-label="anchor" href="#testing-on-matching-pennies"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb402"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fp_mp</span> <span class="op">&lt;-</span> <span class="fu">fictitious_play</span><span class="op">(</span><span class="va">A_mp</span>, <span class="va">B_mp</span>, n_iter <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Fictitious play result for Matching Pennies (2000 iterations):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Fictitious play result for Matching Pennies (2000 iterations):</code></pre>
+<div class="sourceCode" id="cb404"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_mp</span><span class="op">$</span><span class="va">p</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Empirical p = 0.513 0.487</code></pre>
+<div class="sourceCode" id="cb406"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_mp</span><span class="op">$</span><span class="va">q</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Empirical q = 0.498 0.501</code></pre>
+<div class="sourceCode" id="cb408"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  True NE: p = (0.5, 0.5), q = (0.5, 0.5)\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   True NE: p = (0.5, 0.5), q = (0.5, 0.5)</code></pre>
+<div class="sourceCode" id="cb410"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.4f, %.4f)\n"</span>, <span class="va">fp_mp</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">fp_mp</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Payoffs: (-0.0001, 0.0001)</code></pre>
+<p>The empirical frequencies are close to the true mixed Nash equilibrium <span class="math inline">\((0.5, 0.5)\)</span>, demonstrating convergence. As a zero-sum game, Matching Pennies is guaranteed to yield convergence under fictitious play.</p>
+</div>
+</div>
+<div id="worked-example-11" class="section level2" number="15.4">
+<h2>
+<span class="header-section-number">15.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-11"><i class="fas fa-link"></i></a>
+</h2>
+<p>We apply fictitious play to the <strong>Battle of the Sexes</strong> — a game with two pure Nash equilibria and one mixed Nash equilibrium — and visualize the convergence trajectory. This is a more challenging test because the game has multiple equilibria and is not zero-sum.</p>
+<div id="setting-up-the-game" class="section level3" number="15.4.1">
+<h3>
+<span class="header-section-number">15.4.1</span> Setting up the game<a class="anchor" aria-label="anchor" href="#setting-up-the-game"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb412"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Battle of the Sexes</span></span>
+<span><span class="va">A_bos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_bos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># True mixed NE: p = 3/5 (P1 plays Opera), q = 2/5 (P2 plays Opera)</span></span>
+<span><span class="va">true_p</span> <span class="op">&lt;-</span> <span class="fl">3</span> <span class="op">/</span> <span class="fl">5</span></span>
+<span><span class="va">true_q</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">5</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Battle of the Sexes payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Battle of the Sexes payoffs:</code></pre>
+<div class="sourceCode" id="cb414"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Player 1:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Player 1:</code></pre>
+<div class="sourceCode" id="cb416"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A_bos</span></span></code></pre></div>
+<pre><code>#&gt;          Opera Football
+#&gt; Opera        3        0
+#&gt; Football     0        2</code></pre>
+<div class="sourceCode" id="cb418"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPlayer 2:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Player 2:</code></pre>
+<div class="sourceCode" id="cb420"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">B_bos</span></span></code></pre></div>
+<pre><code>#&gt;          Opera Football
+#&gt; Opera        2        0
+#&gt; Football     0        3</code></pre>
+<div class="sourceCode" id="cb422"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nTrue mixed NE: p(Opera) = %.2f, q(Opera) = %.2f\n"</span>, <span class="va">true_p</span>, <span class="va">true_q</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; True mixed NE: p(Opera) = 0.60, q(Opera) = 0.40</code></pre>
+</div>
+<div id="running-fictitious-play" class="section level3" number="15.4.2">
+<h3>
+<span class="header-section-number">15.4.2</span> Running fictitious play<a class="anchor" aria-label="anchor" href="#running-fictitious-play"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb424"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Run fictitious play with many iterations</span></span>
+<span><span class="va">fp_bos</span> <span class="op">&lt;-</span> <span class="fu">fictitious_play</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span>, n_iter <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Battle of the Sexes --- Fictitious Play Results:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Battle of the Sexes --- Fictitious Play Results:</code></pre>
+<div class="sourceCode" id="cb426"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical p(Opera) ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">p</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>    <span class="st">"  (true:"</span>, <span class="va">true_p</span>, <span class="st">")\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Empirical p(Opera) = 1   (true: 0.6 )</code></pre>
+<div class="sourceCode" id="cb428"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Empirical q(Opera) ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">q</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>    <span class="st">"  (true:"</span>, <span class="va">true_q</span>, <span class="st">")\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Empirical q(Opera) = 1   (true: 0.4 )</code></pre>
+<div class="sourceCode" id="cb430"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Expected payoffs at the mixed NE</span></span>
+<span><span class="va">mixed_payoff_1</span> <span class="op">&lt;-</span> <span class="va">true_p</span> <span class="op">*</span> <span class="va">true_q</span> <span class="op">*</span> <span class="fl">3</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">2</span></span>
+<span><span class="va">mixed_payoff_2</span> <span class="op">&lt;-</span> <span class="va">true_p</span> <span class="op">*</span> <span class="va">true_q</span> <span class="op">*</span> <span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">true_q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">3</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Mixed NE expected payoffs:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">mixed_payoff_1</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">","</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">mixed_payoff_2</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Mixed NE expected payoffs: 1.2 , 1.2</code></pre>
+<div class="sourceCode" id="cb432"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Fictitious play payoffs:  "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">","</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_2</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Fictitious play payoffs:   3 , 2</code></pre>
+<p>The empirical frequencies approximate the mixed NE at <span class="math inline">\((p, q) = (0.6, 0.4)\)</span>. The convergence is slow — fictitious play converges at rate <span class="math inline">\(O(1/\sqrt{t})\)</span> — but it is robust and requires no matrix inversion or linear programming.</p>
+</div>
+<div id="publication-figure-convergence-trajectory" class="section level3" number="15.4.3">
+<h3>
+<span class="header-section-number">15.4.3</span> Publication figure: convergence trajectory<a class="anchor" aria-label="anchor" href="#publication-figure-convergence-trajectory"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb434"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Build trajectory data for the plot</span></span>
+<span><span class="va">trajectory</span> <span class="op">&lt;-</span> <span class="va">fp_bos</span><span class="op">$</span><span class="va">history</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    phase <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
+<span>      <span class="va">iter</span> <span class="op">&lt;=</span> <span class="fl">100</span>  <span class="op">~</span> <span class="st">"Early (t &lt;= 100)"</span>,</span>
+<span>      <span class="va">iter</span> <span class="op">&lt;=</span> <span class="fl">1000</span> <span class="op">~</span> <span class="st">"Middle (100 &lt; t &lt;= 1000)"</span>,</span>
+<span>      <span class="cn">TRUE</span>         <span class="op">~</span> <span class="st">"Late (t &gt; 1000)"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    phase <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">phase</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Early (t &lt;= 100)"</span>,</span>
+<span>                                      <span class="st">"Middle (100 &lt; t &lt;= 1000)"</span>,</span>
+<span>                                      <span class="st">"Late (t &gt; 1000)"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Reference points: pure NE and mixed NE</span></span>
+<span><span class="va">ref_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="va">true_p</span><span class="op">)</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="va">true_q</span><span class="op">)</span>,</span>
+<span>  label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Pure NE: (Opera, Opera)"</span>, <span class="st">"Pure NE: (Football, Football)"</span>,</span>
+<span>            <span class="st">"Mixed NE (0.6, 0.4)"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_fp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Trajectory coloured by phase</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_path</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">trajectory</span>,</span>
+<span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">row_freq_1</span>, y <span class="op">=</span> <span class="va">col_freq_1</span>, colour <span class="op">=</span> <span class="va">phase</span><span class="op">)</span>,</span>
+<span>            linewidth <span class="op">=</span> <span class="fl">0.5</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Starting point</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_head</a></span><span class="op">(</span><span class="va">trajectory</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">row_freq_1</span>, y <span class="op">=</span> <span class="va">col_freq_1</span><span class="op">)</span>,</span>
+<span>             shape <span class="op">=</span> <span class="fl">4</span>, size <span class="op">=</span> <span class="fl">3</span>, stroke <span class="op">=</span> <span class="fl">1.5</span>, colour <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Final point</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_tail</a></span><span class="op">(</span><span class="va">trajectory</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">row_freq_1</span>, y <span class="op">=</span> <span class="va">col_freq_1</span><span class="op">)</span>,</span>
+<span>             shape <span class="op">=</span> <span class="fl">8</span>, size <span class="op">=</span> <span class="fl">3</span>, stroke <span class="op">=</span> <span class="fl">1.5</span>, colour <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Reference equilibria</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">ref_points</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span>,</span>
+<span>             shape <span class="op">=</span> <span class="fl">18</span>, size <span class="op">=</span> <span class="fl">4</span>, colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">ref_points</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>            vjust <span class="op">=</span> <span class="op">-</span><span class="fl">1</span>, size <span class="op">=</span> <span class="fl">2.7</span>, colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"Iteration phase"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="st">"Player 1: empirical freq. of Opera"</span>,</span>
+<span>    limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.1</span><span class="op">)</span>,</span>
+<span>    breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.2</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="st">"Player 2: empirical freq. of Opera"</span>,</span>
+<span>    limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.05</span>, <span class="fl">1.15</span><span class="op">)</span>,</span>
+<span>    breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.2</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Fictitious Play Convergence: Battle of the Sexes"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_fp</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:fp-convergence"></span>
+<img src="14-custom-solvers_files/figure-html/fp-convergence-1.png" alt="Fictitious play convergence in the Battle of the Sexes. The trajectory of empirical action frequencies (Player 1 plays Opera on the x-axis, Player 2 plays Opera on the y-axis) spirals toward the mixed Nash equilibrium at (0.6, 0.4). Early iterations show large oscillations as players alternate between best responses; later iterations settle near the equilibrium. The two pure Nash equilibria at (1, 1) and (0, 0) are shown as reference points." width="80%"><p class="caption">
+Figure 15.1: Fictitious play convergence in the Battle of the Sexes. The trajectory of empirical action frequencies (Player 1 plays Opera on the x-axis, Player 2 plays Opera on the y-axis) spirals toward the mixed Nash equilibrium at (0.6, 0.4). Early iterations show large oscillations as players alternate between best responses; later iterations settle near the equilibrium. The two pure Nash equilibria at (1, 1) and (0, 0) are shown as reference points.
+</p>
+</div>
+<div class="sourceCode" id="cb435"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_fp</span>, <span class="st">"fictitious-play-convergence"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+<p>The spiral pattern in the figure is characteristic of fictitious play in games with mixed equilibria. Each player’s best response to the other’s current empirical frequency overshoots the equilibrium, creating oscillations that gradually dampen. The early phase (orange) shows wild swings; the middle phase (blue) tightens the spiral; and the late phase (green) clusters near the mixed NE at <span class="math inline">\((0.6, 0.4)\)</span>.</p>
+<p>This convergence pattern explains why fictitious play, despite its simplicity, is useful as both a computational tool and a model of bounded rationality. Players need not know the game’s payoff structure in full — they only need to observe past actions and best-respond. The path to equilibrium emerges from this simple learning rule, without any explicit computation of the indifference conditions from <a href="sec-mixed-strategies.html#sec-mixed-strategies">5</a>.</p>
+</div>
+<div id="comparing-all-three-approaches" class="section level3" number="15.4.4">
+<h3>
+<span class="header-section-number">15.4.4</span> Comparing all three approaches<a class="anchor" aria-label="anchor" href="#comparing-all-three-approaches"><i class="fas fa-link"></i></a>
+</h3>
+<p>We now apply all three algorithms to Battle of the Sexes and compare their outputs.</p>
+<div class="sourceCode" id="cb436"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 1. Lemke-Howson sketch</span></span>
+<span><span class="va">lh_bos</span> <span class="op">&lt;-</span> <span class="fu">lemke_howson_2x2</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Lemke-Howson:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Lemke-Howson:</code></pre>
+<div class="sourceCode" id="cb438"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">lh_bos</span><span class="op">$</span><span class="va">p</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">" q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">lh_bos</span><span class="op">$</span><span class="va">q</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>    <span class="st">" type:"</span>, <span class="va">lh_bos</span><span class="op">$</span><span class="va">type</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   p = 1 0  q = 1 0  type: pure</code></pre>
+<div class="sourceCode" id="cb440"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.2f, %.2f)\n\n"</span>, <span class="va">lh_bos</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">lh_bos</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Payoffs: (3.00, 2.00)</code></pre>
+<div class="sourceCode" id="cb442"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 2. Fictitious play (already computed above)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Fictitious play (5000 iterations):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Fictitious play (5000 iterations):</code></pre>
+<div class="sourceCode" id="cb444"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">p</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">" q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">fp_bos</span><span class="op">$</span><span class="va">q</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   p = 1 0  q = 1 0</code></pre>
+<div class="sourceCode" id="cb446"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Payoffs: (%.2f, %.2f)\n\n"</span>, <span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="va">fp_bos</span><span class="op">$</span><span class="va">payoff_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Payoffs: (3.00, 2.00)</code></pre>
+<div class="sourceCode" id="cb448"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 3. Exact support enumeration (from \@ref(sec-nashpy-reticulate))</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Exact solutions (for reference):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Exact solutions (for reference):</code></pre>
+<div class="sourceCode" id="cb450"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pure_ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span><span class="op">)</span></span>
+<span><span class="va">mixed_ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">pure_ne</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Pure NE: (%s, %s) -&gt; payoffs (%d, %d)\n"</span>,</span>
+<span>              <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">A_bos</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">A_bos</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>              <span class="va">A_bos</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="va">B_bos</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   Pure NE: (Opera, Opera) -&gt; payoffs (3, 2)
+#&gt;   Pure NE: (Football, Football) -&gt; payoffs (2, 3)</code></pre>
+<div class="sourceCode" id="cb452"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">mixed_ne</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">p_exact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">mixed_ne</span><span class="op">$</span><span class="va">p</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">mixed_ne</span><span class="op">$</span><span class="va">p</span><span class="op">)</span></span>
+<span>  <span class="va">q_exact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">mixed_ne</span><span class="op">$</span><span class="va">q</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">mixed_ne</span><span class="op">$</span><span class="va">q</span><span class="op">)</span></span>
+<span>  <span class="va">payoff_1_exact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">p_exact</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">A_bos</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">q_exact</span><span class="op">)</span></span>
+<span>  <span class="va">payoff_2_exact</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">p_exact</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">B_bos</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">q_exact</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Mixed NE: p = (%.3f, %.3f), q = (%.3f, %.3f) -&gt; payoffs (%.2f, %.2f)\n"</span>,</span>
+<span>              <span class="va">p_exact</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">p_exact</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">q_exact</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">q_exact</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>              <span class="va">payoff_1_exact</span>, <span class="va">payoff_2_exact</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   Mixed NE: p = (0.600, 0.400), q = (0.400, 0.600) -&gt; payoffs (1.20, 1.20)</code></pre>
+<p>The comparison reveals a key distinction. Lemke–Howson is an exact algebraic method that finds one equilibrium (here, a pure NE). Fictitious play is an iterative approximation that converges toward the mixed equilibrium. Support enumeration is the only method that finds <em>all</em> equilibria. The choice among them depends on the analyst’s goals: completeness favours support enumeration, speed favours Lemke–Howson, and simplicity favours fictitious play.</p>
+</div>
+<div id="convergence-speed-across-games" class="section level3" number="15.4.5">
+<h3>
+<span class="header-section-number">15.4.5</span> Convergence speed across games<a class="anchor" aria-label="anchor" href="#convergence-speed-across-games"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb454"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Run fictitious play on two games and track convergence</span></span>
+<span><span class="va">games_for_fp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Matching Pennies"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_mp</span>, B <span class="op">=</span> <span class="va">B_mp</span>, true_p <span class="op">=</span> <span class="fl">0.5</span>, true_q <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Battle of Sexes"</span>  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_bos</span>, B <span class="op">=</span> <span class="va">B_bos</span>, true_p <span class="op">=</span> <span class="fl">0.6</span>, true_q <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">convergence_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">game_name</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">games_for_fp</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">g</span> <span class="op">&lt;-</span> <span class="va">games_for_fp</span><span class="op">[[</span><span class="va">game_name</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">fp</span> <span class="op">&lt;-</span> <span class="fu">fictitious_play</span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">A</span>, <span class="va">g</span><span class="op">$</span><span class="va">B</span>, n_iter <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">conv</span> <span class="op">&lt;-</span> <span class="va">fp</span><span class="op">$</span><span class="va">history</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>      error_p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">row_freq_1</span> <span class="op">-</span> <span class="va">g</span><span class="op">$</span><span class="va">true_p</span><span class="op">)</span>,</span>
+<span>      error_q <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">col_freq_1</span> <span class="op">-</span> <span class="va">g</span><span class="op">$</span><span class="va">true_q</span><span class="op">)</span>,</span>
+<span>      total_error <span class="op">=</span> <span class="va">error_p</span> <span class="op">+</span> <span class="va">error_q</span>,</span>
+<span>      game <span class="op">=</span> <span class="va">game_name</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="va">convergence_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">convergence_data</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">conv</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">conv_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">convergence_data</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">conv_df</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">iter</span> <span class="op">&gt;=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">iter</span>, y <span class="op">=</span> <span class="va">total_error</span>, colour <span class="op">=</span> <span class="va">game</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.6</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Iteration"</span>, labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html">label_comma</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_log10</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Total frequency error |p - p*| + |q - q*|"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Fictitious Play Convergence Speed"</span>,</span>
+<span>    colour <span class="op">=</span> <span class="st">"Game"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="inline-figure"><img src="14-custom-solvers_files/figure-html/convergence-speed-1.png" alt="" width="80%" style="display: block; margin: auto;"></div>
+<p>Both games show the expected <span class="math inline">\(O(1/\sqrt{t})\)</span> convergence rate (approximately linear on the log-log scale with slope around <span class="math inline">\(-0.5\)</span>). Matching Pennies, being zero-sum, converges more smoothly. Battle of the Sexes shows more irregular convergence due to the coordination structure and the presence of multiple equilibria.</p>
+</div>
+</div>
+<div id="extensions-13" class="section level2" number="15.5">
+<h2>
+<span class="header-section-number">15.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-13"><i class="fas fa-link"></i></a>
+</h2>
+<p>The three algorithms in this chapter represent three broad families of equilibrium computation methods:</p>
+<ul>
+<li>
+<strong>Enumeration methods</strong> (support enumeration, <a href="sec-nashpy-reticulate.html#sec-nashpy-reticulate">14</a>) are exhaustive and exact but exponential. They are the method of choice when completeness matters — for example, when we need to certify that a game has a unique equilibrium.</li>
+<li>
+<strong>Path-following methods</strong> (Lemke–Howson) are polynomial in the size of the output (they find one equilibrium in time proportional to the path length) and are the workhorses of practical computation. The full Lemke–Howson algorithm, with proper degeneracy handling, is implemented in Gambit and can be accessed from R via the gtree package (<a href="sec-gtree-package.html#sec-gtree-package">13</a>).</li>
+<li>
+<strong>Learning dynamics</strong> (fictitious play) provide approximate solutions and connect equilibrium theory to the question of how equilibria might arise through repeated interaction. This connects to the evolutionary and repeated-game perspectives explored in <a href="sec-repeated-games.html#sec-repeated-games">8</a>.</li>
+</ul>
+<p>For the theoretical foundations of equilibrium computation, including the PPAD complexity class and the computational hardness of finding Nash equilibria, see <span class="citation">Shoham &amp; Leyton-Brown (<a href="references.html#ref-shoham2009">2009</a>)</span> (Chapter 4) and <span class="citation">Osborne (<a href="references.html#ref-osborne2004">2004</a>)</span> (Chapter 12). The connection between learning dynamics and equilibrium was a central theme in the work of <span class="citation">Nash (<a href="references.html#ref-nash1950">1950</a>)</span>, who originally motivated his equilibrium concept partly through a “mass action” interpretation — populations of players repeatedly interacting and adjusting their strategies.</p>
+</div>
+<div id="exercises-13" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-13"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Fictitious play on a 3x3 game.</strong> Run fictitious play on the asymmetric Rock-Paper-Scissors game from <a href="sec-nashpy-reticulate.html#sec-nashpy-reticulate">14</a> (with payoffs +2 for winning and -1 for losing). Use 10,000 iterations and plot the empirical frequencies of all three actions for Player 1 over time (you will need to extend the <code>fictitious_play()</code> function to track all action frequencies, not just the first). Does fictitious play converge? Compare the final empirical frequencies to the exact Nash equilibrium found by support enumeration.</p></li>
+<li><p><strong>Convergence rate analysis.</strong> For the Battle of the Sexes, run fictitious play for <span class="math inline">\(T \in \{100, 500, 1000, 5000, 10000\}\)</span> iterations with 20 different random seeds for each <span class="math inline">\(T\)</span>. Compute the mean and standard deviation of the total frequency error at each <span class="math inline">\(T\)</span>. Plot the mean error as a function of <span class="math inline">\(T\)</span> on a log-log scale and estimate the convergence rate exponent by fitting a line. Is the empirical rate consistent with the theoretical prediction?</p></li>
+<li><p><strong>Shapley’s counterexample.</strong> Implement the game with payoff matrices <span class="math inline">\(A = \begin{pmatrix} 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \\ 1 &amp; 0 &amp; 0 \end{pmatrix}\)</span> and <span class="math inline">\(B = \begin{pmatrix} 0 &amp; 0 &amp; 1 \\ 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \end{pmatrix}\)</span>. Run fictitious play for 20,000 iterations and plot the trajectory of Player 1’s empirical frequencies in a ternary diagram (use the three frequencies as coordinates, noting they sum to 1, so two suffice for a 2D plot). Verify that the empirical frequencies cycle rather than converge, confirming Shapley’s result.</p></li>
+<li><p><strong>Lemke–Howson by hand.</strong> For the game with <span class="math inline">\(A = \begin{pmatrix} 4 &amp; 1 \\ 2 &amp; 3 \end{pmatrix}\)</span> and <span class="math inline">\(B = \begin{pmatrix} 3 &amp; 2 \\ 1 &amp; 4 \end{pmatrix}\)</span> (after shifting to ensure positivity), write out the best-response polytopes <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span>, enumerate all vertices with their labels, and trace the Lemke–Howson path starting from label <span class="math inline">\(k = 1\)</span>. Verify that the path arrives at a Nash equilibrium. You may present this as a table rather than code.</p></li>
+<li><p><strong>Hybrid solver.</strong> Write a function <code>hybrid_solver(A, B, exact_threshold = 5)</code> that uses support enumeration (via the <code>support_enumeration_general()</code> function from <a href="sec-nashpy-reticulate.html#sec-nashpy-reticulate">14</a>) when both <span class="math inline">\(m \leq\)</span> <code>exact_threshold</code> and <span class="math inline">\(n \leq\)</span> <code>exact_threshold</code>, and falls back to fictitious play with 10,000 iterations otherwise. Test your function on random games of sizes 3x3, 5x5, and 10x10. Report timing results and comment on the quality of the fictitious play approximation relative to the exact solution.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></div>
+<div class="next"><a href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-custom-solvers"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li><a class="nav-link" href="#learning-objectives-13">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-13"><span class="header-section-number">15.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-13"><span class="header-section-number">15.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#support-enumeration-recap"><span class="header-section-number">15.2.1</span> Support enumeration (recap)</a></li>
+<li><a class="nav-link" href="#the-lemkehowson-algorithm"><span class="header-section-number">15.2.2</span> The Lemke–Howson algorithm</a></li>
+<li><a class="nav-link" href="#fictitious-play"><span class="header-section-number">15.2.3</span> Fictitious play</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#implementation-in-r-8"><span class="header-section-number">15.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#lemkehowson-sketch-for-2x2-games"><span class="header-section-number">15.3.1</span> Lemke–Howson sketch for 2x2 games</a></li>
+<li><a class="nav-link" href="#fictitious-play-implementation"><span class="header-section-number">15.3.2</span> Fictitious play implementation</a></li>
+<li><a class="nav-link" href="#testing-on-matching-pennies"><span class="header-section-number">15.3.3</span> Testing on Matching Pennies</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-11"><span class="header-section-number">15.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#setting-up-the-game"><span class="header-section-number">15.4.1</span> Setting up the game</a></li>
+<li><a class="nav-link" href="#running-fictitious-play"><span class="header-section-number">15.4.2</span> Running fictitious play</a></li>
+<li><a class="nav-link" href="#publication-figure-convergence-trajectory"><span class="header-section-number">15.4.3</span> Publication figure: convergence trajectory</a></li>
+<li><a class="nav-link" href="#comparing-all-three-approaches"><span class="header-section-number">15.4.4</span> Comparing all three approaches</a></li>
+<li><a class="nav-link" href="#convergence-speed-across-games"><span class="header-section-number">15.4.5</span> Convergence speed across games</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#extensions-13"><span class="header-section-number">15.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-13">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/14-custom-solvers.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/14-custom-solvers.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

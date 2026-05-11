@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 25 Reinforcement Learning Foundations | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Markov decision processes, the Bellman equation, tabular Q-learning and SARSA from scratch, and the exploration-exploitation trade-off via epsilon-greedy and UCB.  Learning objectives Define a...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 25 Reinforcement Learning Foundations | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-reinforcement-learning.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Markov decision processes, the Bellman equation, tabular Q-learning and SARSA from scratch, and the exploration-exploitation trade-off via epsilon-greedy and UCB.  Learning objectives Define a...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 25 Reinforcement Learning Foundations | Strategy in R">
+<meta name="twitter:description" content="Markov decision processes, the Bellman equation, tabular Q-learning and SARSA from scratch, and the exploration-exploitation trade-off via epsilon-greedy and UCB.  Learning objectives Define a...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 25 Reinforcement Learning Foundations | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="active" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-reinforcement-learning" class="section level1" number="25">
+<h1>
+<span class="header-section-number">25</span> Reinforcement Learning Foundations<a class="anchor" aria-label="anchor" href="#sec-reinforcement-learning"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Markov decision processes, the Bellman equation, tabular Q-learning and SARSA from scratch, and the exploration-exploitation trade-off via epsilon-greedy and UCB.</p>
+</blockquote>
+<div id="learning-objectives-23" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-23"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Define a Markov decision process (MDP) and derive the Bellman optimality equation.</li>
+<li>Implement tabular Q-learning from scratch for a gridworld environment.</li>
+<li>Compare Q-learning (off-policy) and SARSA (on-policy) in terms of learned policies.</li>
+<li>Analyze exploration strategies: <span class="math inline">\(\varepsilon\)</span>-greedy versus upper confidence bound (UCB).</li>
+</ul>
+</div>
+<div id="motivation-23" class="section level2" number="25.1">
+<h2>
+<span class="header-section-number">25.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-23"><i class="fas fa-link"></i></a>
+</h2>
+<p>An agent navigates a maze, choosing directions and receiving rewards, with no prior knowledge of the map. This is the <strong>reinforcement learning</strong> (RL) problem <span class="citation">(<a href="references.html#ref-sutton2018">Sutton &amp; Barto, 2018</a>)</span>. Unlike supervised learning (correct answers provided) or game theory’s analytical equilibria, RL learns through trial-and-error interaction. The framework is foundational for multi-agent learning: before understanding how two Q-learners interact in a matrix game (<a href="sec-q-learning.html#sec-q-learning">26</a>), we must understand single-agent Q-learning.</p>
+</div>
+<div id="theory-23" class="section level2" number="25.2">
+<h2>
+<span class="header-section-number">25.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-23"><i class="fas fa-link"></i></a>
+</h2>
+<div id="markov-decision-processes" class="section level3" number="25.2.1">
+<h3>
+<span class="header-section-number">25.2.1</span> Markov decision processes<a class="anchor" aria-label="anchor" href="#markov-decision-processes"><i class="fas fa-link"></i></a>
+</h3>
+<p>A <strong>Markov decision process</strong> (MDP) is a tuple <span class="math inline">\((\mathcal{S}, \mathcal{A}, P, R, \gamma)\)</span> where:</p>
+<ul>
+<li>
+<span class="math inline">\(\mathcal{S}\)</span> is a finite set of states,</li>
+<li>
+<span class="math inline">\(\mathcal{A}\)</span> is a finite set of actions,</li>
+<li>
+<span class="math inline">\(P(s' \mid s, a)\)</span> is the transition probability,</li>
+<li>
+<span class="math inline">\(R(s, a, s')\)</span> is the reward function,</li>
+<li>
+<span class="math inline">\(\gamma \in [0, 1)\)</span> is the discount factor.</li>
+</ul>
+<p>The agent’s goal is to find a policy <span class="math inline">\(\pi(a \mid s)\)</span> that maximizes expected cumulative discounted reward:</p>
+<p><span class="math display" id="eq:value-function">\[\begin{equation}
+V^\pi(s) = \mathbb{E}_\pi \left[ \sum_{t=0}^{\infty} \gamma^t R_t \;\middle|\; S_0 = s \right]
+\tag{25.1}
+\end{equation}\]</span></p>
+</div>
+<div id="the-bellman-equation" class="section level3" number="25.2.2">
+<h3>
+<span class="header-section-number">25.2.2</span> The Bellman equation<a class="anchor" aria-label="anchor" href="#the-bellman-equation"><i class="fas fa-link"></i></a>
+</h3>
+<p>The optimal value function <span class="math inline">\(V^*(s)\)</span> satisfies the <strong>Bellman optimality equation</strong>:</p>
+<p><span class="math display" id="eq:bellman">\[\begin{equation}
+V^*(s) = \max_{a \in \mathcal{A}} \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma \, V^*(s') \right]
+\tag{25.2}
+\end{equation}\]</span></p>
+<p>Equivalently, the optimal action-value function <span class="math inline">\(Q^*(s, a)\)</span> satisfies:</p>
+<p><span class="math display" id="eq:bellman-q">\[\begin{equation}
+Q^*(s, a) = \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma \max_{a'} Q^*(s', a') \right]
+\tag{25.3}
+\end{equation}\]</span></p>
+</div>
+<div id="tabular-q-learning" class="section level3" number="25.2.3">
+<h3>
+<span class="header-section-number">25.2.3</span> Tabular Q-learning<a class="anchor" aria-label="anchor" href="#tabular-q-learning"><i class="fas fa-link"></i></a>
+</h3>
+<p><strong>Q-learning</strong> <span class="citation">(<a href="references.html#ref-watkins1992">Watkins &amp; Dayan, 1992</a>)</span> is a model-free, off-policy algorithm. After taking action <span class="math inline">\(a\)</span> in state <span class="math inline">\(s\)</span>, observing reward <span class="math inline">\(r\)</span> and next state <span class="math inline">\(s'\)</span>:</p>
+<p><span class="math display" id="eq:q-update">\[\begin{equation}
+Q(s, a) \leftarrow Q(s, a) + \alpha \left[ r + \gamma \max_{a'} Q(s', a') - Q(s, a) \right]
+\tag{25.4}
+\end{equation}\]</span></p>
+<p>The <span class="math inline">\(\max\)</span> operator makes it off-policy: Q-learning updates toward the best possible next action regardless of what was actually taken. Under standard conditions, <span class="math inline">\(Q \to Q^*\)</span>.</p>
+</div>
+<div id="sarsa" class="section level3" number="25.2.4">
+<h3>
+<span class="header-section-number">25.2.4</span> SARSA<a class="anchor" aria-label="anchor" href="#sarsa"><i class="fas fa-link"></i></a>
+</h3>
+<p><strong>SARSA</strong> (State-Action-Reward-State-Action) is an on-policy alternative that bootstraps from the action <span class="math inline">\(a'\)</span> actually chosen, rather than the greedy <span class="math inline">\(\max\)</span>:</p>
+<p><span class="math display" id="eq:sarsa">\[\begin{equation}
+Q(s, a) \leftarrow Q(s, a) + \alpha \left[ r + \gamma \, Q(s', a') - Q(s, a) \right]
+\tag{25.5}
+\end{equation}\]</span></p>
+<p>SARSA learns the value of the policy it follows (including exploration), making it more conservative near dangerous states.</p>
+</div>
+<div id="exploration-vs-exploitation" class="section level3" number="25.2.5">
+<h3>
+<span class="header-section-number">25.2.5</span> Exploration vs exploitation<a class="anchor" aria-label="anchor" href="#exploration-vs-exploitation"><i class="fas fa-link"></i></a>
+</h3>
+<p>The agent must balance <strong>exploitation</strong> (best-known action) with <strong>exploration</strong> (trying alternatives). Two standard strategies: <strong><span class="math inline">\(\varepsilon\)</span>-greedy</strong> (random action with probability <span class="math inline">\(\varepsilon\)</span>, greedy otherwise) and <strong>UCB</strong> (choose <span class="math inline">\(a = \arg\max_a [ Q(s,a) + c \sqrt{\ln t / N(s,a)} ]\)</span>, exploring in proportion to uncertainty).</p>
+</div>
+</div>
+<div id="sec-rl-impl" class="section level2" number="25.3">
+<h2>
+<span class="header-section-number">25.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-rl-impl"><i class="fas fa-link"></i></a>
+</h2>
+<div id="gridworld-environment" class="section level3" number="25.3.1">
+<h3>
+<span class="header-section-number">25.3.1</span> Gridworld environment<a class="anchor" aria-label="anchor" href="#gridworld-environment"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb697"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">create_gridworld</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">rows</span> <span class="op">=</span> <span class="fl">5</span>, <span class="va">cols</span> <span class="op">=</span> <span class="fl">5</span>, <span class="va">obstacles</span> <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                              <span class="va">goal</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">goal_reward</span> <span class="op">=</span> <span class="fl">10</span>, <span class="va">step_cost</span> <span class="op">=</span> <span class="op">-</span><span class="fl">0.1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">goal</span><span class="op">)</span><span class="op">)</span> <span class="va">goal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">rows</span>, <span class="va">cols</span><span class="op">)</span></span>
+<span>  <span class="co"># State encoding: (row, col) -&gt; integer id</span></span>
+<span>  <span class="va">state_id</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">r</span>, <span class="va">c</span><span class="op">)</span> <span class="op">(</span><span class="va">r</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="va">cols</span> <span class="op">+</span> <span class="va">c</span></span>
+<span>  <span class="va">id_to_rc</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">id</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="va">id</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%/%</a></span> <span class="va">cols</span> <span class="op">+</span> <span class="fl">1</span>, <span class="op">(</span><span class="va">id</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">cols</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">is_obstacle</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">r</span>, <span class="va">c</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">obstacles</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">obstacles</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="va">r</span> <span class="op">&amp;</span> <span class="va">obstacles</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">==</span> <span class="va">c</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="co"># Actions: 1=up, 2=right, 3=down, 4=left</span></span>
+<span>  <span class="va">action_delta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">action_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Up"</span>, <span class="st">"Right"</span>, <span class="st">"Down"</span>, <span class="st">"Left"</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">step</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">state</span>, <span class="va">action</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">rc</span> <span class="op">&lt;-</span> <span class="fu">id_to_rc</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
+<span>    <span class="va">delta</span> <span class="op">&lt;-</span> <span class="va">action_delta</span><span class="op">[[</span><span class="va">action</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">nr</span> <span class="op">&lt;-</span> <span class="va">rc</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">delta</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span>    <span class="va">nc</span> <span class="op">&lt;-</span> <span class="va">rc</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">+</span> <span class="va">delta</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span></span>
+<span>    <span class="co"># Stay in place if hitting wall or obstacle</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">nr</span> <span class="op">&lt;</span> <span class="fl">1</span> <span class="op">||</span> <span class="va">nr</span> <span class="op">&gt;</span> <span class="va">rows</span> <span class="op">||</span> <span class="va">nc</span> <span class="op">&lt;</span> <span class="fl">1</span> <span class="op">||</span> <span class="va">nc</span> <span class="op">&gt;</span> <span class="va">cols</span> <span class="op">||</span> <span class="fu">is_obstacle</span><span class="op">(</span><span class="va">nr</span>, <span class="va">nc</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>next_state <span class="op">=</span> <span class="va">state</span>, reward <span class="op">=</span> <span class="va">step_cost</span>, done <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="va">next_state</span> <span class="op">&lt;-</span> <span class="fu">state_id</span><span class="op">(</span><span class="va">nr</span>, <span class="va">nc</span><span class="op">)</span></span>
+<span>    <span class="va">done</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">nr</span> <span class="op">==</span> <span class="va">goal</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&amp;&amp;</span> <span class="va">nc</span> <span class="op">==</span> <span class="va">goal</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">reward</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">done</span><span class="op">)</span> <span class="va">goal_reward</span> <span class="kw">else</span> <span class="va">step_cost</span></span>
+<span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>next_state <span class="op">=</span> <span class="va">next_state</span>, reward <span class="op">=</span> <span class="va">reward</span>, done <span class="op">=</span> <span class="va">done</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>    rows <span class="op">=</span> <span class="va">rows</span>, cols <span class="op">=</span> <span class="va">cols</span>, n_states <span class="op">=</span> <span class="va">rows</span> <span class="op">*</span> <span class="va">cols</span>, n_actions <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>    start <span class="op">=</span> <span class="fu">state_id</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, goal <span class="op">=</span> <span class="fu">state_id</span><span class="op">(</span><span class="va">goal</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">goal</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    step <span class="op">=</span> <span class="va">step</span>, state_id <span class="op">=</span> <span class="va">state_id</span>, id_to_rc <span class="op">=</span> <span class="va">id_to_rc</span>,</span>
+<span>    action_names <span class="op">=</span> <span class="va">action_names</span>, obstacles <span class="op">=</span> <span class="va">obstacles</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="tabular-q-learning-agent" class="section level3" number="25.3.2">
+<h3>
+<span class="header-section-number">25.3.2</span> Tabular Q-learning agent<a class="anchor" aria-label="anchor" href="#tabular-q-learning-agent"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb698"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">q_learning_gridworld</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">env</span>, <span class="va">episodes</span> <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>                                  <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">gamma</span> <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>                                  <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">max_steps</span> <span class="op">=</span> <span class="fl">200</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">Q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">env</span><span class="op">$</span><span class="va">n_states</span>, ncol <span class="op">=</span> <span class="va">env</span><span class="op">$</span><span class="va">n_actions</span><span class="op">)</span></span>
+<span>  <span class="va">episode_rewards</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">ep</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">state</span> <span class="op">&lt;-</span> <span class="va">env</span><span class="op">$</span><span class="va">start</span></span>
+<span>    <span class="va">total_reward</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">step</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">max_steps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="co"># Epsilon-greedy action selection</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">epsilon</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">action</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">env</span><span class="op">$</span><span class="va">n_actions</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="va">ties</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="op">]</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>        <span class="va">action</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">ties</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span></span>
+<span>      <span class="va">result</span> <span class="op">&lt;-</span> <span class="va">env</span><span class="op">$</span><span class="fu">step</span><span class="op">(</span><span class="va">state</span>, <span class="va">action</span><span class="op">)</span></span>
+<span>      <span class="co"># Q-learning update (off-policy: uses max over next actions)</span></span>
+<span>      <span class="va">best_next</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">Q</span><span class="op">[</span><span class="va">result</span><span class="op">$</span><span class="va">next_state</span>, <span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="va">action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="va">action</span><span class="op">]</span> <span class="op">+</span></span>
+<span>        <span class="va">alpha</span> <span class="op">*</span> <span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">reward</span> <span class="op">+</span> <span class="va">gamma</span> <span class="op">*</span> <span class="va">best_next</span> <span class="op">-</span> <span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="va">action</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span>      <span class="va">total_reward</span> <span class="op">&lt;-</span> <span class="va">total_reward</span> <span class="op">+</span> <span class="va">result</span><span class="op">$</span><span class="va">reward</span></span>
+<span>      <span class="va">state</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">next_state</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">done</span><span class="op">)</span> <span class="kw">break</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">episode_rewards</span><span class="op">[</span><span class="va">ep</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">total_reward</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>Q <span class="op">=</span> <span class="va">Q</span>, rewards <span class="op">=</span> <span class="va">episode_rewards</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="sarsa-agent" class="section level3" number="25.3.3">
+<h3>
+<span class="header-section-number">25.3.3</span> SARSA agent<a class="anchor" aria-label="anchor" href="#sarsa-agent"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb699"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sarsa_gridworld</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">env</span>, <span class="va">episodes</span> <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>                             <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">gamma</span> <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>                             <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">max_steps</span> <span class="op">=</span> <span class="fl">200</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">Q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">env</span><span class="op">$</span><span class="va">n_states</span>, ncol <span class="op">=</span> <span class="va">env</span><span class="op">$</span><span class="va">n_actions</span><span class="op">)</span></span>
+<span>  <span class="va">episode_rewards</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">choose_action</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">state</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">epsilon</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">env</span><span class="op">$</span><span class="va">n_actions</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>      <span class="va">ties</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="op">]</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">ties</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">ep</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">state</span> <span class="op">&lt;-</span> <span class="va">env</span><span class="op">$</span><span class="va">start</span></span>
+<span>    <span class="va">action</span> <span class="op">&lt;-</span> <span class="fu">choose_action</span><span class="op">(</span><span class="va">state</span><span class="op">)</span></span>
+<span>    <span class="va">total_reward</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">step</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">max_steps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">result</span> <span class="op">&lt;-</span> <span class="va">env</span><span class="op">$</span><span class="fu">step</span><span class="op">(</span><span class="va">state</span>, <span class="va">action</span><span class="op">)</span></span>
+<span>      <span class="va">next_action</span> <span class="op">&lt;-</span> <span class="fu">choose_action</span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">next_state</span><span class="op">)</span></span>
+<span></span>
+<span>      <span class="co"># SARSA update (on-policy: uses actual next action)</span></span>
+<span>      <span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="va">action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="va">action</span><span class="op">]</span> <span class="op">+</span></span>
+<span>        <span class="va">alpha</span> <span class="op">*</span> <span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">reward</span> <span class="op">+</span> <span class="va">gamma</span> <span class="op">*</span> <span class="va">Q</span><span class="op">[</span><span class="va">result</span><span class="op">$</span><span class="va">next_state</span>, <span class="va">next_action</span><span class="op">]</span> <span class="op">-</span></span>
+<span>                   <span class="va">Q</span><span class="op">[</span><span class="va">state</span>, <span class="va">action</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span>      <span class="va">total_reward</span> <span class="op">&lt;-</span> <span class="va">total_reward</span> <span class="op">+</span> <span class="va">result</span><span class="op">$</span><span class="va">reward</span></span>
+<span>      <span class="va">state</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">next_state</span></span>
+<span>      <span class="va">action</span> <span class="op">&lt;-</span> <span class="va">next_action</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">done</span><span class="op">)</span> <span class="kw">break</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">episode_rewards</span><span class="op">[</span><span class="va">ep</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">total_reward</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>Q <span class="op">=</span> <span class="va">Q</span>, rewards <span class="op">=</span> <span class="va">episode_rewards</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="training-on-the-gridworld" class="section level3" number="25.3.4">
+<h3>
+<span class="header-section-number">25.3.4</span> Training on the gridworld<a class="anchor" aria-label="anchor" href="#training-on-the-gridworld"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb700"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">obstacles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>,  <span class="fl">3</span>, <span class="fl">4</span>,  <span class="fl">4</span>, <span class="fl">2</span>,  <span class="fl">2</span>, <span class="fl">4</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">env</span> <span class="op">&lt;-</span> <span class="fu">create_gridworld</span><span class="op">(</span>rows <span class="op">=</span> <span class="fl">5</span>, cols <span class="op">=</span> <span class="fl">5</span>, obstacles <span class="op">=</span> <span class="va">obstacles</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">ql_result</span> <span class="op">&lt;-</span> <span class="fu">q_learning_gridworld</span><span class="op">(</span><span class="va">env</span>, episodes <span class="op">=</span> <span class="fl">2000</span>,</span>
+<span>                                   alpha <span class="op">=</span> <span class="fl">0.15</span>, gamma <span class="op">=</span> <span class="fl">0.95</span>, epsilon <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">sarsa_result</span> <span class="op">&lt;-</span> <span class="fu">sarsa_gridworld</span><span class="op">(</span><span class="va">env</span>, episodes <span class="op">=</span> <span class="fl">2000</span>,</span>
+<span>                                 alpha <span class="op">=</span> <span class="fl">0.15</span>, gamma <span class="op">=</span> <span class="fl">0.95</span>, epsilon <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb701"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Extract max Q-value per state as value function</span></span>
+<span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">ql_result</span><span class="op">$</span><span class="va">Q</span>, <span class="fl">1</span>, <span class="va">max</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">grid_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  state <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">env</span><span class="op">$</span><span class="va">n_states</span><span class="op">)</span>,</span>
+<span>  row <span class="op">=</span> <span class="op">(</span><span class="va">state</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%/%</a></span> <span class="va">env</span><span class="op">$</span><span class="va">cols</span> <span class="op">+</span> <span class="fl">1</span>,</span>
+<span>  col <span class="op">=</span> <span class="op">(</span><span class="va">state</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">env</span><span class="op">$</span><span class="va">cols</span> <span class="op">+</span> <span class="fl">1</span>,</span>
+<span>  value <span class="op">=</span> <span class="va">V</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Mark obstacles</span></span>
+<span><span class="va">obs_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  row <span class="op">=</span> <span class="va">obstacles</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>,</span>
+<span>  col <span class="op">=</span> <span class="va">obstacles</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_heatmap</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">grid_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">col</span>, y <span class="op">=</span> <span class="va">row</span>, fill <span class="op">=</span> <span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html">geom_tile</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"white"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html">geom_tile</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">obs_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">col</span>, y <span class="op">=</span> <span class="va">row</span><span class="op">)</span>,</span>
+<span>            fill <span class="op">=</span> <span class="st">"grey20"</span>, inherit.aes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">value</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>, colour <span class="op">=</span> <span class="st">"black"</span>, size <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">1</span>, y <span class="op">=</span> <span class="fl">1</span>, label <span class="op">=</span> <span class="st">"S"</span>, fontface <span class="op">=</span> <span class="st">"bold"</span>, size <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">5</span>, y <span class="op">=</span> <span class="fl">5</span>, label <span class="op">=</span> <span class="st">"G"</span>, fontface <span class="op">=</span> <span class="st">"bold"</span>, size <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">"V(s)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_reverse</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_equal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Q-Learning: Learned State Values"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Column"</span>, y <span class="op">=</span> <span class="st">"Row"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_heatmap</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:q-heatmap"></span>
+<img src="24-reinforcement-learning_files/figure-html/q-heatmap-1.png" alt="Learned state values (max Q per state) in the 5x5 gridworld. The agent starts at (1,1) and must reach the goal at (5,5). Dark cells are obstacles. Higher values (orange) indicate states closer to the goal along the optimal path." width="80%"><p class="caption">
+Figure 25.1: Learned state values (max Q per state) in the 5x5 gridworld. The agent starts at (1,1) and must reach the goal at (5,5). Dark cells are obstacles. Higher values (orange) indicate states closer to the goal along the optimal path.
+</p>
+</div>
+<div class="sourceCode" id="cb702"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_heatmap</span>, <span class="st">"q-learning-gridworld-heatmap"</span>, width <span class="op">=</span> <span class="fl">6</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="exploration-comparison-epsilon-greedy-vs-ucb" class="section level3" number="25.3.5">
+<h3>
+<span class="header-section-number">25.3.5</span> Exploration comparison: epsilon-greedy vs UCB<a class="anchor" aria-label="anchor" href="#exploration-comparison-epsilon-greedy-vs-ucb"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb703"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">run_bandit</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">strategy</span>, <span class="va">n_arms</span> <span class="op">=</span> <span class="fl">10</span>, <span class="va">n_steps</span> <span class="op">=</span> <span class="fl">2000</span>,</span>
+<span>                        <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">ucb_c</span> <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">true_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="va">n_arms</span><span class="op">)</span>; <span class="va">Q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_arms</span><span class="op">)</span>; <span class="va">N</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_arms</span><span class="op">)</span></span>
+<span>  <span class="va">cum_regret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n_steps</span><span class="op">)</span>; <span class="va">optimal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">true_values</span><span class="op">)</span>; <span class="va">tot</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_steps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">action</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">strategy</span> <span class="op">==</span> <span class="st">"epsilon_greedy"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">epsilon</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">n_arms</span>, <span class="fl">1</span><span class="op">)</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html">which.max</a></span><span class="op">(</span><span class="va">Q</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">N</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">N</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span>      <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html">which.max</a></span><span class="op">(</span><span class="va">Q</span> <span class="op">+</span> <span class="va">ucb_c</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="op">/</span> <span class="va">N</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">reward</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">1</span>, mean <span class="op">=</span> <span class="va">true_values</span><span class="op">[</span><span class="va">action</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">N</span><span class="op">[</span><span class="va">action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">N</span><span class="op">[</span><span class="va">action</span><span class="op">]</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>    <span class="va">Q</span><span class="op">[</span><span class="va">action</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">Q</span><span class="op">[</span><span class="va">action</span><span class="op">]</span> <span class="op">+</span> <span class="op">(</span><span class="va">reward</span> <span class="op">-</span> <span class="va">Q</span><span class="op">[</span><span class="va">action</span><span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="va">N</span><span class="op">[</span><span class="va">action</span><span class="op">]</span></span>
+<span>    <span class="va">tot</span> <span class="op">&lt;-</span> <span class="va">tot</span> <span class="op">+</span> <span class="op">(</span><span class="va">optimal</span> <span class="op">-</span> <span class="va">true_values</span><span class="op">[</span><span class="va">action</span><span class="op">]</span><span class="op">)</span>; <span class="va">cum_regret</span><span class="op">[</span><span class="va">t</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">tot</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">cum_regret</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span>; <span class="va">n_runs</span> <span class="op">&lt;-</span> <span class="fl">50</span>; <span class="va">n_steps</span> <span class="op">&lt;-</span> <span class="fl">2000</span></span>
+<span><span class="va">eg_regret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_runs</span>, <span class="va">n_steps</span><span class="op">)</span>; <span class="va">ucb_regret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_runs</span>, <span class="va">n_steps</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_runs</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">eg_regret</span><span class="op">[</span><span class="va">i</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">run_bandit</span><span class="op">(</span><span class="st">"epsilon_greedy"</span>, n_steps <span class="op">=</span> <span class="va">n_steps</span><span class="op">)</span></span>
+<span>  <span class="va">ucb_regret</span><span class="op">[</span><span class="va">i</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">run_bandit</span><span class="op">(</span><span class="st">"ucb"</span>, n_steps <span class="op">=</span> <span class="va">n_steps</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">regret_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_steps</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  regret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="va">eg_regret</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colMeans</a></span><span class="op">(</span><span class="va">ucb_regret</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  strategy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Epsilon-greedy"</span>, <span class="st">"UCB"</span><span class="op">)</span>, each <span class="op">=</span> <span class="va">n_steps</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">p_explore</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">regret_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">step</span>, y <span class="op">=</span> <span class="va">regret</span>, colour <span class="op">=</span> <span class="va">strategy</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Epsilon-greedy"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                                  <span class="st">"UCB"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Exploration: Epsilon-Greedy vs UCB"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Step"</span>, y <span class="op">=</span> <span class="st">"Cumulative regret"</span>, colour <span class="op">=</span> <span class="st">"Strategy"</span><span class="op">)</span></span>
+<span><span class="va">p_explore</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:exploration"></span>
+<img src="24-reinforcement-learning_files/figure-html/exploration-1.png" alt="Cumulative regret comparison between epsilon-greedy and UCB on a 10-armed bandit. UCB explores proportionally to uncertainty, yielding lower regret." width="80%"><p class="caption">
+Figure 25.2: Cumulative regret comparison between epsilon-greedy and UCB on a 10-armed bandit. UCB explores proportionally to uncertainty, yielding lower regret.
+</p>
+</div>
+<div class="sourceCode" id="cb704"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_explore</span>, <span class="st">"exploration-eg-vs-ucb"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-21" class="section level2" number="25.4">
+<h2>
+<span class="header-section-number">25.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-21"><i class="fas fa-link"></i></a>
+</h2>
+<p>We trace the learning process on the 5x5 gridworld with obstacles at (2,2), (3,4), (4,2), and (2,4). The agent starts at (1,1) and must reach the goal at (5,5).</p>
+<div class="sourceCode" id="cb705"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Q-Learning — Mean reward (last 200 episodes):"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">ql_result</span><span class="op">$</span><span class="va">rewards</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Q-Learning — Mean reward (last 200 episodes): 6.26</code></pre>
+<div class="sourceCode" id="cb707"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"SARSA      — Mean reward (last 200 episodes):"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">sarsa_result</span><span class="op">$</span><span class="va">rewards</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; SARSA      — Mean reward (last 200 episodes): 6.28</code></pre>
+<div class="sourceCode" id="cb709"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Extract and display the learned policy</span></span>
+<span><span class="va">policy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">ql_result</span><span class="op">$</span><span class="va">Q</span>, <span class="fl">1</span>, <span class="va">which.max</span><span class="op">)</span></span>
+<span><span class="va">arrows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Up"</span>, <span class="st">"Rt"</span>, <span class="st">"Dn"</span>, <span class="st">"Lt"</span><span class="op">)</span></span>
+<span><span class="va">obs_states</span> <span class="op">&lt;-</span> <span class="va">env</span><span class="op">$</span><span class="fu">state_id</span><span class="op">(</span><span class="va">obstacles</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, <span class="va">obstacles</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">policy_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="st">""</span>, nrow <span class="op">=</span> <span class="va">env</span><span class="op">$</span><span class="va">rows</span>, ncol <span class="op">=</span> <span class="va">env</span><span class="op">$</span><span class="va">cols</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">s</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">env</span><span class="op">$</span><span class="va">n_states</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">r</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">s</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%/%</a></span> <span class="va">env</span><span class="op">$</span><span class="va">cols</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>  <span class="va">cc</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">s</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">env</span><span class="op">$</span><span class="va">cols</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">s</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">obs_states</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">policy_matrix</span><span class="op">[</span><span class="va">r</span>, <span class="va">cc</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">" X "</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">s</span> <span class="op">==</span> <span class="va">env</span><span class="op">$</span><span class="va">goal</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">policy_matrix</span><span class="op">[</span><span class="va">r</span>, <span class="va">cc</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">" G "</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">policy_matrix</span><span class="op">[</span><span class="va">r</span>, <span class="va">cc</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">arrows</span><span class="op">[</span><span class="va">policy</span><span class="op">[</span><span class="va">s</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nLearned policy (Q-learning):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Learned policy (Q-learning):</code></pre>
+<div class="sourceCode" id="cb711"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">policy_matrix</span>, quote <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;      [,1] [,2] [,3] [,4] [,5]
+#&gt; [1,] Rt   Rt   Rt   Rt   Dn  
+#&gt; [2,] Up    X   Up    X   Dn  
+#&gt; [3,] Dn   Dn   Up    X   Dn  
+#&gt; [4,] Lt    X   Rt   Rt   Dn  
+#&gt; [5,] Rt   Rt   Rt   Rt    G</code></pre>
+<p>Q-learning finds the optimal route because it evaluates the greedy policy (via <span class="math inline">\(\max\)</span>). SARSA gives obstacles a wider berth because its on-policy updates incorporate the risk of accidentally stepping into a bad state during exploration.</p>
+</div>
+<div id="extensions-23" class="section level2" number="25.5">
+<h2>
+<span class="header-section-number">25.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-23"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Function approximation</strong>: For large state spaces, Q-values can be approximated with linear models or neural networks (DQN). Neural network packages are beyond our R toolkit, but the conceptual framework is identical.</li>
+<li>
+<strong>Policy gradient methods</strong>: REINFORCE and actor-critic methods directly optimize policy parameters rather than learning value functions.</li>
+<li>
+<strong>Multi-agent extensions</strong>: <a href="sec-q-learning.html#sec-q-learning">26</a> explores what happens when two Q-learners face each other in matrix games — single-agent convergence guarantees break down.</li>
+<li>
+<strong>Planning</strong>: Model-based RL (Dyna-Q) combines learned models with Q-learning for faster convergence. See <span class="citation">Sutton &amp; Barto (<a href="references.html#ref-sutton2018">2018</a>)</span> (Chapters 5-8).</li>
+</ul>
+</div>
+<div id="exercises-23" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-23"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Cliff walking.</strong> Create a 4x12 gridworld where the bottom row (except the start and goal) is a “cliff” with reward <span class="math inline">\(-100\)</span>. Compare Q-learning and SARSA policies. Which algorithm learns the safer path along the top?</p></li>
+<li><p><strong>Decaying epsilon.</strong> Implement <span class="math inline">\(\varepsilon_t = 1/\sqrt{t}\)</span> decaying exploration for the 5x5 gridworld. Plot the learning curve alongside fixed <span class="math inline">\(\varepsilon = 0.1\)</span> and compare convergence speed and final performance.</p></li>
+<li><p><strong>Discount factor analysis.</strong> Train Q-learning on the 5x5 gridworld with <span class="math inline">\(\gamma \in \{0.5, 0.9, 0.99\}\)</span>. Visualize the learned value functions as heatmaps. How does the discount factor affect the value gradient from start to goal?</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></div>
+<div class="next"><a href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-reinforcement-learning"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="nav-link" href="#learning-objectives-23">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-23"><span class="header-section-number">25.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-23"><span class="header-section-number">25.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#markov-decision-processes"><span class="header-section-number">25.2.1</span> Markov decision processes</a></li>
+<li><a class="nav-link" href="#the-bellman-equation"><span class="header-section-number">25.2.2</span> The Bellman equation</a></li>
+<li><a class="nav-link" href="#tabular-q-learning"><span class="header-section-number">25.2.3</span> Tabular Q-learning</a></li>
+<li><a class="nav-link" href="#sarsa"><span class="header-section-number">25.2.4</span> SARSA</a></li>
+<li><a class="nav-link" href="#exploration-vs-exploitation"><span class="header-section-number">25.2.5</span> Exploration vs exploitation</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-rl-impl"><span class="header-section-number">25.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#gridworld-environment"><span class="header-section-number">25.3.1</span> Gridworld environment</a></li>
+<li><a class="nav-link" href="#tabular-q-learning-agent"><span class="header-section-number">25.3.2</span> Tabular Q-learning agent</a></li>
+<li><a class="nav-link" href="#sarsa-agent"><span class="header-section-number">25.3.3</span> SARSA agent</a></li>
+<li><a class="nav-link" href="#training-on-the-gridworld"><span class="header-section-number">25.3.4</span> Training on the gridworld</a></li>
+<li><a class="nav-link" href="#exploration-comparison-epsilon-greedy-vs-ucb"><span class="header-section-number">25.3.5</span> Exploration comparison: epsilon-greedy vs UCB</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-21"><span class="header-section-number">25.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-23"><span class="header-section-number">25.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-23">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/24-reinforcement-learning.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/24-reinforcement-learning.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

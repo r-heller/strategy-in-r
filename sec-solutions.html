@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>D Exercise Solutions | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Solutions to end-of-chapter exercises. This appendix provides brief solution sketches for selected exercises from Part I (Chapters 1–8). The goal is to offer enough guidance to check your...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="D Exercise Solutions | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-solutions.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Solutions to end-of-chapter exercises. This appendix provides brief solution sketches for selected exercises from Part I (Chapters 1–8). The goal is to offer enough guidance to check your...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="D Exercise Solutions | Strategy in R">
+<meta name="twitter:description" content="Solutions to end-of-chapter exercises. This appendix provides brief solution sketches for selected exercises from Part I (Chapters 1–8). The goal is to offer enough guidance to check your...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="D Exercise Solutions | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="active" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-solutions" class="section level1" number="46">
+<h1>
+<span class="header-section-number">D</span> Exercise Solutions<a class="anchor" aria-label="anchor" href="#sec-solutions"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Solutions to end-of-chapter exercises.</p>
+</blockquote>
+<p>This appendix provides brief solution sketches for selected exercises from Part I (Chapters 1–8). The goal is to offer enough guidance to check your reasoning without removing the learning opportunity. Full, runnable solutions are available in the book’s online repository.</p>
+<div id="chapter-1-what-is-a-game" class="section level2 unnumbered">
+<h2>Chapter 1: What is a Game?<a class="anchor" aria-label="anchor" href="#chapter-1-what-is-a-game"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Identify the game.</strong> <em>Choose a strategic interaction from everyday life and identify the four building blocks.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Many valid answers exist. One example: two roommates deciding whether to clean a shared kitchen.</p>
+<ul>
+<li>
+<strong>Players</strong>: Roommate A and Roommate B.</li>
+<li>
+<strong>Actions</strong>: Clean or Don’t Clean (for each player).</li>
+<li>
+<strong>Payoffs</strong>: A clean kitchen benefits both, but cleaning is costly. If only one cleans, that person bears the full cost while both enjoy the result — structurally a Prisoner’s Dilemma.</li>
+<li>
+<strong>Information</strong>: Simultaneous — neither observes the other’s choice before deciding.</li>
+</ul>
+<p>The key criterion is mutual dependence: each player’s best action depends on what the other does.</p>
+</div>
+<p><strong>Exercise 2 — Payoff heatmap.</strong> <em>Create a payoff matrix for the Battle of the Sexes.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>The payoff matrices are:</p>
+<p><span class="math display">\[
+A = \begin{pmatrix} 3 &amp; 0 \\ 0 &amp; 2 \end{pmatrix}, \quad
+B = \begin{pmatrix} 2 &amp; 0 \\ 0 &amp; 3 \end{pmatrix}
+\]</span></p>
+<p>Use <code>make_payoff_df()</code> with strategies <code>c("Opera", "Football")</code> for both players. The heatmap should show high payoffs on the diagonal (coordination) and zeros off the diagonal (miscoordination). Unlike the Prisoner’s Dilemma, there is no dominant strategy — both diagonal cells are Nash equilibria.</p>
+</div>
+</div>
+<div id="chapter-2-normal-form-games" class="section level2 unnumbered">
+<h2>Chapter 2: Normal-Form Games<a class="anchor" aria-label="anchor" href="#chapter-2-normal-form-games"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Identifying dominance.</strong> <em>Find strictly and weakly dominated strategies in the 3x3 game.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>For Player 1, compare each row against every other row across all columns:</p>
+<ul>
+<li>Row 2 yields payoffs <span class="math inline">\((3, 2, 5)\)</span>. Row 1 yields <span class="math inline">\((2, 4, 1)\)</span>. Neither strictly dominates the other (Row 1 is better in column 2, Row 2 in columns 1 and 3).</li>
+<li>Row 3 yields <span class="math inline">\((1, 3, 2)\)</span>. Row 2 gives <span class="math inline">\(3 &gt; 1\)</span>, <span class="math inline">\(2 &lt; 3\)</span>, <span class="math inline">\(5 &gt; 2\)</span> — again, no strict dominance.</li>
+</ul>
+<p>Check all pairwise comparisons systematically. For weak dominance, look for rows where one is at least as good in every column and strictly better in at least one. Apply the same logic to Player 2’s columns using matrix <span class="math inline">\(B\)</span>.</p>
+</div>
+<p><strong>Exercise 2 — IESDS practice.</strong> <em>Apply IESDS to the 3x3 game from Exercise 1.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Apply IESDS step by step:</p>
+<ol style="list-style-type: decimal">
+<li>Check for strictly dominated strategies in the original game and eliminate them.</li>
+<li>In the reduced game, check again for newly dominated strategies.</li>
+<li>Repeat until no further elimination is possible.</li>
+</ol>
+<p>The order of elimination does not matter for strict dominance (order independence). Document each step by showing the reduced matrix. If the game reduces to a single cell, it is dominance solvable.</p>
+</div>
+</div>
+<div id="chapter-3-nash-equilibrium" class="section level2 unnumbered">
+<h2>Chapter 3: Nash Equilibrium<a class="anchor" aria-label="anchor" href="#chapter-3-nash-equilibrium"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Stag Hunt equilibria.</strong> <em>Find all Nash equilibria of the Stag Hunt.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>The two pure-strategy NE are (Stag, Stag) with payoffs <span class="math inline">\((4, 4)\)</span> and (Hare, Hare) with payoffs <span class="math inline">\((3, 3)\)</span>. Verify by checking that no player can profitably deviate.</p>
+<p>For the mixed NE, use the indifference principle. If Player 2 plays Stag with probability <span class="math inline">\(q\)</span>:</p>
+<p><span class="math display">\[
+4q + 0(1-q) = 3q + 3(1-q) \implies 4q = 3 \implies q = 3/4
+\]</span></p>
+<p>By symmetry, <span class="math inline">\(p = 3/4\)</span> as well. The mixed NE is <span class="math inline">\((3/4, 3/4)\)</span> with expected payoff <span class="math inline">\(3\)</span> for each player.</p>
+<ul>
+<li>
+<strong>Payoff-dominant</strong>: (Stag, Stag) yields <span class="math inline">\(4 &gt; 3\)</span>.</li>
+<li>
+<strong>Risk-dominant</strong>: (Hare, Hare), because Hare is the best response to the mixed NE probability and is safer against uncertainty about the opponent.</li>
+</ul>
+</div>
+<p><strong>Exercise 3 — Best-response plot for Chicken.</strong> <em>Plot the best-response correspondences.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Set up the indifference conditions for each player using the Chicken payoffs. Player 1’s expected payoff from Swerve equals their payoff from Straight at the indifference point. Solve for the critical mixing probability and plot both best-response functions on the unit square <span class="math inline">\([0, 1]^2\)</span>. The plot should reveal three intersection points: two at corners (the pure NE) and one in the interior (the mixed NE).</p>
+</div>
+</div>
+<div id="chapter-4-mixed-strategies" class="section level2 unnumbered">
+<h2>Chapter 4: Mixed Strategies<a class="anchor" aria-label="anchor" href="#chapter-4-mixed-strategies"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Asymmetric Matching Pennies.</strong> <em>Compute the mixed NE when Player 1 receives 3 for (Heads, Heads).</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Payoff matrices:</p>
+<p><span class="math display">\[
+A = \begin{pmatrix} 3 &amp; -1 \\ -1 &amp; 1 \end{pmatrix}, \quad
+B = \begin{pmatrix} -1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix}
+\]</span></p>
+<p>Player 2’s indifference (making Player 1 indifferent is governed by <span class="math inline">\(B\)</span>):</p>
+<p><span class="math display">\[
+-q + (1-q) = q - (1-q) \implies q^* = 1/2
+\]</span></p>
+<p>Player 1’s indifference (making Player 2 indifferent is governed by <span class="math inline">\(A\)</span>):</p>
+<p><span class="math display">\[
+3p - (1-p) = -p + (1-p) \implies 4p - 1 = -2p + 1 \implies p^* = 1/3
+\]</span></p>
+<p>The asymmetry in Player 1’s payoff changes Player 1’s mixing probability (not Player 2’s). This is the “own-payoff effect” — a player’s equilibrium mixing probability is determined by the opponent’s payoffs, not their own.</p>
+</div>
+<p><strong>Exercise 4 — Rock-Paper-Scissors.</strong> <em>Argue that the unique mixed NE assigns 1/3 to each action.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>By the symmetry of the game, if a NE assigns different probabilities to the three actions, then permuting the labels would yield another NE with different probabilities but identical structure — contradicting uniqueness. Therefore the unique symmetric NE must assign equal probability <span class="math inline">\(1/3\)</span> to each action.</p>
+<p>More formally: the indifference conditions for any pair of actions are identical by the cyclic symmetry of the payoff matrix, so the mixing probabilities must be equal. Since they sum to 1, each is <span class="math inline">\(1/3\)</span>.</p>
+</div>
+</div>
+<div id="chapter-5-extensive-form-games" class="section level2 unnumbered">
+<h2>Chapter 5: Extensive-Form Games<a class="anchor" aria-label="anchor" href="#chapter-5-extensive-form-games"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Ultimatum game.</strong> <em>Find all NE and the SPE of the simplified ultimatum game.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>The game tree has Player 1 choosing Fair or Greedy, then Player 2 choosing Accept or Reject.</p>
+<p><strong>Backward induction</strong>: In each of Player 2’s subgames, accepting is strictly better than rejecting (5 &gt; 0 and 2 &gt; 0). So Player 2 accepts in both subgames. Anticipating this, Player 1 chooses Greedy (payoff 8 &gt; 5). The SPE is (Greedy; Accept, Accept).</p>
+<p><strong>Nash equilibria</strong>: There are additional NE where Player 2 threatens to reject the Greedy offer. For example, (Fair; Accept, Reject) is a NE because Player 1’s deviation to Greedy yields 0 given Player 2’s strategy. However, this involves a non-credible threat — Player 2 would not actually reject a payoff of 2 — so backward induction eliminates it.</p>
+</div>
+<p><strong>Exercise 3 — Non-credible threats.</strong> <em>What if the incumbent’s Fight payoff is 2?</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>With Fight payoff of 2, the incumbent now weakly prefers fighting to accommodating (or strictly prefers it if Accommodate yields less than 2). In the subgame after entry, Fight is at least as good as Accommodate, so the threat to fight is credible.</p>
+<p>The SPE changes: the entrant, anticipating a fight, may prefer to stay out. This illustrates a key insight — whether a threat is credible depends on the payoffs in the subgame, not on the threat itself.</p>
+</div>
+</div>
+<div id="chapter-6-bayesian-games" class="section level2 unnumbered">
+<h2>Chapter 6: Bayesian Games<a class="anchor" aria-label="anchor" href="#chapter-6-bayesian-games"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Modified signaling costs.</strong> <em>Does the separating equilibrium survive if <span class="math inline">\(c_L = 3\)</span>?</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>In the separating equilibrium, the High type chooses Education and the Low type does not. The Low type must not want to deviate to Education. The incentive compatibility condition for the Low type is:</p>
+<p><span class="math display">\[
+\text{Payoff(No Education)} \geq \text{Payoff(Education)} - c_L
+\]</span></p>
+<p>With <span class="math inline">\(c_L = 3\)</span>, check whether the Low type’s gain from being perceived as High (and receiving the High-type wage) exceeds the education cost. If the wage differential is, say, <span class="math inline">\(8 - 2 = 6\)</span> and <span class="math inline">\(c_L = 3 &lt; 6\)</span>, the Low type would profitably deviate to Education, breaking separation.</p>
+<p>The minimum <span class="math inline">\(c_L\)</span> that sustains separation is the wage differential: the Low type must find education too costly to mimic the High type.</p>
+</div>
+<p><strong>Exercise 2 — Pooling equilibrium.</strong> <em>Can both types pool on No Education?</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>In a pooling equilibrium on No Education, the employer observes no signal and pays the expected productivity: <span class="math inline">\(E[\theta] = P(H) \cdot \theta_H + P(L) \cdot \theta_L\)</span>. Neither type deviates if the off-path belief about a worker who chooses Education is sufficiently pessimistic (e.g., the employer believes any educating worker is Low type with probability 1). Under such beliefs, education yields the Low-type wage minus the education cost, which is worse than the pooling wage for both types. These pessimistic off-path beliefs are permitted by Bayes’ rule (which imposes no constraint off the equilibrium path).</p>
+</div>
+</div>
+<div id="chapter-7-repeated-games" class="section level2 unnumbered">
+<h2>Chapter 7: Repeated Games<a class="anchor" aria-label="anchor" href="#chapter-7-repeated-games"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Critical discount factor.</strong> <em>Compute <span class="math inline">\(\delta^*\)</span> for Grim Trigger with <span class="math inline">\(T = 8, R = 5, P = 2, S = 0\)</span>.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Under Grim Trigger, cooperation yields <span class="math inline">\(V_C = R / (1 - \delta) = 5 / (1 - \delta)\)</span>.</p>
+<p>A one-shot deviation yields <span class="math inline">\(T\)</span> today and then <span class="math inline">\(P\)</span> forever: <span class="math inline">\(V_D = T + \delta P / (1 - \delta) = 8 + 2\delta / (1 - \delta)\)</span>.</p>
+<p>Cooperation is sustained when <span class="math inline">\(V_C \geq V_D\)</span>:</p>
+<p><span class="math display">\[
+\frac{5}{1 - \delta} \geq 8 + \frac{2\delta}{1 - \delta}
+\]</span></p>
+<p><span class="math display">\[
+5 \geq 8(1 - \delta) + 2\delta = 8 - 6\delta
+\]</span></p>
+<p><span class="math display">\[
+6\delta \geq 3 \implies \delta^* = 1/2
+\]</span></p>
+<p>Verify in R by computing <span class="math inline">\(V_C\)</span> and <span class="math inline">\(V_D\)</span> at <span class="math inline">\(\delta = 0.5\)</span> and confirming they are equal.</p>
+</div>
+<p><strong>Exercise 3 — Folk theorem region.</strong> <em>Plot the feasible and individually rational region.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>The feasible payoff set is the convex hull of the four payoff profiles: <span class="math inline">\((4, 4)\)</span>, <span class="math inline">\((0, 6)\)</span>, <span class="math inline">\((6, 0)\)</span>, <span class="math inline">\((1, 1)\)</span>. The individually rational region requires each player’s payoff to be at least their minmax value. In a 2x2 game, compute each player’s minmax payoff by finding the worst the opponent can guarantee.</p>
+<p>The Folk theorem region is the intersection: feasible payoffs that dominate both players’ minmax values. Plot the convex hull as a polygon and shade the region above both minmax thresholds.</p>
+</div>
+</div>
+<div id="chapter-8-cooperative-game-theory" class="section level2 unnumbered">
+<h2>Chapter 8: Cooperative Game Theory<a class="anchor" aria-label="anchor" href="#chapter-8-cooperative-game-theory"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Exercise 1 — Asymmetric savings.</strong> <em>Compute the Shapley value for the modified water treatment game.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>With <span class="math inline">\(v(\{A\}) = v(\{B\}) = v(\{C\}) = 0\)</span>, <span class="math inline">\(v(\{A,B\}) = 50\)</span>, <span class="math inline">\(v(\{A,C\}) = 30\)</span>, <span class="math inline">\(v(\{B,C\}) = 40\)</span>, <span class="math inline">\(v(\{A,B,C\}) = 80\)</span>.</p>
+<p>The Shapley value for player <span class="math inline">\(i\)</span> is:</p>
+<p><span class="math display">\[
+\phi_i = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|! \, (n - |S| - 1)!}{n!} \left[ v(S \cup \{i\}) - v(S) \right]
+\]</span></p>
+<p>For a 3-player game, enumerate all <span class="math inline">\(3! = 6\)</span> orderings and compute each player’s marginal contribution in each ordering. Average across orderings.</p>
+<p>For example, in ordering <span class="math inline">\((A, B, C)\)</span>: <span class="math inline">\(A\)</span> contributes <span class="math inline">\(v(\{A\}) - v(\emptyset) = 0\)</span>, <span class="math inline">\(B\)</span> contributes <span class="math inline">\(v(\{A,B\}) - v(\{A\}) = 50\)</span>, <span class="math inline">\(C\)</span> contributes <span class="math inline">\(v(\{A,B,C\}) - v(\{A,B\}) = 30\)</span>.</p>
+<p>Repeat for all six orderings and average. Municipality A benefits from large coalitions with B; Municipality B is the most valuable partner overall.</p>
+</div>
+<p><strong>Exercise 4 — Glove game.</strong> <em>Write the characteristic function, compute the Shapley value, and find the core.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Characteristic function: <span class="math inline">\(v(S) = \min(\text{left gloves in } S, \text{right gloves in } S)\)</span>. So <span class="math inline">\(v(\{1\}) = v(\{2\}) = v(\{3\}) = 0\)</span>, <span class="math inline">\(v(\{1,2\}) = 0\)</span> (two left, no right), <span class="math inline">\(v(\{1,3\}) = v(\{2,3\}) = 1\)</span>, <span class="math inline">\(v(\{1,2,3\}) = 1\)</span>.</p>
+<p>Shapley value: enumerate all <span class="math inline">\(3! = 6\)</span> orderings. Player 3 (the sole right-glove holder) is pivotal in 4 out of 6 orderings, yielding <span class="math inline">\(\phi_3 = 4/6 = 2/3\)</span>. By symmetry, <span class="math inline">\(\phi_1 = \phi_2 = 1/6\)</span>.</p>
+<p>Core: the core requires <span class="math inline">\(x_1 + x_3 \geq 1\)</span>, <span class="math inline">\(x_2 + x_3 \geq 1\)</span>, <span class="math inline">\(x_1 + x_2 \geq 0\)</span>, <span class="math inline">\(x_1 + x_2 + x_3 = 1\)</span>, and <span class="math inline">\(x_i \geq 0\)</span>. From the first two constraints and efficiency: <span class="math inline">\(x_3 \geq 1 - x_1\)</span> and <span class="math inline">\(x_3 \geq 1 - x_2\)</span>. Since <span class="math inline">\(x_1 + x_2 = 1 - x_3\)</span>, both constraints give <span class="math inline">\(x_3 = 1\)</span> and <span class="math inline">\(x_1 = x_2 = 0\)</span>. The core is the single point <span class="math inline">\((0, 0, 1)\)</span>. The Shapley value <span class="math inline">\((1/6, 1/6, 2/3)\)</span> does not lie in the core.</p>
+</div>
+</div>
+<div id="additional-selected-solutions" class="section level2 unnumbered">
+<h2>Additional selected solutions<a class="anchor" aria-label="anchor" href="#additional-selected-solutions"><i class="fas fa-link"></i></a>
+</h2>
+<p>Below are brief hints for a few more exercises that students frequently ask about.</p>
+<p><strong>Chapter 2, Exercise 4 — From story to matrix.</strong> <em>Two firms choose Invest or Stay.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>The payoff matrix is:</p>
+<p><span class="math display">\[
+A = B = \begin{pmatrix} 5 &amp; 1 \\ 4 &amp; 3 \end{pmatrix}
+\]</span></p>
+<p>where rows/columns are (Invest, Stay). Check for dominance: against Invest, Stay yields 4 &gt; 1 (in the role of the other firm); against Stay, Stay yields 3 &gt; 1. Stay strictly dominates Invest for both players, so (Stay, Stay) with payoffs <span class="math inline">\((3, 3)\)</span> is the unique NE. This is a Prisoner’s Dilemma: mutual investment would yield <span class="math inline">\((5, 5)\)</span> but the dominant strategy leads to a Pareto-inferior outcome.</p>
+</div>
+<p><strong>Chapter 4, Exercise 2 — Inspection game.</strong> <em>Find the mixed NE of the Worker-Employer game.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Payoff matrices (Worker is row player, Employer is column player):</p>
+<p><span class="math display">\[
+A = \begin{pmatrix} 2 &amp; 1 \\ 3 &amp; 0 \end{pmatrix}, \quad
+B = \begin{pmatrix} 3 &amp; 2 \\ 0 &amp; 1 \end{pmatrix}
+\]</span></p>
+<p>where rows are (Work, Shirk) and columns are (Trust, Monitor).</p>
+<p>No pure-strategy NE exists (verify by checking best responses). For the mixed NE, let the Worker play Work with probability <span class="math inline">\(p\)</span> and the Employer play Trust with probability <span class="math inline">\(q\)</span>.</p>
+<p>Employer’s indifference (using <span class="math inline">\(A\)</span>): <span class="math inline">\(2q + 1(1-q) = 3q + 0(1-q)\)</span>, so <span class="math inline">\(q + 1 = 3q\)</span>, giving <span class="math inline">\(q^* = 1/2\)</span>.</p>
+<p>Worker’s indifference (using <span class="math inline">\(B\)</span>): <span class="math inline">\(3p + 0(1-p) = 2p + 1(1-p)\)</span>, so <span class="math inline">\(3p = p + 1\)</span>, giving <span class="math inline">\(p^* = 1/2\)</span>.</p>
+<p>Increasing the penalty for caught shirking (lowering <span class="math inline">\(A_{2,2}\)</span> below 0) does <em>not</em> change <span class="math inline">\(p^*\)</span> in equilibrium — it changes the employer’s mixing probability <span class="math inline">\(q^*\)</span> instead. This is another instance of the “own-payoff” paradox from the indifference principle.</p>
+</div>
+<p><strong>Chapter 5, Exercise 4 — SPE vs. NE counting.</strong> <em>Count equilibria in the ultimatum game.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>The normal form has 2 strategies for Player 1 (Fair, Greedy) and 4 strategies for Player 2 (Accept/Accept, Accept/Reject, Reject/Accept, Reject/Reject — one decision for each of Player 1’s possible offers).</p>
+<p>Pure-strategy NE: find all cells where both players play a best response. There are three NE:</p>
+<ol style="list-style-type: decimal">
+<li>(Greedy; Accept, Accept) — payoffs (8, 2).</li>
+<li>(Fair; Accept, Reject) — payoffs (5, 5).</li>
+<li>(Fair; Reject, Reject) — payoffs (5, 5).</li>
+</ol>
+<p>Only NE 1 is subgame perfect, because in NE 2 and 3 Player 2’s plan to reject the Greedy offer is not sequentially rational (2 &gt; 0). Thus SPE <span class="math inline">\(\subset\)</span> NE strictly.</p>
+</div>
+<p><strong>Chapter 7, Exercise 2 — Tit-for-Tat critical discount factor.</strong> <em>Derive <span class="math inline">\(\delta^*\)</span> for TFT.</em></p>
+<div class="callout-tip" collapse="true" title="Solution">
+<p>Under TFT with <span class="math inline">\(T = 5, R = 3, P = 1, S = 0\)</span>: cooperation yields <span class="math inline">\(V_C = 3 / (1 - \delta)\)</span>.</p>
+<p>A deviation yields <span class="math inline">\(T = 5\)</span> today. TFT retaliates next period (defects once), so the deviator gets <span class="math inline">\(S = 0\)</span> in period 2. Then TFT returns to cooperation (it copies the opponent’s last action), so from period 3 onward the deviator gets <span class="math inline">\(R = 3\)</span> again — but only if the deviator also returns to cooperation. The one-shot deviation payoff stream is:</p>
+<p><span class="math display">\[
+V_D = 5 + 0 \cdot \delta + 3 \cdot \frac{\delta^2}{1 - \delta}
+\]</span></p>
+<p>Setting <span class="math inline">\(V_C \geq V_D\)</span>:</p>
+<p><span class="math display">\[
+\frac{3}{1 - \delta} \geq 5 + \frac{3\delta^2}{1 - \delta}
+\]</span></p>
+<p><span class="math display">\[
+3 \geq 5(1 - \delta) + 3\delta^2 = 5 - 5\delta + 3\delta^2
+\]</span></p>
+<p><span class="math display">\[
+3\delta^2 - 5\delta + 2 \leq 0
+\]</span></p>
+<p>Solving: <span class="math inline">\(\delta = \frac{5 \pm \sqrt{25 - 24}}{6} = \frac{5 \pm 1}{6}\)</span>, so <span class="math inline">\(\delta \in [2/3, 1]\)</span>. The critical discount factor is <span class="math inline">\(\delta^* = 2/3\)</span>, which is higher than the Grim Trigger threshold (<span class="math inline">\(1/2\)</span> for these payoffs), reflecting TFT’s milder punishment.</p>
+</div>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></div>
+<div class="next"><a href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-solutions"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="nav-link" href="#chapter-1-what-is-a-game">Chapter 1: What is a Game?</a></li>
+<li><a class="nav-link" href="#chapter-2-normal-form-games">Chapter 2: Normal-Form Games</a></li>
+<li><a class="nav-link" href="#chapter-3-nash-equilibrium">Chapter 3: Nash Equilibrium</a></li>
+<li><a class="nav-link" href="#chapter-4-mixed-strategies">Chapter 4: Mixed Strategies</a></li>
+<li><a class="nav-link" href="#chapter-5-extensive-form-games">Chapter 5: Extensive-Form Games</a></li>
+<li><a class="nav-link" href="#chapter-6-bayesian-games">Chapter 6: Bayesian Games</a></li>
+<li><a class="nav-link" href="#chapter-7-repeated-games">Chapter 7: Repeated Games</a></li>
+<li><a class="nav-link" href="#chapter-8-cooperative-game-theory">Chapter 8: Cooperative Game Theory</a></li>
+<li><a class="nav-link" href="#additional-selected-solutions">Additional selected solutions</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/D-solutions.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/D-solutions.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

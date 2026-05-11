@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 17 Agent-Based Models for Strategic Interaction | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Building agent-based models where heterogeneous agents play games, reproduce proportional to fitness, and evolve strategies over generations — illustrated with the Hawk-Dove game.  Learning...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 17 Agent-Based Models for Strategic Interaction | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-agent-based-models.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Building agent-based models where heterogeneous agents play games, reproduce proportional to fitness, and evolve strategies over generations — illustrated with the Hawk-Dove game.  Learning...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 17 Agent-Based Models for Strategic Interaction | Strategy in R">
+<meta name="twitter:description" content="Building agent-based models where heterogeneous agents play games, reproduce proportional to fitness, and evolve strategies over generations — illustrated with the Hawk-Dove game.  Learning...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 17 Agent-Based Models for Strategic Interaction | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="active" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-agent-based-models" class="section level1" number="17">
+<h1>
+<span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction<a class="anchor" aria-label="anchor" href="#sec-agent-based-models"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Building agent-based models where heterogeneous agents play games, reproduce proportional to fitness, and evolve strategies over generations — illustrated with the Hawk-Dove game.</p>
+</blockquote>
+<div id="learning-objectives-15" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-15"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Contrast the agent-based modeling paradigm with analytical equilibrium analysis.</li>
+<li>Implement a population of agents with heterogeneous strategies that interact through pairwise games.</li>
+<li>Model evolutionary pressure via fitness-proportional reproduction and mutation.</li>
+<li>Simulate the Hawk-Dove game and interpret the emergent strategy frequencies in terms of the evolutionarily stable strategy.</li>
+</ul>
+</div>
+<div id="motivation-15" class="section level2" number="17.1">
+<h2>
+<span class="header-section-number">17.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-15"><i class="fas fa-link"></i></a>
+</h2>
+<p>Analytical game theory derives equilibria by assuming fully rational players with common knowledge. This is powerful but sometimes unrealistic. In biology, economics, and social science, we often observe populations of agents with limited information, heterogeneous strategies, and adaptive behavior. How do strategy frequencies evolve when agents interact locally, reproduce based on success, and occasionally mutate?</p>
+<p>Agent-based models (ABMs) answer this question computationally. Instead of solving for equilibrium, we simulate it. Each agent carries a strategy, plays games against others, earns payoffs, and the population evolves over generations. ABMs can reveal dynamics that analytical models miss: path dependence, transient oscillations, the role of population size, and the effect of mutation rates. Maynard Smith’s Hawk-Dove game — a cornerstone of evolutionary game theory — provides the ideal testbed because it has a known analytical equilibrium we can compare against <span class="citation">(<a href="references.html#ref-osborne2004">Osborne, 2004</a>)</span>.</p>
+</div>
+<div id="theory-15" class="section level2" number="17.2">
+<h2>
+<span class="header-section-number">17.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-15"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-hawk-dove-game" class="section level3" number="17.2.1">
+<h3>
+<span class="header-section-number">17.2.1</span> The Hawk-Dove game<a class="anchor" aria-label="anchor" href="#the-hawk-dove-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>Two animals contest a resource of value <span class="math inline">\(v\)</span>. Each can play <strong>Hawk</strong> (escalate) or <strong>Dove</strong> (yield). The payoff matrix is:</p>
+<div class="inline-table"><table id="tbl-hawk-dove" class="table table-sm">
+<caption>Hawk-Dove payoff matrix, where <span class="math inline">\(v\)</span> is the resource value and <span class="math inline">\(c\)</span> is the cost of fighting.</caption>
+<thead><tr class="header">
+<th></th>
+<th>Hawk</th>
+<th>Dove</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>Hawk</strong></td>
+<td><span class="math inline">\((v - c)/2\)</span></td>
+<td><span class="math inline">\(v\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>Dove</strong></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(v/2\)</span></td>
+</tr>
+</tbody>
+</table></div>
+<p>When <span class="math inline">\(c &gt; v\)</span> (fighting is costly relative to the resource), the game has no pure-strategy Nash equilibrium. The mixed-strategy Nash equilibrium has each player playing Hawk with probability:</p>
+<p><span class="math display" id="eq:hawk-dove-ne">\[\begin{equation}
+p^* = \frac{v}{c}
+\tag{17.1}
+\end{equation}\]</span></p>
+<p>This is also the evolutionarily stable strategy (ESS): a population at frequency <span class="math inline">\(p^*\)</span> cannot be invaded by either pure strategy <span class="citation">(<a href="references.html#ref-osborne2004">Osborne, 2004</a>)</span>.</p>
+</div>
+<div id="agent-based-evolutionary-dynamics" class="section level3" number="17.2.2">
+<h3>
+<span class="header-section-number">17.2.2</span> Agent-based evolutionary dynamics<a class="anchor" aria-label="anchor" href="#agent-based-evolutionary-dynamics"><i class="fas fa-link"></i></a>
+</h3>
+<p>In the ABM framework, we model a finite population of <span class="math inline">\(N\)</span> agents. Each generation proceeds in three steps:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Interaction.</strong> Each agent plays the Hawk-Dove game against <span class="math inline">\(k\)</span> randomly chosen opponents. Its fitness is the average payoff across these interactions.</p></li>
+<li><p><strong>Reproduction.</strong> The next generation is formed by sampling <span class="math inline">\(N\)</span> agents from the current population with replacement, where the probability of being selected is proportional to fitness (shifted to be non-negative):</p></li>
+</ol>
+<p><span class="math display" id="eq:fitness-selection">\[\begin{equation}
+\Pr(\text{agent } i \text{ selected}) = \frac{f_i - f_{\min} + \epsilon}{\sum_{j=1}^{N} (f_j - f_{\min} + \epsilon)}
+\tag{17.2}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(f_i\)</span> is agent <span class="math inline">\(i\)</span>’s fitness, <span class="math inline">\(f_{\min}\)</span> is the minimum fitness in the population, and <span class="math inline">\(\epsilon &gt; 0\)</span> is a small constant ensuring all agents have positive selection probability.</p>
+<ol start="3" style="list-style-type: decimal">
+<li>
+<strong>Mutation.</strong> Each offspring independently switches strategy with probability <span class="math inline">\(\mu\)</span> (the mutation rate).</li>
+</ol>
+<div class="rmdnote">
+<p><strong>Definition</strong></p>
+<p>An <strong>agent-based model</strong> (ABM) is a computational model in which autonomous agents with individual attributes interact according to specified rules. Macro-level patterns emerge from these micro-level interactions without being explicitly programmed.</p>
+</div>
+</div>
+<div id="connection-to-replicator-dynamics" class="section level3" number="17.2.3">
+<h3>
+<span class="header-section-number">17.2.3</span> Connection to replicator dynamics<a class="anchor" aria-label="anchor" href="#connection-to-replicator-dynamics"><i class="fas fa-link"></i></a>
+</h3>
+<p>In the limit of large populations, weak selection, and low mutation, the ABM dynamics converge to the <strong>replicator equation</strong> (<a href="sec-replicator-dynamics.html#sec-replicator-dynamics">20</a>):</p>
+<p><span class="math display" id="eq:replicator">\[\begin{equation}
+\dot{x}_H = x_H \left[ \pi_H(\mathbf{x}) - \bar{\pi}(\mathbf{x}) \right]
+\tag{17.3}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(x_H\)</span> is the frequency of Hawks, <span class="math inline">\(\pi_H\)</span> is the expected payoff to a Hawk, and <span class="math inline">\(\bar{\pi}\)</span> is the population average payoff. The ABM allows us to see how finite population effects, stochastic drift, and mutation perturb these deterministic predictions.</p>
+</div>
+</div>
+<div id="sec-abm-implementation" class="section level2" number="17.3">
+<h2>
+<span class="header-section-number">17.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-abm-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="core-simulation-functions" class="section level3" number="17.3.1">
+<h3>
+<span class="header-section-number">17.3.1</span> Core simulation functions<a class="anchor" aria-label="anchor" href="#core-simulation-functions"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb480"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Hawk-Dove payoff function</span></span>
+<span><span class="va">hawk_dove_payoff</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">strategy1</span>, <span class="va">strategy2</span>, <span class="va">v</span> <span class="op">=</span> <span class="fl">2</span>, <span class="va">c</span> <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">strategy1</span> <span class="op">==</span> <span class="st">"Hawk"</span> <span class="op">&amp;&amp;</span> <span class="va">strategy2</span> <span class="op">==</span> <span class="st">"Hawk"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="op">(</span><span class="va">v</span> <span class="op">-</span> <span class="va">c</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">strategy1</span> <span class="op">==</span> <span class="st">"Hawk"</span> <span class="op">&amp;&amp;</span> <span class="va">strategy2</span> <span class="op">==</span> <span class="st">"Dove"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">v</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">strategy1</span> <span class="op">==</span> <span class="st">"Dove"</span> <span class="op">&amp;&amp;</span> <span class="va">strategy2</span> <span class="op">==</span> <span class="st">"Hawk"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">v</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Compute fitness for all agents via random pairwise interactions</span></span>
+<span><span class="va">compute_fitness</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">population</span>, <span class="va">n_interactions</span>, <span class="va">v</span>, <span class="va">c</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span></span>
+<span>  <span class="va">fitness</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">opponents</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="va">i</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">n_interactions</span>, <span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">opponents</span>, <span class="kw">function</span><span class="op">(</span><span class="va">j</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="fu">hawk_dove_payoff</span><span class="op">(</span><span class="va">population</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">population</span><span class="op">[</span><span class="va">j</span><span class="op">]</span>, <span class="va">v</span>, <span class="va">c</span><span class="op">)</span></span>
+<span>    <span class="op">}</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">fitness</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">payoffs</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">fitness</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Fitness-proportional selection with shift</span></span>
+<span><span class="va">select_parents</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">population</span>, <span class="va">fitness</span>, <span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">shifted</span> <span class="op">&lt;-</span> <span class="va">fitness</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">fitness</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.01</span></span>
+<span>  <span class="va">probs</span> <span class="op">&lt;-</span> <span class="va">shifted</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">shifted</span><span class="op">)</span></span>
+<span>  <span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="va">probs</span><span class="op">)</span></span>
+<span>  <span class="va">population</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Mutation</span></span>
+<span><span class="va">mutate_population</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">population</span>, <span class="va">mu</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span></span>
+<span>  <span class="va">mutate_mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">population</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">mu</span></span>
+<span>  <span class="va">population</span><span class="op">[</span><span class="va">mutate_mask</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">population</span><span class="op">[</span><span class="va">mutate_mask</span><span class="op">]</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/setops.html">setdiff</a></span><span class="op">(</span><span class="va">strategies</span>, <span class="va">s</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">population</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="running-the-abm" class="section level3" number="17.3.2">
+<h3>
+<span class="header-section-number">17.3.2</span> Running the ABM<a class="anchor" aria-label="anchor" href="#running-the-abm"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb481"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">run_hawk_dove_abm</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_agents</span> <span class="op">=</span> <span class="fl">200</span>, <span class="va">n_generations</span> <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>                               <span class="va">initial_hawk_freq</span> <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>                               <span class="va">n_interactions</span> <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                               <span class="va">mutation_rate</span> <span class="op">=</span> <span class="fl">0.01</span>,</span>
+<span>                               <span class="va">v</span> <span class="op">=</span> <span class="fl">2</span>, <span class="va">c</span> <span class="op">=</span> <span class="fl">5</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">42</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Initialize population</span></span>
+<span>  <span class="va">n_hawks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">n_agents</span> <span class="op">*</span> <span class="va">initial_hawk_freq</span><span class="op">)</span></span>
+<span>  <span class="va">population</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="va">n_hawks</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Dove"</span>, <span class="va">n_agents</span> <span class="op">-</span> <span class="va">n_hawks</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Storage for tracking</span></span>
+<span>  <span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    generation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">integer</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    hawk_freq <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">double</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    mean_fitness <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">double</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">gen</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_generations</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">hawk_freq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">population</span> <span class="op">==</span> <span class="st">"Hawk"</span><span class="op">)</span></span>
+<span>    <span class="va">fitness</span> <span class="op">&lt;-</span> <span class="fu">compute_fitness</span><span class="op">(</span><span class="va">population</span>, <span class="va">n_interactions</span>, <span class="va">v</span>, <span class="va">c</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">history</span>, <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>      generation <span class="op">=</span> <span class="va">gen</span>,</span>
+<span>      hawk_freq <span class="op">=</span> <span class="va">hawk_freq</span>,</span>
+<span>      mean_fitness <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">fitness</span><span class="op">)</span></span>
+<span>    <span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Selection and reproduction</span></span>
+<span>    <span class="va">population</span> <span class="op">&lt;-</span> <span class="fu">select_parents</span><span class="op">(</span><span class="va">population</span>, <span class="va">fitness</span>, <span class="va">n_agents</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Mutation</span></span>
+<span>    <span class="va">population</span> <span class="op">&lt;-</span> <span class="fu">mutate_population</span><span class="op">(</span><span class="va">population</span>, <span class="va">mutation_rate</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">history</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="strategy-frequency-evolution" class="section level3" number="17.3.3">
+<h3>
+<span class="header-section-number">17.3.3</span> Strategy frequency evolution<a class="anchor" aria-label="anchor" href="#strategy-frequency-evolution"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb482"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">c_val</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
+<span><span class="va">ess_freq</span> <span class="op">&lt;-</span> <span class="va">v</span> <span class="op">/</span> <span class="va">c_val</span></span>
+<span></span>
+<span><span class="co"># Run three independent simulations with different initial conditions</span></span>
+<span><span class="va">runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>init <span class="op">=</span> <span class="fl">0.1</span>, seed <span class="op">=</span> <span class="fl">42</span>, label <span class="op">=</span> <span class="st">"Run 1 (10% Hawk)"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>init <span class="op">=</span> <span class="fl">0.5</span>, seed <span class="op">=</span> <span class="fl">123</span>, label <span class="op">=</span> <span class="st">"Run 2 (50% Hawk)"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>init <span class="op">=</span> <span class="fl">0.9</span>, seed <span class="op">=</span> <span class="fl">456</span>, label <span class="op">=</span> <span class="st">"Run 3 (90% Hawk)"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">history_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="va">runs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">run_hawk_dove_abm</span><span class="op">(</span></span>
+<span>    n_agents <span class="op">=</span> <span class="fl">200</span>, n_generations <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>    initial_hawk_freq <span class="op">=</span> <span class="va">r</span><span class="op">$</span><span class="va">init</span>, n_interactions <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>    mutation_rate <span class="op">=</span> <span class="fl">0.01</span>, v <span class="op">=</span> <span class="va">v</span>, c <span class="op">=</span> <span class="va">c_val</span>, seed <span class="op">=</span> <span class="va">r</span><span class="op">$</span><span class="va">seed</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>run <span class="op">=</span> <span class="va">r</span><span class="op">$</span><span class="va">label</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_evolution</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">history_all</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">generation</span>, y <span class="op">=</span> <span class="va">hawk_freq</span>,</span>
+<span>                                        colour <span class="op">=</span> <span class="va">run</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.6</span>, alpha <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">ess_freq</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>,</span>
+<span>             colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">"Simulation"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Hawk-Dove ABM: Strategy Frequency Over Generations"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Generation"</span>,</span>
+<span>       y <span class="op">=</span> <span class="st">"Fraction playing Hawk"</span>,</span>
+<span>       caption <span class="op">=</span> <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Dashed line = ESS frequency (v/c = {ess_freq})"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_evolution</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:abm-strategy-evolution"></span>
+<img src="16-agent-based-models_files/figure-html/abm-strategy-evolution-1.png" alt="Strategy frequency evolution in the Hawk-Dove agent-based model across three independent runs. The dashed horizontal line marks the analytical ESS frequency $p^* = v/c = 0.4$. Despite starting from different initial conditions, all runs converge to fluctuate around the predicted equilibrium." width="80%"><p class="caption">
+Figure 17.1: Strategy frequency evolution in the Hawk-Dove agent-based model across three independent runs. The dashed horizontal line marks the analytical ESS frequency <span class="math inline">\(p^* = v/c = 0.4\)</span>. Despite starting from different initial conditions, all runs converge to fluctuate around the predicted equilibrium.
+</p>
+</div>
+<div class="sourceCode" id="cb483"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_evolution</span>, <span class="st">"abm-strategy-evolution"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="population-fitness-over-time" class="section level3" number="17.3.4">
+<h3>
+<span class="header-section-number">17.3.4</span> Population fitness over time<a class="anchor" aria-label="anchor" href="#population-fitness-over-time"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb484"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Compute the analytical equilibrium fitness</span></span>
+<span><span class="co"># At ESS: pi_bar = p*[p*(v-c)/2 + (1-p*)v] + (1-p*)[p*0 + (1-p*)v/2]</span></span>
+<span><span class="va">p_star</span> <span class="op">&lt;-</span> <span class="va">ess_freq</span></span>
+<span><span class="va">pi_bar_star</span> <span class="op">&lt;-</span> <span class="va">p_star</span> <span class="op">*</span> <span class="op">(</span><span class="va">p_star</span> <span class="op">*</span> <span class="op">(</span><span class="va">v</span> <span class="op">-</span> <span class="va">c_val</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p_star</span><span class="op">)</span> <span class="op">*</span> <span class="va">v</span><span class="op">)</span> <span class="op">+</span></span>
+<span>               <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p_star</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">p_star</span> <span class="op">*</span> <span class="fl">0</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p_star</span><span class="op">)</span> <span class="op">*</span> <span class="va">v</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_fitness</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">history_all</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">generation</span>, y <span class="op">=</span> <span class="va">mean_fitness</span>,</span>
+<span>                                      colour <span class="op">=</span> <span class="va">run</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.6</span>, alpha <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">pi_bar_star</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>,</span>
+<span>             colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">"Simulation"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Hawk-Dove ABM: Average Population Fitness"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Generation"</span>,</span>
+<span>       y <span class="op">=</span> <span class="st">"Mean payoff per interaction"</span>,</span>
+<span>       caption <span class="op">=</span> <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"Dashed line = fitness at ESS ({round(pi_bar_star, 2)})"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_fitness</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:abm-fitness"></span>
+<img src="16-agent-based-models_files/figure-html/abm-fitness-1.png" alt="Average population fitness over generations in the Hawk-Dove ABM. Fitness is highest when the population is near the ESS. Early generations show rapid fitness changes as the population adjusts from its initial state; later generations fluctuate around the equilibrium fitness level." width="80%"><p class="caption">
+Figure 17.2: Average population fitness over generations in the Hawk-Dove ABM. Fitness is highest when the population is near the ESS. Early generations show rapid fitness changes as the population adjusts from its initial state; later generations fluctuate around the equilibrium fitness level.
+</p>
+</div>
+<div class="sourceCode" id="cb485"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_fitness</span>, <span class="st">"abm-fitness"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-13" class="section level2" number="17.4">
+<h2>
+<span class="header-section-number">17.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-13"><i class="fas fa-link"></i></a>
+</h2>
+<p>Let us trace through the first few generations of a small population to understand the mechanics.</p>
+<div class="sourceCode" id="cb486"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">n_agents</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
+<span><span class="va">population</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="fl">14</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Dove"</span>, <span class="fl">6</span><span class="op">)</span><span class="op">)</span>  <span class="co"># 70% Hawk</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Initial population (20 agents, 70% Hawk):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Initial population (20 agents, 70% Hawk):</code></pre>
+<div class="sourceCode" id="cb488"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  Hawks: {sum(population == 'Hawk')}, "</span>,</span>
+<span>         <span class="st">"Doves: {sum(population == 'Dove')}"</span><span class="op">)</span>, <span class="st">"\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Hawks: 14, Doves: 6</code></pre>
+<div class="sourceCode" id="cb490"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Generation 1: compute fitness</span></span>
+<span><span class="va">fitness</span> <span class="op">&lt;-</span> <span class="fu">compute_fitness</span><span class="op">(</span><span class="va">population</span>, n_interactions <span class="op">=</span> <span class="fl">5</span>, v <span class="op">=</span> <span class="va">v</span>, c <span class="op">=</span> <span class="va">c_val</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fitness_by_type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  strategy <span class="op">=</span> <span class="va">population</span>,</span>
+<span>  fitness <span class="op">=</span> <span class="va">fitness</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">strategy</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>mean_fitness <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">fitness</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>            min_fitness <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">fitness</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>            max_fitness <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">fitness</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>            .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Generation 1 fitness summary:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Generation 1 fitness summary:</code></pre>
+<div class="sourceCode" id="cb492"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">fitness_by_type</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 2 × 4
+#&gt;   strategy mean_fitness min_fitness max_fitness
+#&gt;   &lt;chr&gt;           &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+#&gt; 1 Dove            0.267         0           0.6
+#&gt; 2 Hawk           -0.4          -1.5         1.3</code></pre>
+<div class="sourceCode" id="cb494"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Selection: Hawks have lower average fitness when over-represented</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nWith 70% Hawks (above ESS of 40%), Hawks fight each other often.\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; With 70% Hawks (above ESS of 40%), Hawks fight each other often.</code></pre>
+<div class="sourceCode" id="cb496"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Doves benefit from facing other Doves more than Hawks benefit from\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Doves benefit from facing other Doves more than Hawks benefit from</code></pre>
+<div class="sourceCode" id="cb498"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"fighting other Hawks (since (v-c)/2 &lt; 0 when c &gt; v).\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; fighting other Hawks (since (v-c)/2 &lt; 0 when c &gt; v).</code></pre>
+<div class="sourceCode" id="cb500"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Next generation</span></span>
+<span><span class="va">population_new</span> <span class="op">&lt;-</span> <span class="fu">select_parents</span><span class="op">(</span><span class="va">population</span>, <span class="va">fitness</span>, <span class="va">n_agents</span><span class="op">)</span></span>
+<span><span class="va">population_new</span> <span class="op">&lt;-</span> <span class="fu">mutate_population</span><span class="op">(</span><span class="va">population_new</span>, mu <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"After selection and mutation:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; After selection and mutation:</code></pre>
+<div class="sourceCode" id="cb502"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  Hawks: {sum(population_new == 'Hawk')}, "</span>,</span>
+<span>         <span class="st">"Doves: {sum(population_new == 'Dove')}"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Hawks: 14, Doves: 6</code></pre>
+<div class="sourceCode" id="cb504"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  Hawk frequency: {mean(population_new == 'Hawk')}"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Hawk frequency: 0.7</code></pre>
+<p>The population moves toward the ESS. Because Hawks are overrepresented (70% vs. the ESS of 40%), they frequently fight each other and incur the costly loss of <span class="math inline">\((v-c)/2 = -1.5\)</span>. Doves, meanwhile, avoid fighting costs entirely. Selection therefore favors Doves, pulling the population toward the equilibrium frequency.</p>
+<div id="sensitivity-to-parameters" class="section level3" number="17.4.1">
+<h3>
+<span class="header-section-number">17.4.1</span> Sensitivity to parameters<a class="anchor" aria-label="anchor" href="#sensitivity-to-parameters"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb506"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Effect of mutation rate on variance of equilibrium frequency</span></span>
+<span><span class="va">mutation_rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.001</span>, <span class="fl">0.01</span>, <span class="fl">0.05</span>, <span class="fl">0.1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sensitivity_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="va">mutation_rates</span>, <span class="kw">function</span><span class="op">(</span><span class="va">mu</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">h</span> <span class="op">&lt;-</span> <span class="fu">run_hawk_dove_abm</span><span class="op">(</span>n_agents <span class="op">=</span> <span class="fl">200</span>, n_generations <span class="op">=</span> <span class="fl">300</span>,</span>
+<span>                          initial_hawk_freq <span class="op">=</span> <span class="fl">0.5</span>, n_interactions <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                          mutation_rate <span class="op">=</span> <span class="va">mu</span>, v <span class="op">=</span> <span class="va">v</span>, c <span class="op">=</span> <span class="va">c_val</span>, seed <span class="op">=</span> <span class="fl">42</span><span class="op">)</span></span>
+<span>  <span class="co"># Use last 100 generations as "steady state"</span></span>
+<span>  <span class="va">steady</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">h</span>, <span class="fl">100</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    mutation_rate <span class="op">=</span> <span class="va">mu</span>,</span>
+<span>    mean_hawk_freq <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">steady</span><span class="op">$</span><span class="va">hawk_freq</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>    sd_hawk_freq <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">steady</span><span class="op">$</span><span class="va">hawk_freq</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sensitivity_df</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_label.html">cols_label</a></span><span class="op">(</span>mutation_rate <span class="op">=</span> <span class="st">"Mutation rate"</span>,</span>
+<span>             mean_hawk_freq <span class="op">=</span> <span class="st">"Mean Hawk freq"</span>,</span>
+<span>             sd_hawk_freq <span class="op">=</span> <span class="st">"SD of Hawk freq"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html">tab_header</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Effect of Mutation Rate on Equilibrium Behavior"</span>,</span>
+<span>             subtitle <span class="op">=</span> <span class="st">"Steady-state statistics from last 100 of 300 generations"</span><span class="op">)</span></span></code></pre></div>
+<div id="lxrzuzrubd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#lxrzuzrubd table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#lxrzuzrubd thead, #lxrzuzrubd tbody, #lxrzuzrubd tfoot, #lxrzuzrubd tr, #lxrzuzrubd td, #lxrzuzrubd th {
+  border-style: none;
+}
+
+#lxrzuzrubd p {
+  margin: 0;
+  padding: 0;
+}
+
+#lxrzuzrubd .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#lxrzuzrubd .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#lxrzuzrubd .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#lxrzuzrubd .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#lxrzuzrubd .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#lxrzuzrubd .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#lxrzuzrubd .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#lxrzuzrubd .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#lxrzuzrubd .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#lxrzuzrubd .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#lxrzuzrubd .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#lxrzuzrubd .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#lxrzuzrubd .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#lxrzuzrubd .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#lxrzuzrubd .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lxrzuzrubd .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#lxrzuzrubd .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#lxrzuzrubd .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#lxrzuzrubd .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lxrzuzrubd .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#lxrzuzrubd .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lxrzuzrubd .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#lxrzuzrubd .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lxrzuzrubd .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#lxrzuzrubd .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#lxrzuzrubd .gt_left {
+  text-align: left;
+}
+
+#lxrzuzrubd .gt_center {
+  text-align: center;
+}
+
+#lxrzuzrubd .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#lxrzuzrubd .gt_font_normal {
+  font-weight: normal;
+}
+
+#lxrzuzrubd .gt_font_bold {
+  font-weight: bold;
+}
+
+#lxrzuzrubd .gt_font_italic {
+  font-style: italic;
+}
+
+#lxrzuzrubd .gt_super {
+  font-size: 65%;
+}
+
+#lxrzuzrubd .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#lxrzuzrubd .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#lxrzuzrubd .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#lxrzuzrubd .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#lxrzuzrubd .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#lxrzuzrubd .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#lxrzuzrubd .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#lxrzuzrubd .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#lxrzuzrubd div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading">
+<td colspan="3" class="gt_heading gt_title gt_font_normal" style>Effect of Mutation Rate on Equilibrium Behavior</td>
+    </tr>
+<tr class="gt_heading">
+<td colspan="3" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>Steady-state statistics from last 100 of 300 generations</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="mutation_rate">Mutation rate</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="mean_hawk_freq">Mean Hawk freq</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="sd_hawk_freq">SD of Hawk freq</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="mutation_rate" class="gt_row gt_right">0.001</td>
+<td headers="mean_hawk_freq" class="gt_row gt_right">0.417</td>
+<td headers="sd_hawk_freq" class="gt_row gt_right">0.045</td>
+</tr>
+<tr>
+<td headers="mutation_rate" class="gt_row gt_right">0.010</td>
+<td headers="mean_hawk_freq" class="gt_row gt_right">0.407</td>
+<td headers="sd_hawk_freq" class="gt_row gt_right">0.052</td>
+</tr>
+<tr>
+<td headers="mutation_rate" class="gt_row gt_right">0.050</td>
+<td headers="mean_hawk_freq" class="gt_row gt_right">0.419</td>
+<td headers="sd_hawk_freq" class="gt_row gt_right">0.040</td>
+</tr>
+<tr>
+<td headers="mutation_rate" class="gt_row gt_right">0.100</td>
+<td headers="mean_hawk_freq" class="gt_row gt_right">0.444</td>
+<td headers="sd_hawk_freq" class="gt_row gt_right">0.041</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>Higher mutation rates increase the variance around the ESS — agents are more frequently pushed away from the equilibrium — but the mean frequency remains close to <span class="math inline">\(p^* = 0.4\)</span> across all mutation rates. This robustness is a signature of the ESS: selection pressure always pushes back toward equilibrium, regardless of perturbations <span class="citation">(<a href="references.html#ref-von-neumann1944">Neumann &amp; Morgenstern, 1944</a>)</span>.</p>
+</div>
+</div>
+<div id="extensions-15" class="section level2" number="17.5">
+<h2>
+<span class="header-section-number">17.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-15"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Spatial structure.</strong> When agents interact only with neighbors on a grid, spatial clusters can form and persist. Cooperation can be sustained in spatial Prisoner’s Dilemma even without reciprocity (<a href="sec-spatial-pd.html#sec-spatial-pd">19</a>).</li>
+<li>
+<strong>Multiple strategies.</strong> The ABM framework extends naturally to games with more than two pure strategies. With three or more strategies, the dynamics can exhibit limit cycles (as in Rock-Paper-Scissors) rather than convergence to a fixed point.</li>
+<li>
+<strong>Evolutionary stability.</strong> The analytical counterpart to ABM convergence is the concept of an evolutionarily stable strategy. See <a href="sec-ess.html#sec-ess">21</a> for formal definitions and the relationship to Nash equilibrium.</li>
+<li>
+<strong>Replicator dynamics.</strong> The continuous-time limit of the ABM’s selection step yields the replicator equation (<a href="sec-replicator-dynamics.html#sec-replicator-dynamics">20</a>). Comparing the ABM to the replicator ODE reveals where finite-population effects matter.</li>
+<li>
+<strong>Network structure.</strong> When the interaction graph is not well-mixed but has network structure, cooperation dynamics change qualitatively (<a href="sec-network-games.html#sec-network-games">22</a>). For the foundational analysis, see <span class="citation">Shoham &amp; Leyton-Brown (<a href="references.html#ref-shoham2009">2009</a>)</span>.</li>
+</ul>
+</div>
+<div id="exercises-15" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-15"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Three strategies.</strong> Add a third strategy, <strong>Retaliator</strong>, that plays Dove against Doves and Hawk against Hawks (it matches the opponent’s type). This requires each agent to observe its opponent’s strategy before acting. Run the ABM and report whether Retaliator can invade a Hawk-Dove population at the ESS.</p></li>
+<li><p><strong>Population size effects.</strong> Run the Hawk-Dove ABM with population sizes of 20, 100, 500, and 2000 agents for 300 generations each. Plot the standard deviation of the Hawk frequency (over the last 100 generations) against population size. What relationship do you observe, and why?</p></li>
+<li><p><strong>Stag Hunt dynamics.</strong> Replace the Hawk-Dove payoff matrix with the Stag Hunt: mutual cooperation (Stag, Stag) yields 4 each, mutual defection (Hare, Hare) yields 2 each, and miscoordination yields 0 for the Stag player and 2 for the Hare player. Run the ABM from initial cooperation frequencies of 0.3, 0.5, and 0.8. Does the population always converge to the same equilibrium? Explain in terms of the game’s two Nash equilibria.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></div>
+<div class="next"><a href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-agent-based-models"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="nav-link" href="#learning-objectives-15">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-15"><span class="header-section-number">17.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-15"><span class="header-section-number">17.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-hawk-dove-game"><span class="header-section-number">17.2.1</span> The Hawk-Dove game</a></li>
+<li><a class="nav-link" href="#agent-based-evolutionary-dynamics"><span class="header-section-number">17.2.2</span> Agent-based evolutionary dynamics</a></li>
+<li><a class="nav-link" href="#connection-to-replicator-dynamics"><span class="header-section-number">17.2.3</span> Connection to replicator dynamics</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-abm-implementation"><span class="header-section-number">17.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#core-simulation-functions"><span class="header-section-number">17.3.1</span> Core simulation functions</a></li>
+<li><a class="nav-link" href="#running-the-abm"><span class="header-section-number">17.3.2</span> Running the ABM</a></li>
+<li><a class="nav-link" href="#strategy-frequency-evolution"><span class="header-section-number">17.3.3</span> Strategy frequency evolution</a></li>
+<li><a class="nav-link" href="#population-fitness-over-time"><span class="header-section-number">17.3.4</span> Population fitness over time</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-13"><span class="header-section-number">17.4</span> Worked example</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#sensitivity-to-parameters"><span class="header-section-number">17.4.1</span> Sensitivity to parameters</a></li></ul>
+</li>
+<li><a class="nav-link" href="#extensions-15"><span class="header-section-number">17.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-15">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/16-agent-based-models.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/16-agent-based-models.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

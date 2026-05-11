@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 42 The Future of Strategy | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Emerging frontiers in strategic AI: computational complexity, multi-agent foundation models, and responsible deployment.  Learning objectives Identify the major open problems at the intersection...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 42 The Future of Strategy | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-future.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Emerging frontiers in strategic AI: computational complexity, multi-agent foundation models, and responsible deployment.  Learning objectives Identify the major open problems at the intersection...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 42 The Future of Strategy | Strategy in R">
+<meta name="twitter:description" content="Emerging frontiers in strategic AI: computational complexity, multi-agent foundation models, and responsible deployment.  Learning objectives Identify the major open problems at the intersection...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 42 The Future of Strategy | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="active" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-future" class="section level1" number="42">
+<h1>
+<span class="header-section-number">42</span> The Future of Strategy<a class="anchor" aria-label="anchor" href="#sec-future"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Emerging frontiers in strategic AI: computational complexity, multi-agent foundation models, and responsible deployment.</p>
+</blockquote>
+<div id="learning-objectives-40" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-40"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Identify the major open problems at the intersection of game theory and AI.</li>
+<li>Understand the computational complexity landscape of game-solving algorithms.</li>
+<li>Recognize the key milestones in the convergence of game theory and artificial intelligence.</li>
+<li>Articulate principles for responsible deployment of strategic AI systems.</li>
+</ul>
+</div>
+<div id="motivation-40" class="section level2" number="42.1">
+<h2>
+<span class="header-section-number">42.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-40"><i class="fas fa-link"></i></a>
+</h2>
+<p>This book has covered four decades of ideas — from Nash equilibrium to multi-agent reinforcement learning, from mechanism design to cooperative AI. But the field is accelerating. Foundation models are being deployed in multi-agent settings, AI systems negotiate on behalf of humans, and algorithmic decision-makers interact in markets, infrastructure, and governance.</p>
+<p>This capstone chapter surveys the frontier: what has been solved, what remains open, and what practitioners should consider as they build the next generation of strategic AI systems.</p>
+</div>
+<div id="theory-40" class="section level2" number="42.2">
+<h2>
+<span class="header-section-number">42.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-40"><i class="fas fa-link"></i></a>
+</h2>
+<div id="computational-complexity-of-game-solving" class="section level3" number="42.2.1">
+<h3>
+<span class="header-section-number">42.2.1</span> Computational complexity of game solving<a class="anchor" aria-label="anchor" href="#computational-complexity-of-game-solving"><i class="fas fa-link"></i></a>
+</h3>
+<p>Not all games are equally hard to solve. The computational complexity of finding equilibria varies dramatically with the game’s structure.</p>
+<div class="rmdnote">
+<p><strong>Complexity Classes for Game Solutions</strong></p>
+<ul>
+<li>
+<strong>Polynomial (P):</strong> Two-player zero-sum games can be solved via linear programming in polynomial time.</li>
+<li>
+<strong>PPAD-complete:</strong> Finding a Nash equilibrium in two-player general-sum games is PPAD-complete — believed to be hard but not NP-hard <span class="citation">(<a href="references.html#ref-daskalakis2009">Daskalakis et al., 2009</a>)</span>.</li>
+<li>
+<strong>NP-hard:</strong> Finding a Nash equilibrium that satisfies additional properties (e.g., maximum social welfare) is NP-hard.</li>
+<li>
+<strong>EXPTIME:</strong> Solving extensive-form games with imperfect information grows exponentially in the game tree size.</li>
+</ul>
+</div>
+<p>These complexity results have practical implications: for large games, exact equilibrium computation is infeasible, and practitioners must rely on approximation algorithms, learning dynamics, or structural simplifications.</p>
+</div>
+<div id="emerging-frontiers" class="section level3" number="42.2.2">
+<h3>
+<span class="header-section-number">42.2.2</span> Emerging frontiers<a class="anchor" aria-label="anchor" href="#emerging-frontiers"><i class="fas fa-link"></i></a>
+</h3>
+<p><strong>Multi-agent foundation models.</strong> Large language models are increasingly deployed in multi-agent settings — negotiation, debate, collaborative problem-solving. The game-theoretic properties of these interactions (equilibrium selection, emergent cooperation, strategic manipulation) are largely unexplored.</p>
+<p><strong>AI negotiation.</strong> Automated negotiation systems already operate in e-commerce, resource allocation, and diplomacy simulations. A key open question is whether foundation-model negotiators converge to game-theoretically rational strategies or exhibit systematic biases.</p>
+<p><strong>AI governance.</strong> As AI systems make decisions with societal impact, governance frameworks must account for strategic interactions between AI developers, deployers, regulators, and affected populations. Mechanism design (<a href="sec-mechanism-design.html#sec-mechanism-design">33</a>) provides the theoretical foundation.</p>
+</div>
+<div id="open-problems-in-marl" class="section level3" number="42.2.3">
+<h3>
+<span class="header-section-number">42.2.3</span> Open problems in MARL<a class="anchor" aria-label="anchor" href="#open-problems-in-marl"><i class="fas fa-link"></i></a>
+</h3>
+<p>Multi-agent reinforcement learning faces several unsolved challenges:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Non-stationarity.</strong> Each agent’s environment is changing because other agents are learning simultaneously.</li>
+<li>
+<strong>Credit assignment.</strong> In cooperative settings, attributing team success to individual agents is hard.</li>
+<li>
+<strong>Scalability.</strong> The joint action space grows exponentially with the number of agents.</li>
+<li>
+<strong>Equilibrium selection.</strong> Learning algorithms may converge to different equilibria depending on initialization.</li>
+<li>
+<strong>Safety and alignment.</strong> Ensuring that learned policies satisfy safety constraints in multi-agent settings is an open problem connecting to <a href="sec-ai-alignment.html#sec-ai-alignment">40</a>.</li>
+</ol>
+</div>
+<div id="responsible-deployment" class="section level3" number="42.2.4">
+<h3>
+<span class="header-section-number">42.2.4</span> Responsible deployment<a class="anchor" aria-label="anchor" href="#responsible-deployment"><i class="fas fa-link"></i></a>
+</h3>
+<p>Deploying strategic AI systems requires attention to:</p>
+<ul>
+<li>
+<strong>Transparency:</strong> Can stakeholders understand the system’s strategy?</li>
+<li>
+<strong>Fairness:</strong> Does the system treat all participants equitably (<a href="sec-fairness-ml.html#sec-fairness-ml">39</a>)?</li>
+<li>
+<strong>Accountability:</strong> Who is responsible when a strategic AI causes harm?</li>
+<li>
+<strong>Robustness:</strong> Does the system behave well under adversarial or out-of-distribution conditions?</li>
+</ul>
+</div>
+</div>
+<div id="sec-future-implementation" class="section level2" number="42.3">
+<h2>
+<span class="header-section-number">42.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-future-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="complexity-landscape-of-game-theory-problems" class="section level3" number="42.3.1">
+<h3>
+<span class="header-section-number">42.3.1</span> Complexity landscape of game-theory problems<a class="anchor" aria-label="anchor" href="#complexity-landscape-of-game-theory-problems"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1200"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Taxonomy of game-theory problems with complexity classifications</span></span>
+<span><span class="va">complexity_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  problem <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"2P zero-sum (LP)"</span>, <span class="st">"2P zero-sum\n(extensive form)"</span>,</span>
+<span>    <span class="st">"2P general-sum\n(Nash)"</span>, <span class="st">"N-player Nash"</span>,</span>
+<span>    <span class="st">"Bayesian Nash\n(2P)"</span>, <span class="st">"Correlated\nequilibrium"</span>,</span>
+<span>    <span class="st">"Mechanism\ndesign (optimal)"</span>, <span class="st">"Extensive form\n(imperfect info)"</span>,</span>
+<span>    <span class="st">"Mean-field\nequilibrium"</span>, <span class="st">"Cooperative\n(Shapley value)"</span>,</span>
+<span>    <span class="st">"Social welfare\nmax Nash"</span>, <span class="st">"Stackelberg\nequilibrium"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  game_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">7</span>, <span class="fl">5</span>, <span class="fl">3</span>, <span class="fl">8</span>, <span class="fl">6</span>, <span class="fl">9</span>, <span class="fl">5</span>, <span class="fl">5</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>  difficulty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2.5</span>, <span class="fl">4</span>, <span class="fl">6.5</span>, <span class="fl">5</span>, <span class="fl">1.5</span>, <span class="fl">7.5</span>, <span class="fl">7</span>, <span class="fl">5.5</span>, <span class="fl">3</span>, <span class="fl">8</span>, <span class="fl">3.5</span><span class="op">)</span>,</span>
+<span>  complexity_class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"P"</span>, <span class="st">"P"</span>, <span class="st">"PPAD"</span>, <span class="st">"PPAD"</span>, <span class="st">"PPAD"</span>,</span>
+<span>                       <span class="st">"P"</span>, <span class="st">"NP-hard"</span>, <span class="st">"EXPTIME"</span>, <span class="st">"Open"</span>,</span>
+<span>                       <span class="st">"P"</span>, <span class="st">"NP-hard"</span>, <span class="st">"NP-hard"</span><span class="op">)</span>,</span>
+<span>  chapter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">8</span>, <span class="fl">4</span>, <span class="fl">11</span>, <span class="fl">5</span>, <span class="fl">28</span>, <span class="fl">10</span>, <span class="fl">3</span>, <span class="fl">6</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb1201"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">complexity_data</span>,</span>
+<span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">game_size</span>, y <span class="op">=</span> <span class="va">difficulty</span>, colour <span class="op">=</span> <span class="va">complexity_class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">problem</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">2.5</span>, vjust <span class="op">=</span> <span class="op">-</span><span class="fl">1.2</span>,</span>
+<span>            show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"P"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="st">"PPAD"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>               <span class="st">"NP-hard"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>, <span class="st">"EXPTIME"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">7</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Open"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"Complexity class"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="st">"Game size (players / information complexity)"</span>,</span>
+<span>    breaks <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,</span>
+<span>    limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">10.5</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="st">"Solution difficulty"</span>,</span>
+<span>    breaks <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">9</span>,</span>
+<span>    limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">9.5</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Complexity Landscape of Game-Theory Problems"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:complexity-landscape"></span>
+<img src="41-future-of-strategy_files/figure-html/complexity-landscape-1.png" alt="Computational complexity landscape of game-theory problems covered in this book. Horizontal axis represents game size (number of players/actions), vertical axis represents solution difficulty. Problems are coloured by complexity class: P (polynomial), PPAD (believed hard), NP-hard, EXPTIME, and open problems." width="80%"><p class="caption">
+Figure 42.1: Computational complexity landscape of game-theory problems covered in this book. Horizontal axis represents game size (number of players/actions), vertical axis represents solution difficulty. Problems are coloured by complexity class: P (polynomial), PPAD (believed hard), NP-hard, EXPTIME, and open problems.
+</p>
+</div>
+<div class="sourceCode" id="cb1202"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p1</span>, <span class="st">"future-complexity-landscape"</span>, width <span class="op">=</span> <span class="fl">8</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="timeline-of-game-theory-and-ai-convergence" class="section level3" number="42.3.2">
+<h3>
+<span class="header-section-number">42.3.2</span> Timeline of game theory and AI convergence<a class="anchor" aria-label="anchor" href="#timeline-of-game-theory-and-ai-convergence"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1203"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">milestones</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  year <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1928</span>, <span class="fl">1944</span>, <span class="fl">1950</span>, <span class="fl">1951</span>, <span class="fl">1953</span>, <span class="fl">1973</span>, <span class="fl">1981</span>, <span class="fl">1992</span>,</span>
+<span>           <span class="fl">1994</span>, <span class="fl">2006</span>, <span class="fl">2009</span>, <span class="fl">2015</span>, <span class="fl">2017</span>, <span class="fl">2019</span>, <span class="fl">2022</span>, <span class="fl">2024</span><span class="op">)</span>,</span>
+<span>  event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"von Neumann:\nminimax theorem"</span>,</span>
+<span>    <span class="st">"von Neumann &amp;\nMorgenstern: TGEB"</span>,</span>
+<span>    <span class="st">"Nash:\nequilibrium"</span>,</span>
+<span>    <span class="st">"Shapley:\ncooperative\ngames"</span>,</span>
+<span>    <span class="st">"Kuhn:\nextensive form"</span>,</span>
+<span>    <span class="st">"Harsanyi:\nBayesian games"</span>,</span>
+<span>    <span class="st">"Axelrod:\nIPD tournament"</span>,</span>
+<span>    <span class="st">"Fudenberg &amp; Tirole:\nGame Theory (textbook)"</span>,</span>
+<span>    <span class="st">"Nash/Harsanyi/Selten:\nNobel Prize"</span>,</span>
+<span>    <span class="st">"Daskalakis et al.:\nPPAD-completeness"</span>,</span>
+<span>    <span class="st">"PPAD complexity\nresult published"</span>,</span>
+<span>    <span class="st">"Silver et al.:\nAlphaGo"</span>,</span>
+<span>    <span class="st">"Brown &amp; Sandholm:\nLibratus (poker)"</span>,</span>
+<span>    <span class="st">"Vinyals et al.:\nAlphaStar"</span>,</span>
+<span>    <span class="st">"CICERO:\nDiplomacy AI"</span>,</span>
+<span>    <span class="st">"Multi-agent\nfoundation models"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  domain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Theory"</span>, <span class="st">"Theory"</span>, <span class="st">"Theory"</span>, <span class="st">"Theory"</span>, <span class="st">"Theory"</span>,</span>
+<span>             <span class="st">"Theory"</span>, <span class="st">"Theory/AI"</span>, <span class="st">"Theory"</span>, <span class="st">"Theory"</span>,</span>
+<span>             <span class="st">"Complexity"</span>, <span class="st">"Complexity"</span>, <span class="st">"AI"</span>, <span class="st">"AI"</span>, <span class="st">"AI"</span>, <span class="st">"AI"</span>, <span class="st">"AI"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb1204"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Alternate y positions for readability</span></span>
+<span><span class="va">milestones</span> <span class="op">&lt;-</span> <span class="va">milestones</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    y_pos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.5</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    era <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case-and-replace-when.html">case_when</a></span><span class="op">(</span></span>
+<span>      <span class="va">year</span> <span class="op">&lt;=</span> <span class="fl">1960</span> <span class="op">~</span> <span class="st">"Classical foundations"</span>,</span>
+<span>      <span class="va">year</span> <span class="op">&lt;=</span> <span class="fl">2000</span> <span class="op">~</span> <span class="st">"Maturation"</span>,</span>
+<span>      <span class="va">year</span> <span class="op">&lt;=</span> <span class="fl">2015</span> <span class="op">~</span> <span class="st">"Computational turn"</span>,</span>
+<span>      <span class="cn">TRUE</span> <span class="op">~</span> <span class="st">"AI era"</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">milestones</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Timeline axis</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, colour <span class="op">=</span> <span class="st">"grey40"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Stems</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, xend <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="fl">0</span>, yend <span class="op">=</span> <span class="va">y_pos</span> <span class="op">*</span> <span class="fl">0.7</span><span class="op">)</span>,</span>
+<span>               colour <span class="op">=</span> <span class="st">"grey60"</span>, linewidth <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Points on the timeline</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="fl">0</span>, colour <span class="op">=</span> <span class="va">domain</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Event labels</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">y_pos</span> <span class="op">*</span> <span class="fl">0.85</span>, label <span class="op">=</span> <span class="va">event</span><span class="op">)</span>,</span>
+<span>            size <span class="op">=</span> <span class="fl">2.2</span>, lineheight <span class="op">=</span> <span class="fl">0.85</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Year labels</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">y_pos</span> <span class="op">*</span> <span class="fl">0.05</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">y_pos</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="op">-</span><span class="fl">0.15</span>, <span class="fl">0.15</span><span class="op">)</span>,</span>
+<span>                label <span class="op">=</span> <span class="va">year</span><span class="op">)</span>,</span>
+<span>            size <span class="op">=</span> <span class="fl">2</span>, colour <span class="op">=</span> <span class="st">"grey30"</span>, fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Theory"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"Theory/AI"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Complexity"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>, <span class="st">"AI"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"Domain"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">1930</span>, <span class="fl">2030</span>, <span class="fl">10</span><span class="op">)</span>, limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1925</span>, <span class="fl">2028</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Game Theory and AI: A Convergent History"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.ticks.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        panel.grid.major.y <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html">coord_cartesian</a></span><span class="op">(</span>ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p2</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:timeline"></span>
+<img src="41-future-of-strategy_files/figure-html/timeline-1.png" alt="Key milestones in the convergence of game theory and AI. Early milestones (left) are foundational theoretical results; recent milestones (right) represent AI systems that achieve or surpass human performance in strategic games." width="80%"><p class="caption">
+Figure 42.2: Key milestones in the convergence of game theory and AI. Early milestones (left) are foundational theoretical results; recent milestones (right) represent AI systems that achieve or surpass human performance in strategic games.
+</p>
+</div>
+<div class="sourceCode" id="cb1205"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p2</span>, <span class="st">"future-timeline"</span>, width <span class="op">=</span> <span class="fl">9</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-38" class="section level2" number="42.4">
+<h2>
+<span class="header-section-number">42.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-38"><i class="fas fa-link"></i></a>
+</h2>
+<p>We summarize the taxonomy of games, solution concepts, and computational complexity encountered throughout this book.</p>
+<div class="sourceCode" id="cb1206"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Build a taxonomy table</span></span>
+<span><span class="va">taxonomy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  part <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Foundations"</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Dynamic Games"</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Tic. &amp; Info."</span>, <span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Multi-Agent"</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Advanced"</span>, <span class="fl">3</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="st">"Ethics"</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  game_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Normal form (2P)"</span>, <span class="st">"Zero-sum"</span>, <span class="st">"Potential games"</span>, <span class="st">"Cooperative"</span>,</span>
+<span>    <span class="st">"Extensive form"</span>, <span class="st">"Repeated games"</span>, <span class="st">"Stochastic games"</span>,</span>
+<span>    <span class="st">"Bayesian games"</span>, <span class="st">"Mechanism design"</span>, <span class="st">"Auctions"</span>,</span>
+<span>    <span class="st">"MARL"</span>, <span class="st">"Evolutionary"</span>, <span class="st">"Mean-field"</span>,</span>
+<span>    <span class="st">"Network games"</span>, <span class="st">"Matching markets"</span>, <span class="st">"Bargaining"</span>,</span>
+<span>    <span class="st">"Social welfare"</span>, <span class="st">"Fairness games"</span>, <span class="st">"Alignment games"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  solution_concept <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Nash eq."</span>, <span class="st">"Minimax"</span>, <span class="st">"Pure Nash"</span>, <span class="st">"Shapley value"</span>,</span>
+<span>    <span class="st">"SPE / backward ind."</span>, <span class="st">"Folk theorem"</span>, <span class="st">"Markov perfect"</span>,</span>
+<span>    <span class="st">"BNE"</span>, <span class="st">"DSIC / BIC"</span>, <span class="st">"Dominant strategy"</span>,</span>
+<span>    <span class="st">"Convergence"</span>, <span class="st">"ESS"</span>, <span class="st">"MFE"</span>,</span>
+<span>    <span class="st">"Network Nash"</span>, <span class="st">"Stable matching"</span>, <span class="st">"Nash bargaining"</span>,</span>
+<span>    <span class="st">"SWF optimum"</span>, <span class="st">"Constrained opt."</span>, <span class="st">"Program eq."</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  complexity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"PPAD"</span>, <span class="st">"P"</span>, <span class="st">"P (if exists)"</span>, <span class="st">"P"</span>,</span>
+<span>    <span class="st">"P (perf. info)"</span>, <span class="st">"Depends"</span>, <span class="st">"NP-hard (general)"</span>,</span>
+<span>    <span class="st">"PPAD"</span>, <span class="st">"NP-hard (optimal)"</span>, <span class="st">"P (single-item)"</span>,</span>
+<span>    <span class="st">"No guarantee"</span>, <span class="st">"P (2x2)"</span>, <span class="st">"Open"</span>,</span>
+<span>    <span class="st">"PPAD (general)"</span>, <span class="st">"P (Gale-Shapley)"</span>, <span class="st">"P (2P)"</span>,</span>
+<span>    <span class="st">"Varies"</span>, <span class="st">"NP-hard"</span>, <span class="st">"Open"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  players <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"2"</span>, <span class="st">"2"</span>, <span class="st">"N"</span>, <span class="st">"N"</span>,</span>
+<span>    <span class="st">"2+"</span>, <span class="st">"2+"</span>, <span class="st">"2+"</span>,</span>
+<span>    <span class="st">"2+"</span>, <span class="st">"N+1"</span>, <span class="st">"N+1"</span>,</span>
+<span>    <span class="st">"N"</span>, <span class="st">"Large"</span>, <span class="st">"Continuum"</span>,</span>
+<span>    <span class="st">"N (network)"</span>, <span class="st">"2 sides"</span>, <span class="st">"2"</span>,</span>
+<span>    <span class="st">"N"</span>, <span class="st">"N + regulator"</span>, <span class="st">"2"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"=== Taxonomy of Games in This Book ===\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; === Taxonomy of Games in This Book ===</code></pre>
+<div class="sourceCode" id="cb1208"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Display as a gt table</span></span>
+<span><span class="va">taxonomy</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span>groupname_col <span class="op">=</span> <span class="st">"part"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_label.html">cols_label</a></span><span class="op">(</span></span>
+<span>    game_type <span class="op">=</span> <span class="st">"Game Type"</span>,</span>
+<span>    solution_concept <span class="op">=</span> <span class="st">"Solution Concept"</span>,</span>
+<span>    complexity <span class="op">=</span> <span class="st">"Complexity"</span>,</span>
+<span>    players <span class="op">=</span> <span class="st">"Players"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html">tab_header</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Taxonomy of Strategic Interactions"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/tab_options.html">tab_options</a></span><span class="op">(</span>table.font.size <span class="op">=</span> <span class="fu"><a href="https://gt.rstudio.com/reference/px.html">px</a></span><span class="op">(</span><span class="fl">12</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div id="qeayjdrzqo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qeayjdrzqo table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#qeayjdrzqo thead, #qeayjdrzqo tbody, #qeayjdrzqo tfoot, #qeayjdrzqo tr, #qeayjdrzqo td, #qeayjdrzqo th {
+  border-style: none;
+}
+
+#qeayjdrzqo p {
+  margin: 0;
+  padding: 0;
+}
+
+#qeayjdrzqo .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 12px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#qeayjdrzqo .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qeayjdrzqo .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qeayjdrzqo .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qeayjdrzqo .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#qeayjdrzqo .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qeayjdrzqo .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qeayjdrzqo .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qeayjdrzqo .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#qeayjdrzqo .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qeayjdrzqo .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_left {
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_center {
+  text-align: center;
+}
+
+#qeayjdrzqo .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qeayjdrzqo .gt_font_normal {
+  font-weight: normal;
+}
+
+#qeayjdrzqo .gt_font_bold {
+  font-weight: bold;
+}
+
+#qeayjdrzqo .gt_font_italic {
+  font-style: italic;
+}
+
+#qeayjdrzqo .gt_super {
+  font-size: 65%;
+}
+
+#qeayjdrzqo .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#qeayjdrzqo .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#qeayjdrzqo .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#qeayjdrzqo .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#qeayjdrzqo .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#qeayjdrzqo .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#qeayjdrzqo .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#qeayjdrzqo .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#qeayjdrzqo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading">
+<td colspan="4" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Taxonomy of Strategic Interactions</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="game_type">Game Type</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="solution_concept">Solution Concept</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="complexity">Complexity</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="players">Players</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="gt_group_heading_row">
+<th colspan="4" class="gt_group_heading" scope="colgroup" id="Foundations">Foundations</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="Foundations  game_type" class="gt_row gt_left">Normal form (2P)</td>
+<td headers="Foundations  solution_concept" class="gt_row gt_left">Nash eq.</td>
+<td headers="Foundations  complexity" class="gt_row gt_left">PPAD</td>
+<td headers="Foundations  players" class="gt_row gt_left">2</td>
+</tr>
+<tr>
+<td headers="Foundations  game_type" class="gt_row gt_left">Zero-sum</td>
+<td headers="Foundations  solution_concept" class="gt_row gt_left">Minimax</td>
+<td headers="Foundations  complexity" class="gt_row gt_left">P</td>
+<td headers="Foundations  players" class="gt_row gt_left">2</td>
+</tr>
+<tr>
+<td headers="Foundations  game_type" class="gt_row gt_left">Potential games</td>
+<td headers="Foundations  solution_concept" class="gt_row gt_left">Pure Nash</td>
+<td headers="Foundations  complexity" class="gt_row gt_left">P (if exists)</td>
+<td headers="Foundations  players" class="gt_row gt_left">N</td>
+</tr>
+<tr>
+<td headers="Foundations  game_type" class="gt_row gt_left">Cooperative</td>
+<td headers="Foundations  solution_concept" class="gt_row gt_left">Shapley value</td>
+<td headers="Foundations  complexity" class="gt_row gt_left">P</td>
+<td headers="Foundations  players" class="gt_row gt_left">N</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="4" class="gt_group_heading" scope="colgroup" id="Dynamic Games">Dynamic Games</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="Dynamic Games  game_type" class="gt_row gt_left">Extensive form</td>
+<td headers="Dynamic Games  solution_concept" class="gt_row gt_left">SPE / backward ind.</td>
+<td headers="Dynamic Games  complexity" class="gt_row gt_left">P (perf. info)</td>
+<td headers="Dynamic Games  players" class="gt_row gt_left">2+</td>
+</tr>
+<tr>
+<td headers="Dynamic Games  game_type" class="gt_row gt_left">Repeated games</td>
+<td headers="Dynamic Games  solution_concept" class="gt_row gt_left">Folk theorem</td>
+<td headers="Dynamic Games  complexity" class="gt_row gt_left">Depends</td>
+<td headers="Dynamic Games  players" class="gt_row gt_left">2+</td>
+</tr>
+<tr>
+<td headers="Dynamic Games  game_type" class="gt_row gt_left">Stochastic games</td>
+<td headers="Dynamic Games  solution_concept" class="gt_row gt_left">Markov perfect</td>
+<td headers="Dynamic Games  complexity" class="gt_row gt_left">NP-hard (general)</td>
+<td headers="Dynamic Games  players" class="gt_row gt_left">2+</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="4" class="gt_group_heading" scope="colgroup" id="Tic. &amp;amp; Info.">Tic. &amp; Info.</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="Tic. &amp; Info.  game_type" class="gt_row gt_left">Bayesian games</td>
+<td headers="Tic. &amp; Info.  solution_concept" class="gt_row gt_left">BNE</td>
+<td headers="Tic. &amp; Info.  complexity" class="gt_row gt_left">PPAD</td>
+<td headers="Tic. &amp; Info.  players" class="gt_row gt_left">2+</td>
+</tr>
+<tr>
+<td headers="Tic. &amp; Info.  game_type" class="gt_row gt_left">Mechanism design</td>
+<td headers="Tic. &amp; Info.  solution_concept" class="gt_row gt_left">DSIC / BIC</td>
+<td headers="Tic. &amp; Info.  complexity" class="gt_row gt_left">NP-hard (optimal)</td>
+<td headers="Tic. &amp; Info.  players" class="gt_row gt_left">N+1</td>
+</tr>
+<tr>
+<td headers="Tic. &amp; Info.  game_type" class="gt_row gt_left">Auctions</td>
+<td headers="Tic. &amp; Info.  solution_concept" class="gt_row gt_left">Dominant strategy</td>
+<td headers="Tic. &amp; Info.  complexity" class="gt_row gt_left">P (single-item)</td>
+<td headers="Tic. &amp; Info.  players" class="gt_row gt_left">N+1</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="4" class="gt_group_heading" scope="colgroup" id="Multi-Agent">Multi-Agent</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="Multi-Agent  game_type" class="gt_row gt_left">MARL</td>
+<td headers="Multi-Agent  solution_concept" class="gt_row gt_left">Convergence</td>
+<td headers="Multi-Agent  complexity" class="gt_row gt_left">No guarantee</td>
+<td headers="Multi-Agent  players" class="gt_row gt_left">N</td>
+</tr>
+<tr>
+<td headers="Multi-Agent  game_type" class="gt_row gt_left">Evolutionary</td>
+<td headers="Multi-Agent  solution_concept" class="gt_row gt_left">ESS</td>
+<td headers="Multi-Agent  complexity" class="gt_row gt_left">P (2x2)</td>
+<td headers="Multi-Agent  players" class="gt_row gt_left">Large</td>
+</tr>
+<tr>
+<td headers="Multi-Agent  game_type" class="gt_row gt_left">Mean-field</td>
+<td headers="Multi-Agent  solution_concept" class="gt_row gt_left">MFE</td>
+<td headers="Multi-Agent  complexity" class="gt_row gt_left">Open</td>
+<td headers="Multi-Agent  players" class="gt_row gt_left">Continuum</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="4" class="gt_group_heading" scope="colgroup" id="Advanced">Advanced</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="Advanced  game_type" class="gt_row gt_left">Network games</td>
+<td headers="Advanced  solution_concept" class="gt_row gt_left">Network Nash</td>
+<td headers="Advanced  complexity" class="gt_row gt_left">PPAD (general)</td>
+<td headers="Advanced  players" class="gt_row gt_left">N (network)</td>
+</tr>
+<tr>
+<td headers="Advanced  game_type" class="gt_row gt_left">Matching markets</td>
+<td headers="Advanced  solution_concept" class="gt_row gt_left">Stable matching</td>
+<td headers="Advanced  complexity" class="gt_row gt_left">P (Gale-Shapley)</td>
+<td headers="Advanced  players" class="gt_row gt_left">2 sides</td>
+</tr>
+<tr>
+<td headers="Advanced  game_type" class="gt_row gt_left">Bargaining</td>
+<td headers="Advanced  solution_concept" class="gt_row gt_left">Nash bargaining</td>
+<td headers="Advanced  complexity" class="gt_row gt_left">P (2P)</td>
+<td headers="Advanced  players" class="gt_row gt_left">2</td>
+</tr>
+<tr class="gt_group_heading_row">
+<th colspan="4" class="gt_group_heading" scope="colgroup" id="Ethics">Ethics</th>
+    </tr>
+<tr class="gt_row_group_first">
+<td headers="Ethics  game_type" class="gt_row gt_left">Social welfare</td>
+<td headers="Ethics  solution_concept" class="gt_row gt_left">SWF optimum</td>
+<td headers="Ethics  complexity" class="gt_row gt_left">Varies</td>
+<td headers="Ethics  players" class="gt_row gt_left">N</td>
+</tr>
+<tr>
+<td headers="Ethics  game_type" class="gt_row gt_left">Fairness games</td>
+<td headers="Ethics  solution_concept" class="gt_row gt_left">Constrained opt.</td>
+<td headers="Ethics  complexity" class="gt_row gt_left">NP-hard</td>
+<td headers="Ethics  players" class="gt_row gt_left">N + regulator</td>
+</tr>
+<tr>
+<td headers="Ethics  game_type" class="gt_row gt_left">Alignment games</td>
+<td headers="Ethics  solution_concept" class="gt_row gt_left">Program eq.</td>
+<td headers="Ethics  complexity" class="gt_row gt_left">Open</td>
+<td headers="Ethics  players" class="gt_row gt_left">2</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div class="sourceCode" id="cb1209"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Summary statistics</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\n=== Summary Statistics ===\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; === Summary Statistics ===</code></pre>
+<div class="sourceCode" id="cb1211"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Total game types covered:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">taxonomy</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Total game types covered: 19</code></pre>
+<div class="sourceCode" id="cb1213"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">complexity_counts</span> <span class="op">&lt;-</span> <span class="va">taxonomy</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span><span class="op">(</span><span class="va">complexity</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nComplexity distribution:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Complexity distribution:</code></pre>
+<div class="sourceCode" id="cb1215"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">complexity_counts</span>, n <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 16 × 2
+#&gt;    complexity            n
+#&gt;    &lt;chr&gt;             &lt;int&gt;
+#&gt;  1 Open                  2
+#&gt;  2 P                     2
+#&gt;  3 PPAD                  2
+#&gt;  4 Depends               1
+#&gt;  5 NP-hard               1
+#&gt;  6 NP-hard (general)     1
+#&gt;  7 NP-hard (optimal)     1
+#&gt;  8 No guarantee          1
+#&gt;  9 P (2P)                1
+#&gt; 10 P (2x2)               1
+#&gt; 11 P (Gale-Shapley)      1
+#&gt; 12 P (if exists)         1
+#&gt; 13 P (perf. info)        1
+#&gt; 14 P (single-item)       1
+#&gt; 15 PPAD (general)        1
+#&gt; 16 Varies                1</code></pre>
+<div class="sourceCode" id="cb1217"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nParts covered:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">taxonomy</span><span class="op">$</span><span class="va">part</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Parts covered: 6</code></pre>
+<div class="sourceCode" id="cb1219"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Unique solution concepts:"</span>, <span class="fu"><a href="https://dplyr.tidyverse.org/reference/n_distinct.html">n_distinct</a></span><span class="op">(</span><span class="va">taxonomy</span><span class="op">$</span><span class="va">solution_concept</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Unique solution concepts: 19</code></pre>
+<p><strong>Reflection.</strong> The taxonomy reveals a striking pattern: the most practically important games are often the hardest to solve. Two-player zero-sum games (poker, competitive pricing) have polynomial-time solutions, but general-sum games with incomplete information — which describe most real-world strategic interactions — are computationally intractable in the worst case.</p>
+<p>This complexity gap explains why heuristic methods (MARL, evolutionary dynamics, learned strategies) dominate in practice, and why the theoretical guarantees from classical game theory serve primarily as benchmarks and design principles rather than as implementable algorithms for large-scale systems.</p>
+</div>
+<div id="extensions-40" class="section level2" number="42.5">
+<h2>
+<span class="header-section-number">42.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-40"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Multi-agent foundation models.</strong> The deployment of large language models in multi-agent settings creates new game-theoretic questions about emergent strategy, manipulation, and alignment. See <span class="citation"><span class="nocase">Meta Fundamental AI Research Diplomacy Team (FAIR) et al.</span> (<a href="references.html#ref-meta2022">2022</a>)</span> on CICERO for Diplomacy.</li>
+<li>
+<strong>Algorithmic game theory.</strong> <span class="citation">Nisan et al. (<a href="references.html#ref-nisan2007">2007</a>)</span> provide a comprehensive treatment of computational aspects of game theory, including complexity results and approximation algorithms.</li>
+<li>
+<strong>AI safety and governance.</strong> The intersection of game theory and AI safety is surveyed by <span class="citation">Dafoe et al. (<a href="references.html#ref-dafoe2020">2020</a>)</span>. Responsible deployment requires combining the technical tools from this book with institutional and regulatory frameworks.</li>
+<li>
+<strong>Mechanism design for AI.</strong> As AI systems participate in markets and governance, designing mechanisms that remain incentive-compatible when some participants are AI agents is a frontier research area.</li>
+</ul>
+</div>
+<div id="exercises-40" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-40"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Complexity classification.</strong> For each of the following, state whether finding a Nash equilibrium is in P, PPAD-complete, or NP-hard: (a) a 2-player zero-sum game, (b) a 3-player general-sum game, (c) a 2-player general-sum game where we require the equilibrium to maximize social welfare. Briefly justify each answer.</p></li>
+<li><p><strong>Research survey.</strong> Choose one of the “Open” problems in the complexity landscape (e.g., mean-field equilibrium computation) and write a one-paragraph summary of the current state of knowledge, citing at least two references.</p></li>
+<li><p><strong>Book reflection.</strong> Pick any two chapters from different parts of this book. Describe a real-world scenario where both solution concepts would apply simultaneously (e.g., a repeated Bayesian game on a network). What additional challenges arise from combining the two frameworks?</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></div>
+<div class="next"><a href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-future"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li><a class="nav-link" href="#learning-objectives-40">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-40"><span class="header-section-number">42.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-40"><span class="header-section-number">42.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#computational-complexity-of-game-solving"><span class="header-section-number">42.2.1</span> Computational complexity of game solving</a></li>
+<li><a class="nav-link" href="#emerging-frontiers"><span class="header-section-number">42.2.2</span> Emerging frontiers</a></li>
+<li><a class="nav-link" href="#open-problems-in-marl"><span class="header-section-number">42.2.3</span> Open problems in MARL</a></li>
+<li><a class="nav-link" href="#responsible-deployment"><span class="header-section-number">42.2.4</span> Responsible deployment</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-future-implementation"><span class="header-section-number">42.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#complexity-landscape-of-game-theory-problems"><span class="header-section-number">42.3.1</span> Complexity landscape of game-theory problems</a></li>
+<li><a class="nav-link" href="#timeline-of-game-theory-and-ai-convergence"><span class="header-section-number">42.3.2</span> Timeline of game theory and AI convergence</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-38"><span class="header-section-number">42.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-40"><span class="header-section-number">42.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-40">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/41-future-of-strategy.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/41-future-of-strategy.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 6 Extensive-Form Games | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Game trees, backward induction, and subgame perfect equilibrium — the tools for analyzing sequential strategic interaction where timing and information matter.  Learning objectives Represent...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 6 Extensive-Form Games | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-extensive-form.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Game trees, backward induction, and subgame perfect equilibrium — the tools for analyzing sequential strategic interaction where timing and information matter.  Learning objectives Represent...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 6 Extensive-Form Games | Strategy in R">
+<meta name="twitter:description" content="Game trees, backward induction, and subgame perfect equilibrium — the tools for analyzing sequential strategic interaction where timing and information matter.  Learning objectives Represent...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 6 Extensive-Form Games | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="active" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-extensive-form" class="section level1" number="6">
+<h1>
+<span class="header-section-number">6</span> Extensive-Form Games<a class="anchor" aria-label="anchor" href="#sec-extensive-form"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Game trees, backward induction, and subgame perfect equilibrium — the tools for analyzing sequential strategic interaction where timing and information matter.</p>
+</blockquote>
+<div id="learning-objectives-4" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-4"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Represent sequential games as game trees with nodes, branches, and information sets.</li>
+<li>Translate between extensive-form and normal-form representations of a game.</li>
+<li>Apply backward induction to solve finite games of perfect information.</li>
+<li>Define subgame perfect equilibrium and explain why it refines Nash equilibrium.</li>
+<li>Implement backward induction in R and visualize game trees with ggplot2.</li>
+</ul>
+</div>
+<div id="motivation-4" class="section level2" number="6.1">
+<h2>
+<span class="header-section-number">6.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-4"><i class="fas fa-link"></i></a>
+</h2>
+<p>The normal-form games introduced in <a href="sec-normal-form.html#sec-normal-form">3</a> assume that players choose their strategies simultaneously, without observing each other’s actions. Many real-world interactions, however, unfold over time. A firm decides whether to enter a market <em>after</em> observing an incumbent’s investment in capacity. A prosecutor makes a plea offer <em>before</em> the defendant decides whether to accept it. A chess player moves <em>in response</em> to an opponent’s prior move.</p>
+<p>When the sequence of moves matters, we need a richer representation than a payoff matrix. The <strong>extensive form</strong> models games as trees, where each node represents a decision point, each branch represents an available action, and the tree’s structure encodes who moves when and what they know at the time of their decision. This representation, introduced by <span class="citation">Neumann &amp; Morgenstern (<a href="references.html#ref-von-neumann1944">1944</a>)</span> and refined by Kuhn (1953), is the standard framework for analyzing sequential strategic interaction.</p>
+<p>The key payoff of moving to the extensive form is a sharper solution concept. As we saw in <a href="sec-nash-equilibrium.html#sec-nash-equilibrium">4</a>, Nash equilibrium can sustain outcomes based on threats that a player would never actually carry out. Backward induction — reasoning from the end of the game back to the beginning — eliminates such non-credible threats and leads to <strong>subgame perfect equilibrium</strong> (SPE), a refinement that requires rational play in every subgame, not just on the equilibrium path.</p>
+</div>
+<div id="theory-4" class="section level2" number="6.2">
+<h2>
+<span class="header-section-number">6.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-4"><i class="fas fa-link"></i></a>
+</h2>
+<div id="game-trees" class="section level3" number="6.2.1">
+<h3>
+<span class="header-section-number">6.2.1</span> Game trees<a class="anchor" aria-label="anchor" href="#game-trees"><i class="fas fa-link"></i></a>
+</h3>
+<p>An <strong>extensive-form game</strong> consists of:</p>
+<ol style="list-style-type: decimal">
+<li>A set of players <span class="math inline">\(N = \{1, 2, \ldots, n\}\)</span>.</li>
+<li>A <strong>game tree</strong> — a directed tree with a distinguished root node.</li>
+<li>A <strong>player function</strong> assigning each non-terminal (decision) node to a player.</li>
+<li>
+<strong>Actions</strong> labeling the branches from each decision node.</li>
+<li>
+<strong>Information sets</strong> partitioning each player’s decision nodes into groups within which the player cannot distinguish (reflecting what the player knows at that point).</li>
+<li>
+<strong>Payoff vectors</strong> assigned to each terminal node.</li>
+</ol>
+<p>A game has <strong>perfect information</strong> if every information set contains exactly one node — that is, each player knows exactly where they are in the tree when they move. Chess, tic-tac-toe, and the entry deterrence game below are all games of perfect information. When an information set contains multiple nodes, the player faces <strong>imperfect information</strong> about prior moves; this connects to the analysis of Bayesian games in <a href="sec-bayesian-games.html#sec-bayesian-games">7</a>.</p>
+</div>
+<div id="strategies-in-extensive-form-vs.-normal-form" class="section level3" number="6.2.2">
+<h3>
+<span class="header-section-number">6.2.2</span> Strategies in extensive form vs. normal form<a class="anchor" aria-label="anchor" href="#strategies-in-extensive-form-vs.-normal-form"><i class="fas fa-link"></i></a>
+</h3>
+<p>A <strong>strategy</strong> in the extensive form is a complete contingent plan: it specifies an action at <em>every</em> information set where the player might be called to move, including those that the strategy itself makes unreachable. This is a subtle but important distinction from the normal form. Two extensive-form strategies that differ only at unreachable information sets map to the same normal-form strategy but can have different implications for subgame perfection.</p>
+<p>Any extensive-form game can be converted to a normal-form game (see <a href="sec-normal-form.html#sec-normal-form">3</a>) by enumerating all strategy combinations and computing the resulting payoffs. However, this conversion discards the sequential structure, and Nash equilibria of the normal form may include strategy profiles sustained by non-credible threats.</p>
+</div>
+<div id="backward-induction" class="section level3" number="6.2.3">
+<h3>
+<span class="header-section-number">6.2.3</span> Backward induction<a class="anchor" aria-label="anchor" href="#backward-induction"><i class="fas fa-link"></i></a>
+</h3>
+<p>For finite games of perfect information, <strong>backward induction</strong> provides a constructive algorithm for finding rational play:</p>
+<ol style="list-style-type: decimal">
+<li>Start at each terminal node and record the payoffs.</li>
+<li>Move to the decision nodes immediately preceding the terminal nodes. At each such node, the deciding player chooses the action that maximizes their payoff.</li>
+<li>Replace each such decision node with the terminal payoff that results from the optimal choice.</li>
+<li>Repeat until the root is reached.</li>
+</ol>
+<div class="rmdtip">
+<p><strong>Theorem: Zermelo–Kuhn</strong></p>
+<p>Every finite game of perfect information has at least one subgame perfect equilibrium in pure strategies, which can be found by backward induction <span class="citation">(<a href="references.html#ref-osborne2004">Osborne, 2004, Chapter 5</a>)</span>.</p>
+</div>
+</div>
+<div id="subgame-perfect-equilibrium" class="section level3" number="6.2.4">
+<h3>
+<span class="header-section-number">6.2.4</span> Subgame perfect equilibrium<a class="anchor" aria-label="anchor" href="#subgame-perfect-equilibrium"><i class="fas fa-link"></i></a>
+</h3>
+<p>A <strong>subgame</strong> of an extensive-form game is any subtree that (i) begins at a singleton information set, (ii) contains all successors of its root node, and (iii) does not break any information set.</p>
+<div class="rmdnote">
+<p><strong>Definition: Subgame Perfect Equilibrium</strong></p>
+<p>A strategy profile is a <strong>subgame perfect equilibrium</strong> (SPE) if it induces a Nash equilibrium in every subgame of the game.</p>
+</div>
+<p>Every SPE is a Nash equilibrium, but not every Nash equilibrium is subgame perfect. The additional requirement of rationality in <em>every</em> subgame rules out strategies that rely on non-credible threats — actions a player would not actually carry out if called upon to do so. This refinement is the central contribution of Selten (1965) and is fundamental to the analysis of sequential games throughout this book.</p>
+</div>
+</div>
+<div id="implementation-in-r-3" class="section level2" number="6.3">
+<h2>
+<span class="header-section-number">6.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#implementation-in-r-3"><i class="fas fa-link"></i></a>
+</h2>
+<p>We implement the entry deterrence game — a classic example from industrial organization — as a game tree using ggplot2, then solve it by backward induction.</p>
+<div id="defining-the-game-tree" class="section level3" number="6.3.1">
+<h3>
+<span class="header-section-number">6.3.1</span> Defining the game tree<a class="anchor" aria-label="anchor" href="#defining-the-game-tree"><i class="fas fa-link"></i></a>
+</h3>
+<p>Consider an <strong>entry deterrence game</strong> with two players:</p>
+<ul>
+<li>
+<strong>Entrant</strong> (Player 1) chooses to <strong>Enter</strong> or <strong>Stay Out</strong>.</li>
+<li>
+<strong>Incumbent</strong> (Player 2), if entry occurs, chooses to <strong>Accommodate</strong> or <strong>Fight</strong>.</li>
+</ul>
+<p>The payoffs are: if the entrant stays out, the incumbent keeps the monopoly (Entrant: 0, Incumbent: 3). If the entrant enters and the incumbent accommodates, both share the market (Entrant: 2, Incumbent: 1). If the entrant enters and the incumbent fights, both suffer losses (Entrant: -1, Incumbent: -1).</p>
+<div class="sourceCode" id="cb137"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define the game tree as a data structure</span></span>
+<span><span class="co"># Each node: id, player, label, x/y position</span></span>
+<span><span class="va">nodes</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  id     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"root"</span>, <span class="st">"inc"</span>, <span class="st">"t1"</span>, <span class="st">"t2"</span>, <span class="st">"t3"</span><span class="op">)</span>,</span>
+<span>  player <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Entrant"</span>, <span class="st">"Incumbent"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  label  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Entrant"</span>, <span class="st">"Incumbent"</span>, <span class="st">"(0, 3)"</span>, <span class="st">"(2, 1)"</span>, <span class="st">"(-1, -1)"</span><span class="op">)</span>,</span>
+<span>  x      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">2.5</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>  y      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1.5</span>, <span class="fl">1.5</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  is_terminal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Edges: from, to, action label</span></span>
+<span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  from_x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span>,</span>
+<span>  from_y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span>,</span>
+<span>  to_x   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="op">-</span><span class="fl">1.5</span>, <span class="fl">2.5</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>  to_y   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">1.5</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  action  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Enter"</span>, <span class="st">"Stay Out"</span>, <span class="st">"Accommodate"</span>, <span class="st">"Fight"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="drawing-the-game-tree" class="section level3" number="6.3.2">
+<h3>
+<span class="header-section-number">6.3.2</span> Drawing the game tree<a class="anchor" aria-label="anchor" href="#drawing-the-game-tree"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb138"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Backward induction result: at the incumbent's node, Accommodate (2,1)</span></span>
+<span><span class="co"># dominates Fight (-1,-1), so the incumbent accommodates.</span></span>
+<span><span class="co"># Knowing this, the entrant compares Enter -&gt; (2,1) vs Stay Out -&gt; (0,3):</span></span>
+<span><span class="co"># Entrant gets 2 &gt; 0, so Enter is optimal.</span></span>
+<span><span class="co"># SPE path: Enter -&gt; Accommodate</span></span>
+<span></span>
+<span><span class="va">spe_edges</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  from_x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1.5</span><span class="op">)</span>,</span>
+<span>  from_y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1.5</span><span class="op">)</span>,</span>
+<span>  to_x   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">2.5</span><span class="op">)</span>,</span>
+<span>  to_y   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_tree</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Draw all branches</span></span>
+<span></span>
+<span>  <span class="fu">geom_segment</span><span class="op">(</span>data <span class="op">=</span> <span class="va">edges</span>,</span>
+<span>               <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">from_x</span>, y <span class="op">=</span> <span class="va">from_y</span>, xend <span class="op">=</span> <span class="va">to_x</span>, yend <span class="op">=</span> <span class="va">to_y</span><span class="op">)</span>,</span>
+<span>               colour <span class="op">=</span> <span class="st">"grey60"</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Highlight SPE path</span></span>
+<span></span>
+<span>  <span class="fu">geom_segment</span><span class="op">(</span>data <span class="op">=</span> <span class="va">spe_edges</span>,</span>
+<span>               <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">from_x</span>, y <span class="op">=</span> <span class="va">from_y</span>, xend <span class="op">=</span> <span class="va">to_x</span>, yend <span class="op">=</span> <span class="va">to_y</span><span class="op">)</span>,</span>
+<span>               colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">1.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Decision nodes</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">nodes</span>, <span class="op">!</span><span class="va">is_terminal</span><span class="op">)</span>,</span>
+<span>             <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span>,</span>
+<span>             shape <span class="op">=</span> <span class="fl">21</span>, size <span class="op">=</span> <span class="fl">6</span>, fill <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>             colour <span class="op">=</span> <span class="st">"black"</span>, stroke <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Terminal nodes</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">nodes</span>, <span class="va">is_terminal</span><span class="op">)</span>,</span>
+<span>             <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span>,</span>
+<span>             shape <span class="op">=</span> <span class="fl">22</span>, size <span class="op">=</span> <span class="fl">5</span>, fill <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>             colour <span class="op">=</span> <span class="st">"black"</span>, stroke <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Node labels</span></span>
+<span>  <span class="fu">geom_text</span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">nodes</span>, <span class="op">!</span><span class="va">is_terminal</span><span class="op">)</span>,</span>
+<span>            <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>            vjust <span class="op">=</span> <span class="op">-</span><span class="fl">1.5</span>, fontface <span class="op">=</span> <span class="st">"bold"</span>, size <span class="op">=</span> <span class="fl">3.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_text</span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">nodes</span>, <span class="va">is_terminal</span><span class="op">)</span>,</span>
+<span>            <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>            vjust <span class="op">=</span> <span class="fl">1.8</span>, size <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Action labels on edges</span></span>
+<span>  <span class="fu">geom_text</span><span class="op">(</span>data <span class="op">=</span> <span class="va">edges</span>,</span>
+<span>            <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="op">(</span><span class="va">from_x</span> <span class="op">+</span> <span class="va">to_x</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span>,</span>
+<span>                y <span class="op">=</span> <span class="op">(</span><span class="va">from_y</span> <span class="op">+</span> <span class="va">to_y</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span>,</span>
+<span>                label <span class="op">=</span> <span class="va">action</span><span class="op">)</span>,</span>
+<span>            nudge_x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="op">-</span><span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>            nudge_y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="fl">0.15</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span><span class="op">)</span>,</span>
+<span>            size <span class="op">=</span> <span class="fl">3.3</span>, fontface <span class="op">=</span> <span class="st">"italic"</span>,</span>
+<span>            colour <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="st">"grey40"</span>, <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="st">"grey40"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="co"># Annotation for backward induction reasoning</span></span>
+<span>  <span class="fu">annotate</span><span class="op">(</span><span class="st">"label"</span>, x <span class="op">=</span> <span class="fl">2.8</span>, y <span class="op">=</span> <span class="fl">1.0</span>,</span>
+<span>           label <span class="op">=</span> <span class="st">"Incumbent prefers\n1 &gt; -1: Accommodate"</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">2.8</span>, fill <span class="op">=</span> <span class="st">"white"</span>, label.size <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>           colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">annotate</span><span class="op">(</span><span class="st">"label"</span>, x <span class="op">=</span> <span class="op">-</span><span class="fl">1.5</span>, y <span class="op">=</span> <span class="fl">2.8</span>,</span>
+<span>           label <span class="op">=</span> <span class="st">"Entrant prefers\n2 &gt; 0: Enter"</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">2.8</span>, fill <span class="op">=</span> <span class="st">"white"</span>, label.size <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>           colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_x_continuous</span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2.5</span>, <span class="fl">4</span><span class="op">)</span>, expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_y_continuous</span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.8</span>, <span class="fl">4</span><span class="op">)</span>, expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Backward Induction in the Entry Deterrence Game"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span></span>
+<span>    axis.text  <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    axis.title <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    axis.ticks <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    panel.grid <span class="op">=</span> <span class="fu">element_blank</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_tree</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:entry-deterrence-tree"></span>
+<img src="05-extensive-form_files/figure-html/entry-deterrence-tree-1.png" alt="Entry deterrence game solved by backward induction. Bold edges show the subgame perfect equilibrium path: the entrant enters and the incumbent accommodates. The struck-through branch (Fight) represents a non-credible threat." width="80%"><p class="caption">
+Figure 6.1: Entry deterrence game solved by backward induction. Bold edges show the subgame perfect equilibrium path: the entrant enters and the incumbent accommodates. The struck-through branch (Fight) represents a non-credible threat.
+</p>
+</div>
+<div class="sourceCode" id="cb139"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_tree</span>, <span class="st">"entry-deterrence-backward-induction"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="backward-induction-algorithm" class="section level3" number="6.3.3">
+<h3>
+<span class="header-section-number">6.3.3</span> Backward induction algorithm<a class="anchor" aria-label="anchor" href="#backward-induction-algorithm"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb140"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># A general backward induction solver for binary game trees</span></span>
+<span><span class="co"># encoded as nested lists</span></span>
+<span></span>
+<span><span class="va">backward_induction</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">node</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Terminal node: return payoffs</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">node</span><span class="op">$</span><span class="va">type</span> <span class="op">==</span> <span class="st">"terminal"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>payoffs <span class="op">=</span> <span class="va">node</span><span class="op">$</span><span class="va">payoffs</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="co"># Recursive: solve each child subtree</span></span>
+<span>  <span class="va">left</span>  <span class="op">&lt;-</span> <span class="fu">backward_induction</span><span class="op">(</span><span class="va">node</span><span class="op">$</span><span class="va">left</span><span class="op">)</span></span>
+<span>  <span class="va">right</span> <span class="op">&lt;-</span> <span class="fu">backward_induction</span><span class="op">(</span><span class="va">node</span><span class="op">$</span><span class="va">right</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># The moving player picks the branch maximizing their payoff</span></span>
+<span>  <span class="va">player_idx</span> <span class="op">&lt;-</span> <span class="va">node</span><span class="op">$</span><span class="va">player</span>  <span class="co"># 1 or 2</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">left</span><span class="op">$</span><span class="va">payoffs</span><span class="op">[</span><span class="va">player_idx</span><span class="op">]</span> <span class="op">&gt;=</span> <span class="va">right</span><span class="op">$</span><span class="va">payoffs</span><span class="op">[</span><span class="va">player_idx</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">chosen</span> <span class="op">&lt;-</span> <span class="va">left</span></span>
+<span>    <span class="va">action</span> <span class="op">&lt;-</span> <span class="va">node</span><span class="op">$</span><span class="va">left_action</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">chosen</span> <span class="op">&lt;-</span> <span class="va">right</span></span>
+<span>    <span class="va">action</span> <span class="op">&lt;-</span> <span class="va">node</span><span class="op">$</span><span class="va">right_action</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>    payoffs <span class="op">=</span> <span class="va">chosen</span><span class="op">$</span><span class="va">payoffs</span>,</span>
+<span>    path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>player <span class="op">=</span> <span class="va">player_idx</span>, action <span class="op">=</span> <span class="va">action</span><span class="op">)</span><span class="op">)</span>, <span class="va">chosen</span><span class="op">$</span><span class="va">path</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Encode the entry deterrence game</span></span>
+<span><span class="va">entry_game</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  type <span class="op">=</span> <span class="st">"decision"</span>, player <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  left_action <span class="op">=</span> <span class="st">"Stay Out"</span>,</span>
+<span>  left <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"terminal"</span>, payoffs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  right_action <span class="op">=</span> <span class="st">"Enter"</span>,</span>
+<span>  right <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>    type <span class="op">=</span> <span class="st">"decision"</span>, player <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>    left_action <span class="op">=</span> <span class="st">"Accommodate"</span>,</span>
+<span>    left <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"terminal"</span>, payoffs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    right_action <span class="op">=</span> <span class="st">"Fight"</span>,</span>
+<span>    right <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"terminal"</span>, payoffs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">backward_induction</span><span class="op">(</span><span class="va">entry_game</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"SPE outcome payoffs:"</span>, <span class="va">result</span><span class="op">$</span><span class="va">payoffs</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; SPE outcome payoffs: 2 1</code></pre>
+<div class="sourceCode" id="cb142"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"SPE path:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; SPE path:</code></pre>
+<div class="sourceCode" id="cb144"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">step</span> <span class="kw">in</span> <span class="va">result</span><span class="op">$</span><span class="va">path</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Player %d chooses: %s\n"</span>, <span class="va">step</span><span class="op">$</span><span class="va">player</span>, <span class="va">step</span><span class="op">$</span><span class="va">action</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   Player 1 chooses: Enter
+#&gt;   Player 2 chooses: Accommodate</code></pre>
+</div>
+</div>
+<div id="worked-example-4" class="section level2" number="6.4">
+<h2>
+<span class="header-section-number">6.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-4"><i class="fas fa-link"></i></a>
+</h2>
+<p>We now trace through the entry deterrence game step by step to see exactly how backward induction eliminates non-credible threats.</p>
+<p><strong>Step 1: Identify the last decision node.</strong> The incumbent’s node is reached only if the entrant enters. At this node, the incumbent has two choices:</p>
+<ul>
+<li>
+<strong>Accommodate</strong>: payoff to Incumbent = 1</li>
+<li>
+<strong>Fight</strong>: payoff to Incumbent = -1</li>
+</ul>
+<p>Since <span class="math inline">\(1 &gt; -1\)</span>, a rational incumbent chooses Accommodate. Fighting is a non-credible threat — the incumbent would never carry it out if actually called upon to decide.</p>
+<p><strong>Step 2: Fold back to the first decision node.</strong> Knowing that the incumbent will accommodate upon entry, the entrant faces an effective choice between:</p>
+<ul>
+<li>
+<strong>Stay Out</strong>: payoff to Entrant = 0</li>
+<li>
+<strong>Enter</strong>: payoff to Entrant = 2 (since the incumbent will accommodate)</li>
+</ul>
+<p>Since <span class="math inline">\(2 &gt; 0\)</span>, the entrant enters.</p>
+<p><strong>Step 3: The subgame perfect equilibrium.</strong> The SPE strategy profile is (Enter, Accommodate), yielding payoffs <span class="math inline">\((2, 1)\)</span>.</p>
+<div class="sourceCode" id="cb146"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Convert to normal form to show the Nash equilibrium issue</span></span>
+<span><span class="co"># Entrant: {Enter, Stay Out}</span></span>
+<span><span class="co"># Incumbent: {Accommodate, Fight}</span></span>
+<span><span class="va">A_entry</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Enter"</span>, <span class="st">"Stay Out"</span><span class="op">)</span>,</span>
+<span>                                  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Accommodate"</span>, <span class="st">"Fight"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_entry</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Enter"</span>, <span class="st">"Stay Out"</span><span class="op">)</span>,</span>
+<span>                                  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Accommodate"</span>, <span class="st">"Fight"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Normal-form representation:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Normal-form representation:</code></pre>
+<div class="sourceCode" id="cb148"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Entrant payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Entrant payoffs:</code></pre>
+<div class="sourceCode" id="cb150"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A_entry</span></span></code></pre></div>
+<pre><code>#&gt;          Accommodate Fight
+#&gt; Enter              2    -1
+#&gt; Stay Out           0     0</code></pre>
+<div class="sourceCode" id="cb152"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nIncumbent payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Incumbent payoffs:</code></pre>
+<div class="sourceCode" id="cb154"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">B_entry</span></span></code></pre></div>
+<pre><code>#&gt;          Accommodate Fight
+#&gt; Enter              1    -1
+#&gt; Stay Out           3     3</code></pre>
+<div class="sourceCode" id="cb156"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"solvers.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span><span class="op">(</span><span class="va">A_entry</span>, <span class="va">B_entry</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPure-strategy Nash equilibria:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Pure-strategy Nash equilibria:</code></pre>
+<div class="sourceCode" id="cb158"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">ne</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  (%s, %s) -&gt; payoffs (%d, %d)\n"</span>,</span>
+<span>              <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">A_entry</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">A_entry</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>              <span class="va">A_entry</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="va">B_entry</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   (Enter, Accommodate) -&gt; payoffs (2, 1)
+#&gt;   (Stay Out, Fight) -&gt; payoffs (0, 3)</code></pre>
+<p>The normal form reveals <strong>two</strong> Nash equilibria: (Enter, Accommodate) and (Stay Out, Fight). The second equilibrium involves the incumbent <em>threatening</em> to fight if entry occurs — a threat that deters the entrant. But we showed above that this threat is non-credible: if the incumbent actually had to carry it out, they would prefer to accommodate. Subgame perfection eliminates (Stay Out, Fight), leaving only (Enter, Accommodate) as the unique SPE. This is the power of backward induction as a refinement of Nash equilibrium.</p>
+</div>
+<div id="extensions-4" class="section level2" number="6.5">
+<h2>
+<span class="header-section-number">6.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-4"><i class="fas fa-link"></i></a>
+</h2>
+<p>The extensive form opens several directions explored later in this book:</p>
+<ul>
+<li>
+<strong>Bayesian games</strong> (<a href="sec-bayesian-games.html#sec-bayesian-games">7</a>) extend the extensive form to settings where players have private information about payoffs or types, using information sets to model uncertainty about nature’s prior moves.</li>
+<li>
+<strong>Repeated games</strong> (<a href="sec-repeated-games.html#sec-repeated-games">8</a>) can be viewed as extensive-form games with a particular tree structure, and the folk theorem relies on strategies conditioned on the history of play.</li>
+<li>
+<strong>Bargaining</strong> (Chapter 34) uses alternating-offer extensive-form games, where Rubinstein’s model yields a unique SPE through backward induction with discounting.</li>
+<li>
+<strong>Imperfect information</strong> generalizes the trees studied here by allowing information sets with multiple nodes, creating a bridge between the extensive form and the normal form.</li>
+</ul>
+<p>For the foundational treatment of extensive-form games and backward induction, see <span class="citation">Neumann &amp; Morgenstern (<a href="references.html#ref-von-neumann1944">1944</a>)</span> and <span class="citation">Osborne (<a href="references.html#ref-osborne2004">2004</a>)</span> (Chapters 5–7). The entry deterrence example follows the tradition of Selten’s chain-store paradox, which demonstrates the power of subgame perfection for eliminating non-credible threats in sequential games.</p>
+</div>
+<div id="exercises-4" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-4"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Ultimatum game.</strong> Consider a simplified ultimatum game where Player 1 proposes a split of 10 units, choosing either Fair (5, 5) or Greedy (8, 2). Player 2 then accepts or rejects; rejection gives both zero. Draw the game tree, find all Nash equilibria in the normal form, and identify the subgame perfect equilibrium using backward induction. Which Nash equilibria are eliminated by subgame perfection?</p></li>
+<li><p><strong>Three-stage game.</strong> Three players move in sequence. Player 1 chooses L or R; Player 2 observes this and chooses A or B; Player 3 observes both prior choices and chooses X or Y. Terminal payoffs are: (L, A, X) = (3, 2, 1), (L, A, Y) = (1, 3, 2), (L, B, X) = (0, 1, 4), (L, B, Y) = (2, 0, 3), (R, A, X) = (1, 1, 1), (R, A, Y) = (2, 2, 0), (R, B, X) = (4, 0, 2), (R, B, Y) = (0, 3, 3). Apply backward induction to find the SPE. Implement the game tree as a nested list in R and verify your answer with the <code>backward_induction()</code> function.</p></li>
+<li><p><strong>Non-credible threats.</strong> Modify the entry deterrence game so that the incumbent’s Fight payoff is 2 instead of -1 (perhaps representing a market where fighting is costless). Recompute the SPE. Does the equilibrium change? Explain economically why the threat to fight is now credible.</p></li>
+<li><p><strong>SPE vs. NE counting.</strong> Convert the ultimatum game from Exercise 1 to normal form. Count all pure-strategy Nash equilibria and all subgame perfect equilibria. Verify that the set of SPE is a strict subset of the set of NE.</p></li>
+<li><p><strong>Centipede game.</strong> Two players alternate for 4 rounds, each choosing to <strong>Stop</strong> (ending the game) or <strong>Continue</strong> (passing to the other player). At round <span class="math inline">\(k\)</span>, stopping gives the stopper <span class="math inline">\(k\)</span> and the other player <span class="math inline">\(0\)</span>. If both continue for all 4 rounds, each receives 3. What does backward induction predict? Implement this in R by extending <code>backward_induction()</code> to handle a 4-node sequential game. Discuss why human behaviour in laboratory experiments typically departs from the backward-induction prediction.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></div>
+<div class="next"><a href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-extensive-form"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="nav-link" href="#learning-objectives-4">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-4"><span class="header-section-number">6.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-4"><span class="header-section-number">6.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#game-trees"><span class="header-section-number">6.2.1</span> Game trees</a></li>
+<li><a class="nav-link" href="#strategies-in-extensive-form-vs.-normal-form"><span class="header-section-number">6.2.2</span> Strategies in extensive form vs. normal form</a></li>
+<li><a class="nav-link" href="#backward-induction"><span class="header-section-number">6.2.3</span> Backward induction</a></li>
+<li><a class="nav-link" href="#subgame-perfect-equilibrium"><span class="header-section-number">6.2.4</span> Subgame perfect equilibrium</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#implementation-in-r-3"><span class="header-section-number">6.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#defining-the-game-tree"><span class="header-section-number">6.3.1</span> Defining the game tree</a></li>
+<li><a class="nav-link" href="#drawing-the-game-tree"><span class="header-section-number">6.3.2</span> Drawing the game tree</a></li>
+<li><a class="nav-link" href="#backward-induction-algorithm"><span class="header-section-number">6.3.3</span> Backward induction algorithm</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-4"><span class="header-section-number">6.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-4"><span class="header-section-number">6.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-4">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/05-extensive-form.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/05-extensive-form.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

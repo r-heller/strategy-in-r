@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 23 Performance Optimization | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Profiling R code, vectorization strategies, memory-efficient history storage, and when to consider Rcpp — demonstrated on game-theory simulations.  Learning objectives Profile R code using...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 23 Performance Optimization | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-performance-rcpp.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Profiling R code, vectorization strategies, memory-efficient history storage, and when to consider Rcpp — demonstrated on game-theory simulations.  Learning objectives Profile R code using...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 23 Performance Optimization | Strategy in R">
+<meta name="twitter:description" content="Profiling R code, vectorization strategies, memory-efficient history storage, and when to consider Rcpp — demonstrated on game-theory simulations.  Learning objectives Profile R code using...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 23 Performance Optimization | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="active" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-performance-rcpp" class="section level1" number="23">
+<h1>
+<span class="header-section-number">23</span> Performance Optimization<a class="anchor" aria-label="anchor" href="#sec-performance-rcpp"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Profiling R code, vectorization strategies, memory-efficient history storage, and when to consider Rcpp — demonstrated on game-theory simulations.</p>
+</blockquote>
+<div id="learning-objectives-21" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-21"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Profile R code using <code><a href="https://rdrr.io/r/base/system.time.html">system.time()</a></code> and manual benchmarking to identify bottlenecks.</li>
+<li>Replace explicit loops with vectorized matrix operations for payoff computation.</li>
+<li>Pre-allocate data structures to avoid the performance cost of growing objects.</li>
+<li>Recognize when Rcpp would provide further speedups and describe the conceptual approach.</li>
+</ul>
+</div>
+<div id="motivation-21" class="section level2" number="23.1">
+<h2>
+<span class="header-section-number">23.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-21"><i class="fas fa-link"></i></a>
+</h2>
+<p>A single run of the Axelrod tournament (<a href="sec-axelrod-tournament.html#sec-axelrod-tournament">18</a>) with eight strategies and 200 rounds finishes in under a second. But scale the problem — 100 strategies, 1000 rounds, spatial grids of 10,000 agents, evolutionary dynamics over 500 generations — and naive R code can take hours. The difference between a simulation that runs in 30 seconds and one that runs in 30 minutes is often not a better algorithm, but better use of R’s strengths.</p>
+<p>R is slow when you fight it: growing vectors with <code><a href="https://rdrr.io/r/base/c.html">c()</a></code>, appending rows with <code><a href="https://rdrr.io/r/base/cbind.html">rbind()</a></code>, nested loops over scalar operations. R is fast when you work with it: pre-allocated matrices, vectorized arithmetic, and functions that call optimized C code under the hood. In this chapter, we profile a game-theory simulation, identify the bottlenecks, and eliminate them.</p>
+</div>
+<div id="theory-21" class="section level2" number="23.2">
+<h2>
+<span class="header-section-number">23.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-21"><i class="fas fa-link"></i></a>
+</h2>
+<div id="why-r-loops-are-slow" class="section level3" number="23.2.1">
+<h3>
+<span class="header-section-number">23.2.1</span> Why R loops are slow<a class="anchor" aria-label="anchor" href="#why-r-loops-are-slow"><i class="fas fa-link"></i></a>
+</h3>
+<p>R is an interpreted language with dynamic typing. Each iteration of a <code>for</code> loop involves type checking, memory allocation, and function dispatch. A loop that runs <span class="math inline">\(n\)</span> times incurs this overhead <span class="math inline">\(n\)</span> times. Vectorized operations like <code>A %*% x</code> delegate the loop to compiled C or Fortran code, paying the overhead once and executing the loop at native speed.</p>
+</div>
+<div id="three-levels-of-optimization" class="section level3" number="23.2.2">
+<h3>
+<span class="header-section-number">23.2.2</span> Three levels of optimization<a class="anchor" aria-label="anchor" href="#three-levels-of-optimization"><i class="fas fa-link"></i></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Vectorization</strong>: Replace element-wise loops with matrix operations. This is always the first step and often delivers 10–100x speedups.</li>
+<li>
+<strong>Memory pre-allocation</strong>: Replace <code>c(vec, new_val)</code> and <code>rbind(df, new_row)</code> with indexed assignment into pre-allocated objects. Growing objects forces R to copy the entire object on each append.</li>
+<li>
+<strong>Compiled code (Rcpp)</strong>: For algorithms that cannot be vectorized — complex conditional logic, recursive data structures, sequential dependencies — Rcpp lets you write inner loops in C++ while keeping the R interface. This is the tool of last resort, not the first.</li>
+</ol>
+</div>
+<div id="the-profiling-workflow" class="section level3" number="23.2.3">
+<h3>
+<span class="header-section-number">23.2.3</span> The profiling workflow<a class="anchor" aria-label="anchor" href="#the-profiling-workflow"><i class="fas fa-link"></i></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Measure</strong>: Use <code><a href="https://rdrr.io/r/base/system.time.html">system.time()</a></code> to get elapsed time.</li>
+<li>
+<strong>Identify</strong>: Find the hotspot — the innermost loop consuming most runtime.</li>
+<li>
+<strong>Optimize</strong>: Apply vectorization, pre-allocation, or Rcpp.</li>
+<li>
+<strong>Verify</strong>: Confirm the optimized code produces identical results.</li>
+</ol>
+</div>
+</div>
+<div id="sec-performance-implementation" class="section level2" number="23.3">
+<h2>
+<span class="header-section-number">23.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-performance-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-baseline-loop-based-spatial-pd" class="section level3" number="23.3.1">
+<h3>
+<span class="header-section-number">23.3.1</span> The baseline: loop-based spatial PD<a class="anchor" aria-label="anchor" href="#the-baseline-loop-based-spatial-pd"><i class="fas fa-link"></i></a>
+</h3>
+<p>We implement a simplified spatial Prisoner’s Dilemma on a grid, similar to <a href="sec-spatial-pd.html#sec-spatial-pd">19</a>. This is our baseline for optimization.</p>
+<div class="sourceCode" id="cb629"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">spatial_pd_loop</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span> <span class="op">=</span> <span class="fl">30</span>, <span class="va">rounds</span> <span class="op">=</span> <span class="fl">50</span>, <span class="va">b</span> <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">0L</span><span class="op">)</span>, <span class="va">n</span> <span class="op">*</span> <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Store cooperation history</span></span>
+<span>  <span class="va">coop_history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">rounds</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">rounds</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">coop_history</span><span class="op">[</span><span class="va">t</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Compute payoffs (loop version)</span></span>
+<span>    <span class="va">payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="co"># Four neighbors with periodic boundary</span></span>
+<span>        <span class="va">neighbors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="op">(</span><span class="va">i</span> <span class="op">-</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span>, <span class="va">j</span><span class="op">)</span>,</span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="va">i</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span>, <span class="va">j</span><span class="op">)</span>,</span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">i</span>, <span class="op">(</span><span class="op">(</span><span class="va">j</span> <span class="op">-</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">i</span>, <span class="op">(</span><span class="va">j</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>        <span class="op">)</span></span>
+<span>        <span class="kw">for</span> <span class="op">(</span><span class="va">nb</span> <span class="kw">in</span> <span class="va">neighbors</span><span class="op">)</span> <span class="op">{</span></span>
+<span>          <span class="va">ni</span> <span class="op">&lt;-</span> <span class="va">nb</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>; <span class="va">nj</span> <span class="op">&lt;-</span> <span class="va">nb</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span>          <span class="co"># PD payoff: C vs C = 1, C vs D = 0, D vs C = b, D vs D = 0</span></span>
+<span>          <span class="kw">if</span> <span class="op">(</span><span class="va">grid</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1L</span> <span class="op">&amp;&amp;</span> <span class="va">grid</span><span class="op">[</span><span class="va">ni</span>, <span class="va">nj</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1L</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="va">payoffs</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">payoffs</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>          <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">grid</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">==</span> <span class="fl">0L</span> <span class="op">&amp;&amp;</span> <span class="va">grid</span><span class="op">[</span><span class="va">ni</span>, <span class="va">nj</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1L</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="va">payoffs</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">payoffs</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">+</span> <span class="va">b</span></span>
+<span>          <span class="op">}</span></span>
+<span>        <span class="op">}</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="co"># Imitation: copy highest-earning neighbor or self</span></span>
+<span>    <span class="va">new_grid</span> <span class="op">&lt;-</span> <span class="va">grid</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">best_payoff</span> <span class="op">&lt;-</span> <span class="va">payoffs</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span></span>
+<span>        <span class="va">best_strategy</span> <span class="op">&lt;-</span> <span class="va">grid</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span></span>
+<span>        <span class="va">neighbors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="op">(</span><span class="va">i</span> <span class="op">-</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span>, <span class="va">j</span><span class="op">)</span>,</span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="va">i</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span>, <span class="va">j</span><span class="op">)</span>,</span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">i</span>, <span class="op">(</span><span class="op">(</span><span class="va">j</span> <span class="op">-</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">i</span>, <span class="op">(</span><span class="va">j</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>        <span class="op">)</span></span>
+<span>        <span class="kw">for</span> <span class="op">(</span><span class="va">nb</span> <span class="kw">in</span> <span class="va">neighbors</span><span class="op">)</span> <span class="op">{</span></span>
+<span>          <span class="va">ni</span> <span class="op">&lt;-</span> <span class="va">nb</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>; <span class="va">nj</span> <span class="op">&lt;-</span> <span class="va">nb</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span>          <span class="kw">if</span> <span class="op">(</span><span class="va">payoffs</span><span class="op">[</span><span class="va">ni</span>, <span class="va">nj</span><span class="op">]</span> <span class="op">&gt;</span> <span class="va">best_payoff</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="va">best_payoff</span> <span class="op">&lt;-</span> <span class="va">payoffs</span><span class="op">[</span><span class="va">ni</span>, <span class="va">nj</span><span class="op">]</span></span>
+<span>            <span class="va">best_strategy</span> <span class="op">&lt;-</span> <span class="va">grid</span><span class="op">[</span><span class="va">ni</span>, <span class="va">nj</span><span class="op">]</span></span>
+<span>          <span class="op">}</span></span>
+<span>        <span class="op">}</span></span>
+<span>        <span class="va">new_grid</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">best_strategy</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">grid</span> <span class="op">&lt;-</span> <span class="va">new_grid</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">coop_history</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="the-optimized-version-vectorized-spatial-pd" class="section level3" number="23.3.2">
+<h3>
+<span class="header-section-number">23.3.2</span> The optimized version: vectorized spatial PD<a class="anchor" aria-label="anchor" href="#the-optimized-version-vectorized-spatial-pd"><i class="fas fa-link"></i></a>
+</h3>
+<p>The key insight is that summing neighbor cooperators is a <strong>convolution</strong> — shifting the grid in each direction and adding. We replace the inner double loops with matrix shifts.</p>
+<div class="sourceCode" id="cb630"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Helper: shift a matrix with periodic boundaries</span></span>
+<span><span class="va">shift_matrix</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">mat</span>, <span class="va">row_shift</span>, <span class="va">col_shift</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">mat</span><span class="op">)</span></span>
+<span>  <span class="va">rows</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">row_shift</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>  <span class="va">cols</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">col_shift</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">n</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>  <span class="va">mat</span><span class="op">[</span><span class="va">rows</span>, <span class="va">cols</span><span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Vectorized spatial PD simulation</span></span>
+<span><span class="va">spatial_pd_vectorized</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span> <span class="op">=</span> <span class="fl">30</span>, <span class="va">rounds</span> <span class="op">=</span> <span class="fl">50</span>, <span class="va">b</span> <span class="op">=</span> <span class="fl">1.8</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">0L</span><span class="op">)</span>, <span class="va">n</span> <span class="op">*</span> <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">coop_history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">rounds</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">rounds</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">coop_history</span><span class="op">[</span><span class="va">t</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Count cooperating neighbors (vectorized)</span></span>
+<span>    <span class="va">coop_neighbors</span> <span class="op">&lt;-</span> <span class="fu">shift_matrix</span><span class="op">(</span><span class="va">grid</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>                      <span class="fu">shift_matrix</span><span class="op">(</span><span class="va">grid</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>                      <span class="fu">shift_matrix</span><span class="op">(</span><span class="va">grid</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>                      <span class="fu">shift_matrix</span><span class="op">(</span><span class="va">grid</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Payoffs: cooperators get 1 per cooperating neighbor</span></span>
+<span>    <span class="co">#          defectors get b per cooperating neighbor</span></span>
+<span>    <span class="va">payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">grid</span> <span class="op">==</span> <span class="fl">1L</span>, <span class="va">coop_neighbors</span>, <span class="va">b</span> <span class="op">*</span> <span class="va">coop_neighbors</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Imitation: compare with all neighbors' payoffs</span></span>
+<span>    <span class="va">best_payoff</span> <span class="op">&lt;-</span> <span class="va">payoffs</span></span>
+<span>    <span class="va">best_strategy</span> <span class="op">&lt;-</span> <span class="va">grid</span></span>
+<span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">shift</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="op">-</span><span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">nb_payoff</span> <span class="op">&lt;-</span> <span class="fu">shift_matrix</span><span class="op">(</span><span class="va">payoffs</span>, <span class="va">shift</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">shift</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="va">nb_strategy</span> <span class="op">&lt;-</span> <span class="fu">shift_matrix</span><span class="op">(</span><span class="va">grid</span>, <span class="va">shift</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">shift</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="va">update</span> <span class="op">&lt;-</span> <span class="va">nb_payoff</span> <span class="op">&gt;</span> <span class="va">best_payoff</span></span>
+<span>      <span class="va">best_payoff</span><span class="op">[</span><span class="va">update</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">nb_payoff</span><span class="op">[</span><span class="va">update</span><span class="op">]</span></span>
+<span>      <span class="va">best_strategy</span><span class="op">[</span><span class="va">update</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">nb_strategy</span><span class="op">[</span><span class="va">update</span><span class="op">]</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="va">grid</span> <span class="op">&lt;-</span> <span class="va">best_strategy</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">coop_history</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="benchmarking-the-two-implementations" class="section level3" number="23.3.3">
+<h3>
+<span class="header-section-number">23.3.3</span> Benchmarking the two implementations<a class="anchor" aria-label="anchor" href="#benchmarking-the-two-implementations"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb631"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Manual benchmarking function</span></span>
+<span><span class="va">benchmark_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">fn</span>, <span class="va">...</span>, <span class="va">n_reps</span> <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n_reps</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_reps</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span>    <span class="va">times</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span><span class="fu">fn</span><span class="op">(</span><span class="va">...</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">times</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">times</span><span class="op">)</span>, times <span class="op">=</span> <span class="va">times</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Benchmarking spatial PD (30x30 grid, 50 rounds)...\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Benchmarking spatial PD (30x30 grid, 50 rounds)...</code></pre>
+<div class="sourceCode" id="cb633"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">time_loop</span> <span class="op">&lt;-</span> <span class="fu">benchmark_fn</span><span class="op">(</span><span class="va">spatial_pd_loop</span>, n <span class="op">=</span> <span class="fl">30</span>, rounds <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">time_vec</span>  <span class="op">&lt;-</span> <span class="fu">benchmark_fn</span><span class="op">(</span><span class="va">spatial_pd_vectorized</span>, n <span class="op">=</span> <span class="fl">30</span>, rounds <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Loop-based:  %.3f s (sd: %.3f)\n"</span>, <span class="va">time_loop</span><span class="op">$</span><span class="va">mean</span>, <span class="va">time_loop</span><span class="op">$</span><span class="va">sd</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Loop-based:  0.243 s (sd: 0.030)</code></pre>
+<div class="sourceCode" id="cb635"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Vectorized:  %.3f s (sd: %.3f)\n"</span>, <span class="va">time_vec</span><span class="op">$</span><span class="va">mean</span>, <span class="va">time_vec</span><span class="op">$</span><span class="va">sd</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Vectorized:  0.015 s (sd: 0.011)</code></pre>
+<div class="sourceCode" id="cb637"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Speedup:     %.1fx\n"</span>, <span class="va">time_loop</span><span class="op">$</span><span class="va">mean</span> <span class="op">/</span> <span class="va">time_vec</span><span class="op">$</span><span class="va">mean</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Speedup:     16.2x</code></pre>
+</div>
+<div id="verifying-correctness" class="section level3" number="23.3.4">
+<h3>
+<span class="header-section-number">23.3.4</span> Verifying correctness<a class="anchor" aria-label="anchor" href="#verifying-correctness"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb639"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">result_loop</span> <span class="op">&lt;-</span> <span class="fu">spatial_pd_loop</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">20</span>, rounds <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">result_vec</span> <span class="op">&lt;-</span> <span class="fu">spatial_pd_vectorized</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">20</span>, rounds <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Verification: loop vs vectorized produce identical results:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Verification: loop vs vectorized produce identical results:</code></pre>
+<div class="sourceCode" id="cb641"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Max absolute difference: %.10f\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">result_loop</span> <span class="op">-</span> <span class="va">result_vec</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Max absolute difference: 0.0000000000</code></pre>
+<div class="sourceCode" id="cb643"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  All equal: %s\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/all.equal.html">all.equal</a></span><span class="op">(</span><span class="va">result_loop</span>, <span class="va">result_vec</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   All equal: TRUE</code></pre>
+</div>
+<div id="visualizing-the-benchmark" class="section level3" number="23.3.5">
+<h3>
+<span class="header-section-number">23.3.5</span> Visualizing the benchmark<a class="anchor" aria-label="anchor" href="#visualizing-the-benchmark"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb645"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bench_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  implementation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span><span class="op">)</span>,</span>
+<span>  mean_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">time_loop</span><span class="op">$</span><span class="va">mean</span>, <span class="va">time_vec</span><span class="op">$</span><span class="va">mean</span><span class="op">)</span>,</span>
+<span>  sd_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">time_loop</span><span class="op">$</span><span class="va">sd</span>, <span class="va">time_vec</span><span class="op">$</span><span class="va">sd</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>implementation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">implementation</span>,</span>
+<span>                                  levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_bench</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">bench_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">implementation</span>, y <span class="op">=</span> <span class="va">mean_time</span>,</span>
+<span>                                 fill <span class="op">=</span> <span class="va">implementation</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span><span class="op">(</span><span class="va">mean_time</span> <span class="op">-</span> <span class="va">sd_time</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>                    ymax <span class="op">=</span> <span class="va">mean_time</span> <span class="op">+</span> <span class="va">sd_time</span><span class="op">)</span>,</span>
+<span>                width <span class="op">=</span> <span class="fl">0.15</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%.3fs"</span>, <span class="va">mean_time</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>, size <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Loop-based"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>                                <span class="st">"Vectorized"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Spatial PD: Loop vs Vectorized"</span>,</span>
+<span>       x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="st">"Execution time (seconds)"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_bench</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:performance-comparison"></span>
+<img src="22-performance-rcpp_files/figure-html/performance-comparison-1.png" alt="Execution time comparison for the spatial Prisoner's Dilemma simulation. Vectorized matrix operations eliminate the inner double loops, achieving a substantial speedup over the naive loop-based implementation." width="80%"><p class="caption">
+Figure 23.1: Execution time comparison for the spatial Prisoner’s Dilemma simulation. Vectorized matrix operations eliminate the inner double loops, achieving a substantial speedup over the naive loop-based implementation.
+</p>
+</div>
+<div class="sourceCode" id="cb646"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_bench</span>, <span class="st">"performance-comparison"</span>, width <span class="op">=</span> <span class="fl">6</span>, height <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="scaling-behavior" class="section level3" number="23.3.6">
+<h3>
+<span class="header-section-number">23.3.6</span> Scaling behavior<a class="anchor" aria-label="anchor" href="#scaling-behavior"><i class="fas fa-link"></i></a>
+</h3>
+<p>How does each implementation scale with grid size?</p>
+<div class="sourceCode" id="cb647"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">grid_sizes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">15</span>, <span class="fl">20</span>, <span class="fl">30</span>, <span class="fl">40</span>, <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">scaling_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">n</span> <span class="kw">in</span> <span class="va">grid_sizes</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span>  <span class="va">t_loop</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span><span class="fu">spatial_pd_loop</span><span class="op">(</span>n <span class="op">=</span> <span class="va">n</span>, rounds <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span>  <span class="va">t_vec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span><span class="fu">spatial_pd_vectorized</span><span class="op">(</span>n <span class="op">=</span> <span class="va">n</span>, rounds <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span></span>
+<span>  <span class="va">scaling_results</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">scaling_results</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    grid_size <span class="op">=</span> <span class="va">n</span>,</span>
+<span>    n_cells <span class="op">=</span> <span class="va">n</span><span class="op">^</span><span class="fl">2</span>,</span>
+<span>    loop_time <span class="op">=</span> <span class="va">t_loop</span>,</span>
+<span>    vec_time <span class="op">=</span> <span class="va">t_vec</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">scaling_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">scaling_results</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">loop_time</span>, <span class="va">vec_time</span><span class="op">)</span>,</span>
+<span>               names_to <span class="op">=</span> <span class="st">"method"</span>, values_to <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">method</span> <span class="op">==</span> <span class="st">"loop_time"</span>, <span class="st">"Loop-based"</span>, <span class="st">"Vectorized"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_scaling</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">scaling_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">n_cells</span>, y <span class="op">=</span> <span class="va">time</span>, colour <span class="op">=</span> <span class="va">method</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_log10</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html">comma_format</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_log10</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html">label_number</a></span><span class="op">(</span>suffix <span class="op">=</span> <span class="st">"s"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Loop-based"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>                                  <span class="st">"Vectorized"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                      name <span class="op">=</span> <span class="st">"Implementation"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotation_logticks.html">annotation_logticks</a></span><span class="op">(</span>sides <span class="op">=</span> <span class="st">"bl"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Scaling: Time vs Grid Size (log-log)"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Number of cells"</span>, y <span class="op">=</span> <span class="st">"Execution time"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_scaling</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:performance-scaling"></span>
+<img src="22-performance-rcpp_files/figure-html/performance-scaling-1.png" alt="Scaling behavior of loop-based vs vectorized spatial PD as grid size increases (fixed at 20 rounds). Both scale roughly quadratically in the number of cells (as expected for a grid simulation), but the vectorized version maintains a consistent advantage. The log-log plot reveals parallel scaling slopes with a constant multiplicative gap." width="80%"><p class="caption">
+Figure 23.2: Scaling behavior of loop-based vs vectorized spatial PD as grid size increases (fixed at 20 rounds). Both scale roughly quadratically in the number of cells (as expected for a grid simulation), but the vectorized version maintains a consistent advantage. The log-log plot reveals parallel scaling slopes with a constant multiplicative gap.
+</p>
+</div>
+<div class="sourceCode" id="cb648"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_scaling</span>, <span class="st">"performance-scaling"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-19" class="section level2" number="23.4">
+<h2>
+<span class="header-section-number">23.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-19"><i class="fas fa-link"></i></a>
+</h2>
+<p>We optimize the spatial PD simulation step by step, measuring the impact of each change.</p>
+<div id="step-1-profile-the-baseline" class="section level3" number="23.4.1">
+<h3>
+<span class="header-section-number">23.4.1</span> Step 1: Profile the baseline<a class="anchor" aria-label="anchor" href="#step-1-profile-the-baseline"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb649"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Profiling the loop-based implementation (40x40, 20 rounds):\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Profiling the loop-based implementation (40x40, 20 rounds):</code></pre>
+<div class="sourceCode" id="cb651"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">t_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>  <span class="va">result_full</span> <span class="op">&lt;-</span> <span class="fu">spatial_pd_loop</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">40</span>, rounds <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Total elapsed time: %.3f s\n"</span>, <span class="va">t_full</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Total elapsed time: 0.165 s</code></pre>
+<div class="sourceCode" id="cb653"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Bottleneck: nested loops over all cells and neighbors for payoff computation.\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Bottleneck: nested loops over all cells and neighbors for payoff computation.</code></pre>
+<div class="sourceCode" id="cb655"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Each round iterates over n^2 cells x 4 neighbors = 6,400 scalar operations.\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Each round iterates over n^2 cells x 4 neighbors = 6,400 scalar operations.</code></pre>
+<div class="sourceCode" id="cb657"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Over 20 rounds: 128,000 individual loop iterations.\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Over 20 rounds: 128,000 individual loop iterations.</code></pre>
+</div>
+<div id="step-2-vectorize-payoff-computation" class="section level3" number="23.4.2">
+<h3>
+<span class="header-section-number">23.4.2</span> Step 2: Vectorize payoff computation<a class="anchor" aria-label="anchor" href="#step-2-vectorize-payoff-computation"><i class="fas fa-link"></i></a>
+</h3>
+<p>The key rewrite replaces the inner double loop with four matrix-shift operations.</p>
+<div class="sourceCode" id="cb659"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">t_vec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span><span class="va">result_vec</span> <span class="op">&lt;-</span> <span class="fu">spatial_pd_vectorized</span><span class="op">(</span>n <span class="op">=</span> <span class="fl">40</span>, rounds <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Vectorized time:  %.3f s\n"</span>, <span class="va">t_vec</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Vectorized time:  0.006 s</code></pre>
+<div class="sourceCode" id="cb661"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Loop-based time:  %.3f s\n"</span>, <span class="va">t_full</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Loop-based time:  0.165 s</code></pre>
+<div class="sourceCode" id="cb663"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Speedup:          %.1fx\n"</span>, <span class="va">t_full</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span> <span class="op">/</span> <span class="va">t_vec</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Speedup:          27.5x</code></pre>
+</div>
+<div id="step-3-memory-pre-allocation-matters" class="section level3" number="23.4.3">
+<h3>
+<span class="header-section-number">23.4.3</span> Step 3: Memory pre-allocation matters<a class="anchor" aria-label="anchor" href="#step-3-memory-pre-allocation-matters"><i class="fas fa-link"></i></a>
+</h3>
+<p>A common anti-pattern in R is growing a data frame row by row. We demonstrate the cost.</p>
+<div class="sourceCode" id="cb665"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Growing a vector vs pre-allocated</span></span>
+<span><span class="va">grow_vector</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">v</span>, <span class="va">i</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">v</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">prealloc_vector</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">v</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">i</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">v</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">sizes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">5000</span>, <span class="fl">10000</span>, <span class="fl">20000</span><span class="op">)</span></span>
+<span><span class="va">prealloc_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">sz</span> <span class="kw">in</span> <span class="va">sizes</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">t_grow</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span><span class="fu">grow_vector</span><span class="op">(</span><span class="va">sz</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span></span>
+<span>  <span class="va">t_pre</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html">system.time</a></span><span class="op">(</span><span class="fu">prealloc_vector</span><span class="op">(</span><span class="va">sz</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span></span>
+<span>  <span class="va">prealloc_results</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">prealloc_results</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    n <span class="op">=</span> <span class="va">sz</span>, grow <span class="op">=</span> <span class="va">t_grow</span>, prealloc <span class="op">=</span> <span class="va">t_pre</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">prealloc_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">prealloc_results</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Growing vs pre-allocated vector (seconds):\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Growing vs pre-allocated vector (seconds):</code></pre>
+<div class="sourceCode" id="cb667"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  %-8s  %-8s  %-10s  %s\n"</span>, <span class="st">"n"</span>, <span class="st">"Grow"</span>, <span class="st">"Prealloc"</span>, <span class="st">"Speedup"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   n         Grow      Prealloc    Speedup</code></pre>
+<div class="sourceCode" id="cb669"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">prealloc_df</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sp</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">prealloc_df</span><span class="op">$</span><span class="va">prealloc</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="va">prealloc_df</span><span class="op">$</span><span class="va">grow</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">/</span><span class="va">prealloc_df</span><span class="op">$</span><span class="va">prealloc</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="kw">else</span> <span class="cn">Inf</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  %-8s  %-8.4f  %-10.4f  %.0fx\n"</span>,</span>
+<span>              <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/comma.html">comma</a></span><span class="op">(</span><span class="va">prealloc_df</span><span class="op">$</span><span class="va">n</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span>, <span class="va">prealloc_df</span><span class="op">$</span><span class="va">grow</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">prealloc_df</span><span class="op">$</span><span class="va">prealloc</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">sp</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   1,000     0.0040    0.0030      1x
+#&gt;   5,000     0.0180    0.0000      Infx
+#&gt;   10,000    0.0740    0.0010      74x
+#&gt;   20,000    0.2730    0.0010      273x</code></pre>
+<p>The growing vector copies the entire vector on each append, producing <span class="math inline">\(O(n^2)\)</span> total work. Pre-allocation is <span class="math inline">\(O(n)\)</span>.</p>
+</div>
+<div id="when-to-consider-rcpp" class="section level3" number="23.4.4">
+<h3>
+<span class="header-section-number">23.4.4</span> When to consider Rcpp<a class="anchor" aria-label="anchor" href="#when-to-consider-rcpp"><i class="fas fa-link"></i></a>
+</h3>
+<p>For the spatial PD, vectorization delivered a large speedup because the core operation — summing neighbor states — is naturally expressed as matrix arithmetic. But some algorithms resist vectorization:</p>
+<ul>
+<li>
+<strong>Sequential dependencies</strong>: When round <span class="math inline">\(t\)</span>’s outcome depends on the order of updates within round <span class="math inline">\(t-1\)</span>, you cannot compute all cells simultaneously.</li>
+<li>
+<strong>Complex conditionals</strong>: Strategies with multi-step memory require per-agent branching that <code><a href="https://rdrr.io/r/base/ifelse.html">ifelse()</a></code> cannot cleanly express.</li>
+<li>
+<strong>Graph traversal</strong>: Shortest paths and clustering on irregular networks involve queues and visited-node tracking that are inherently sequential.</li>
+</ul>
+<p>In these cases, <strong>Rcpp</strong> lets you write the inner loop in C++ while keeping the R interface. A typical C++ function takes R matrices as input, performs the sequential computation, and returns the result — with 50–200x speedups over R loops.</p>
+<p>The decision rule is simple: <strong>vectorize first, Rcpp second</strong>. If the bottleneck can be expressed as matrix operations, do that. Only reach for Rcpp when it cannot.</p>
+</div>
+</div>
+<div id="extensions-21" class="section level2" number="23.5">
+<h2>
+<span class="header-section-number">23.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-21"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Parallel computation</strong>: R’s <code>parallel</code> package provides <code>mclapply()</code> (Unix) and <code>parLapply()</code> (all platforms) for embarrassingly parallel tasks like running independent replications.</li>
+<li>
+<strong>Sparse matrices</strong>: The <code>Matrix</code> package provides sparse representations that reduce storage from <span class="math inline">\(O(n^2)\)</span> to <span class="math inline">\(O(m)\)</span> for networks with <span class="math inline">\(m\)</span> edges, and its arithmetic skips zero entries.</li>
+<li>
+<strong>Byte compilation</strong>: <code><a href="https://rdrr.io/r/compiler/compile.html">compiler::cmpfun()</a></code> byte-compiles R functions, delivering 2–5x speedups for loop-heavy code with zero code changes.</li>
+<li>
+<strong>Profiling tools</strong>: <code><a href="https://rdrr.io/r/utils/Rprof.html">Rprof()</a></code> provides sampling-based profiling, and <code>profvis::profvis()</code> offers interactive flame-graph visualizations for identifying hotspots.</li>
+</ul>
+</div>
+<div id="exercises-21" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-21"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Vectorize the tournament.</strong> The <code>run_tournament()</code> function in <code>R/axelrod.R</code> uses nested loops over strategy pairs. Each match is independent, so the outer loop is embarrassingly parallel. Write a version that stores results in a pre-allocated matrix and measure the speedup.</p></li>
+<li><p><strong>Memory scaling.</strong> Modify the spatial PD to store the full grid at each round using (a) a growing list <code>grid_list[[t]] &lt;- grid</code> and (b) a pre-allocated 3D array <code>array(0L, dim = c(n, n, rounds))</code>. Benchmark both for <span class="math inline">\(n = 50\)</span> and 100 rounds.</p></li>
+<li><p><strong>Identify the crossover.</strong> Find the grid size <span class="math inline">\(n\)</span> at which the vectorized version becomes faster than the loop-based version. Plot both timing curves and mark the crossover point.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></div>
+<div class="next"><a href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-performance-rcpp"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li><a class="nav-link" href="#learning-objectives-21">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-21"><span class="header-section-number">23.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-21"><span class="header-section-number">23.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#why-r-loops-are-slow"><span class="header-section-number">23.2.1</span> Why R loops are slow</a></li>
+<li><a class="nav-link" href="#three-levels-of-optimization"><span class="header-section-number">23.2.2</span> Three levels of optimization</a></li>
+<li><a class="nav-link" href="#the-profiling-workflow"><span class="header-section-number">23.2.3</span> The profiling workflow</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-performance-implementation"><span class="header-section-number">23.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-baseline-loop-based-spatial-pd"><span class="header-section-number">23.3.1</span> The baseline: loop-based spatial PD</a></li>
+<li><a class="nav-link" href="#the-optimized-version-vectorized-spatial-pd"><span class="header-section-number">23.3.2</span> The optimized version: vectorized spatial PD</a></li>
+<li><a class="nav-link" href="#benchmarking-the-two-implementations"><span class="header-section-number">23.3.3</span> Benchmarking the two implementations</a></li>
+<li><a class="nav-link" href="#verifying-correctness"><span class="header-section-number">23.3.4</span> Verifying correctness</a></li>
+<li><a class="nav-link" href="#visualizing-the-benchmark"><span class="header-section-number">23.3.5</span> Visualizing the benchmark</a></li>
+<li><a class="nav-link" href="#scaling-behavior"><span class="header-section-number">23.3.6</span> Scaling behavior</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-19"><span class="header-section-number">23.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#step-1-profile-the-baseline"><span class="header-section-number">23.4.1</span> Step 1: Profile the baseline</a></li>
+<li><a class="nav-link" href="#step-2-vectorize-payoff-computation"><span class="header-section-number">23.4.2</span> Step 2: Vectorize payoff computation</a></li>
+<li><a class="nav-link" href="#step-3-memory-pre-allocation-matters"><span class="header-section-number">23.4.3</span> Step 3: Memory pre-allocation matters</a></li>
+<li><a class="nav-link" href="#when-to-consider-rcpp"><span class="header-section-number">23.4.4</span> When to consider Rcpp</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#extensions-21"><span class="header-section-number">23.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-21">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/22-performance-rcpp.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/22-performance-rcpp.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 36 Conflict and Cooperation Models | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Applying game theory to international relations and social dilemmas — Chicken, Stag Hunt, Schelling focal points, and arms race dynamics.  Learning objectives Formulate the Chicken game and Stag...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 36 Conflict and Cooperation Models | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-conflict-cooperation.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Applying game theory to international relations and social dilemmas — Chicken, Stag Hunt, Schelling focal points, and arms race dynamics.  Learning objectives Formulate the Chicken game and Stag...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 36 Conflict and Cooperation Models | Strategy in R">
+<meta name="twitter:description" content="Applying game theory to international relations and social dilemmas — Chicken, Stag Hunt, Schelling focal points, and arms race dynamics.  Learning objectives Formulate the Chicken game and Stag...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 36 Conflict and Cooperation Models | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="active" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-conflict-cooperation" class="section level1" number="36">
+<h1>
+<span class="header-section-number">36</span> Conflict and Cooperation Models<a class="anchor" aria-label="anchor" href="#sec-conflict-cooperation"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Applying game theory to international relations and social dilemmas — Chicken, Stag Hunt, Schelling focal points, and arms race dynamics.</p>
+</blockquote>
+<div id="learning-objectives-34" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-34"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Formulate the Chicken game and Stag Hunt as strategic-form games, and identify their Nash equilibria.</li>
+<li>Explain Schelling focal points and why coordination can succeed without communication.</li>
+<li>Model an arms race as an iterated Prisoner’s Dilemma and analyze how strategy choice affects long-run payoffs.</li>
+<li>Simulate cooperation and defection dynamics under varying risk-dominance conditions in R.</li>
+</ul>
+</div>
+<div id="motivation-34" class="section level2" number="36.1">
+<h2>
+<span class="header-section-number">36.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-34"><i class="fas fa-link"></i></a>
+</h2>
+<p>In October 1962, the United States and the Soviet Union stood at the brink of nuclear war during the Cuban Missile Crisis. Each side could escalate (hold firm) or back down (accommodate). Mutual escalation risked catastrophe; mutual accommodation preserved the status quo. But each side preferred the other to back down first.</p>
+<p>This scenario has the structure of the <strong>Chicken game</strong>, one of several canonical models that game theory uses to study conflict and cooperation. Alongside <strong>Stag Hunt</strong> (coordination under risk) and the <strong>iterated Prisoner’s Dilemma</strong> (arms races), these models illuminate when cooperation emerges, when it collapses, and what institutional features sustain it.</p>
+</div>
+<div id="theory-34" class="section level2" number="36.2">
+<h2>
+<span class="header-section-number">36.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-34"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-chicken-game" class="section level3" number="36.2.1">
+<h3>
+<span class="header-section-number">36.2.1</span> The Chicken game<a class="anchor" aria-label="anchor" href="#the-chicken-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>In Chicken, two players simultaneously choose to Swerve (cooperate) or Drive Straight (defect). The payoff structure is:</p>
+<div class="inline-table"><table id="tbl-chicken" class="table table-sm">
+<caption>Chicken game payoff matrix</caption>
+<thead><tr class="header">
+<th align="left"></th>
+<th align="center">Swerve</th>
+<th align="center">Straight</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Swerve</strong></td>
+<td align="center"><span class="math inline">\((3, 3)\)</span></td>
+<td align="center"><span class="math inline">\((2, 4)\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Straight</strong></td>
+<td align="center"><span class="math inline">\((4, 2)\)</span></td>
+<td align="center"><span class="math inline">\((0, 0)\)</span></td>
+</tr>
+</tbody>
+</table></div>
+<p>Mutual defection (Straight, Straight) is the worst outcome for both — a “crash.” The game has <strong>two pure-strategy Nash equilibria</strong>: (Swerve, Straight) and (Straight, Swerve), plus a mixed equilibrium. Unlike the Prisoner’s Dilemma, mutual defection is <em>not</em> an equilibrium.</p>
+</div>
+<div id="stag-hunt" class="section level3" number="36.2.2">
+<h3>
+<span class="header-section-number">36.2.2</span> Stag Hunt<a class="anchor" aria-label="anchor" href="#stag-hunt"><i class="fas fa-link"></i></a>
+</h3>
+<p>In Stag Hunt, two hunters choose to hunt Stag (cooperate) or hunt Hare (defect). Hunting stag requires coordination; a lone stag hunter gets nothing.</p>
+<div class="inline-table"><table id="tbl-stag-hunt" class="table table-sm">
+<caption>Stag Hunt payoff matrix</caption>
+<thead><tr class="header">
+<th align="left"></th>
+<th align="center">Stag</th>
+<th align="center">Hare</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><strong>Stag</strong></td>
+<td align="center"><span class="math inline">\((4, 4)\)</span></td>
+<td align="center"><span class="math inline">\((0, 3)\)</span></td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Hare</strong></td>
+<td align="center"><span class="math inline">\((3, 0)\)</span></td>
+<td align="center"><span class="math inline">\((3, 3)\)</span></td>
+</tr>
+</tbody>
+</table></div>
+<p>The game has two pure-strategy NE: (Stag, Stag) is <strong>payoff-dominant</strong> (both prefer it) while (Hare, Hare) is <strong>risk-dominant</strong> (safer against uncertainty). The mixed NE has each player hunting Stag with probability <span class="math inline">\(p^* = 3/4\)</span>. The tension between payoff dominance and risk dominance is central to coordination problems.</p>
+<div class="rmdnote">
+<p><strong>Definition: Risk Dominance</strong></p>
+<p>In a <span class="math inline">\(2 \times 2\)</span> game with two pure-strategy NE, equilibrium <span class="math inline">\((a_1, a_2)\)</span> <strong>risk-dominates</strong> <span class="math inline">\((b_1, b_2)\)</span> if the product of deviation losses is larger:</p>
+<p><span class="math display">\[
+(u_1(a_1,a_2) - u_1(b_1,a_2))(u_2(a_1,a_2) - u_2(a_1,b_2)) &gt; (u_1(b_1,b_2) - u_1(a_1,b_2))(u_2(b_1,b_2) - u_2(b_1,a_2))
+\]</span></p>
+</div>
+</div>
+<div id="schelling-focal-points" class="section level3" number="36.2.3">
+<h3>
+<span class="header-section-number">36.2.3</span> Schelling focal points<a class="anchor" aria-label="anchor" href="#schelling-focal-points"><i class="fas fa-link"></i></a>
+</h3>
+<p>Schelling <span class="citation">(<a href="references.html#ref-schelling1960">1960</a>)</span> observed that players often coordinate successfully by choosing options that are culturally or contextually prominent — <strong>focal points</strong>. When asked to meet in New York without specifying a location, most people choose Grand Central Station at noon. Focal points operate outside the formal game structure but resolve the equilibrium selection problem in practice.</p>
+</div>
+<div id="arms-race-as-iterated-prisoners-dilemma" class="section level3" number="36.2.4">
+<h3>
+<span class="header-section-number">36.2.4</span> Arms race as iterated Prisoner’s Dilemma<a class="anchor" aria-label="anchor" href="#arms-race-as-iterated-prisoners-dilemma"><i class="fas fa-link"></i></a>
+</h3>
+<p>An arms race between two nations can be modeled as a repeated Prisoner’s Dilemma. In each period, each nation chooses to Arm (defect) or Disarm (cooperate). The stage-game payoffs reflect that mutual disarmament is efficient, but each side has a unilateral incentive to arm. Over many rounds, strategies like Tit-for-Tat can sustain cooperation, but sufficiently hawkish strategies or finite horizons can trigger arms races.</p>
+</div>
+</div>
+<div id="sec-conflict-implementation" class="section level2" number="36.3">
+<h2>
+<span class="header-section-number">36.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-conflict-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="stag-hunt-dynamics-under-varying-risk-dominance" class="section level3" number="36.3.1">
+<h3>
+<span class="header-section-number">36.3.1</span> Stag Hunt dynamics under varying risk dominance<a class="anchor" aria-label="anchor" href="#stag-hunt-dynamics-under-varying-risk-dominance"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1017"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">simulate_stag_hunt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span>, <span class="va">c_val</span>, <span class="va">d_val</span>, <span class="va">n_pop</span> <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>                               <span class="va">n_periods</span> <span class="op">=</span> <span class="fl">50</span>, <span class="va">p0_seq</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.95</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Payoffs: Stag/Stag=a, Stag/Hare=b, Hare/Stag=c, Hare/Hare=d</span></span>
+<span>  <span class="co"># Replicator dynamics: dp/dt = p(1-p)[EU(Stag) - EU(Hare)]</span></span>
+<span>  <span class="co"># EU(Stag) = p*a + (1-p)*b,  EU(Hare) = p*c + (1-p)*d</span></span>
+<span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="va">p0_seq</span>, <span class="kw">function</span><span class="op">(</span><span class="va">p0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p0</span></span>
+<span>    <span class="va">trajectory</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>t <span class="op">=</span> <span class="fl">0</span>, p_stag <span class="op">=</span> <span class="va">p</span>, p0 <span class="op">=</span> <span class="va">p0</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">t_step</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_periods</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">eu_stag</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">*</span> <span class="va">a</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="va">b</span></span>
+<span>      <span class="va">eu_hare</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">*</span> <span class="va">c_val</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="va">d_val</span></span>
+<span>      <span class="va">dp</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">eu_stag</span> <span class="op">-</span> <span class="va">eu_hare</span><span class="op">)</span></span>
+<span>      <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">p</span> <span class="op">+</span> <span class="va">dp</span> <span class="op">*</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span>  <span class="co"># Euler step</span></span>
+<span>      <span class="va">trajectory</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">trajectory</span>,</span>
+<span>                               <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>t <span class="op">=</span> <span class="va">t_step</span>, p_stag <span class="op">=</span> <span class="va">p</span>, p0 <span class="op">=</span> <span class="va">p0</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">trajectory</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="va">results</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Baseline Stag Hunt: a=4, b=0, c=3, d=3</span></span>
+<span><span class="va">stag_dynamics</span> <span class="op">&lt;-</span> <span class="fu">simulate_stag_hunt</span><span class="op">(</span>a <span class="op">=</span> <span class="fl">4</span>, b <span class="op">=</span> <span class="fl">0</span>, c_val <span class="op">=</span> <span class="fl">3</span>, d_val <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Mixed NE threshold: p* = (d - b) / (a - c - b + d) = 3/4</span></span>
+<span><span class="va">p_star</span> <span class="op">&lt;-</span> <span class="fl">3</span> <span class="op">/</span> <span class="fl">4</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Stag Hunt mixed NE threshold: p* = %.2f\n"</span>, <span class="va">p_star</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Stag Hunt mixed NE threshold: p* = 0.75</code></pre>
+<div class="sourceCode" id="cb1019"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Populations starting above p* converge to (Stag, Stag).\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Populations starting above p* converge to (Stag, Stag).</code></pre>
+<div class="sourceCode" id="cb1021"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Populations starting below p* converge to (Hare, Hare).\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Populations starting below p* converge to (Hare, Hare).</code></pre>
+</div>
+<div id="phase-diagram-cooperation-vs.-defection-basins" class="section level3" number="36.3.2">
+<h3>
+<span class="header-section-number">36.3.2</span> Phase diagram: cooperation vs. defection basins<a class="anchor" aria-label="anchor" href="#phase-diagram-cooperation-vs.-defection-basins"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1023"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Three regimes: vary d (safe payoff) to shift risk dominance</span></span>
+<span><span class="va">regimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  d_val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3.5</span><span class="op">)</span>,</span>
+<span>  label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Weak risk (d=2)"</span>, <span class="st">"Baseline (d=3)"</span>, <span class="st">"Strong risk (d=3.5)"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">phase_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">regimes</span><span class="op">)</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">dyn</span> <span class="op">&lt;-</span> <span class="fu">simulate_stag_hunt</span><span class="op">(</span>a <span class="op">=</span> <span class="fl">4</span>, b <span class="op">=</span> <span class="fl">0</span>, c_val <span class="op">=</span> <span class="va">regimes</span><span class="op">$</span><span class="va">d_val</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>                            d_val <span class="op">=</span> <span class="va">regimes</span><span class="op">$</span><span class="va">d_val</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>                            p0_seq <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.9</span>, by <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">dyn</span><span class="op">$</span><span class="va">regime</span> <span class="op">&lt;-</span> <span class="va">regimes</span><span class="op">$</span><span class="va">label</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span>  <span class="va">dyn</span><span class="op">$</span><span class="va">p_star</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">regimes</span><span class="op">$</span><span class="va">d_val</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">4</span> <span class="op">-</span> <span class="va">regimes</span><span class="op">$</span><span class="va">d_val</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">regimes</span><span class="op">$</span><span class="va">d_val</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">dyn</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">phase_data</span><span class="op">$</span><span class="va">regime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">phase_data</span><span class="op">$</span><span class="va">regime</span>, levels <span class="op">=</span> <span class="va">regimes</span><span class="op">$</span><span class="va">label</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_phase</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">phase_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">t</span>, y <span class="op">=</span> <span class="va">p_stag</span>, group <span class="op">=</span> <span class="va">p0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, alpha <span class="op">=</span> <span class="fl">0.5</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">p_star</span><span class="op">)</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>,</span>
+<span>             colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">regime</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Time period"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Proportion hunting Stag"</span>,</span>
+<span>                     limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/percent_format.html">percent</a></span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Stag Hunt: Basins of Attraction under Varying Risk Dominance"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_phase</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:stag-hunt-basins"></span>
+<img src="35-conflict-cooperation_files/figure-html/stag-hunt-basins-1.png" alt="Phase diagram of Stag Hunt replicator dynamics under three risk-dominance regimes. Each curve is one trajectory starting from a different initial proportion of Stag hunters. The dashed line marks the mixed-NE threshold separating the basins of attraction." width="80%"><p class="caption">
+Figure 36.1: Phase diagram of Stag Hunt replicator dynamics under three risk-dominance regimes. Each curve is one trajectory starting from a different initial proportion of Stag hunters. The dashed line marks the mixed-NE threshold separating the basins of attraction.
+</p>
+</div>
+<div class="sourceCode" id="cb1024"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_phase</span>, <span class="st">"stag-hunt-basins"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="arms-race-simulation" class="section level3" number="36.3.3">
+<h3>
+<span class="header-section-number">36.3.3</span> Arms race simulation<a class="anchor" aria-label="anchor" href="#arms-race-simulation"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1025"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">simulate_arms_race</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">strategy1</span>, <span class="va">strategy2</span>, <span class="va">n_rounds</span> <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>                               <span class="va">payoffs</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>CC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span>, CD <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>                                              DC <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">0</span><span class="op">)</span>, DD <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># strategy: function(own_history, opp_history) -&gt; "C" or "D"</span></span>
+<span>  <span class="va">h1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="va">h2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>round <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">integer</a></span><span class="op">(</span><span class="op">)</span>, a1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="op">)</span>, a2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                    pay1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="op">)</span>, pay2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_rounds</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">a1</span> <span class="op">&lt;-</span> <span class="fu">strategy1</span><span class="op">(</span><span class="va">h1</span>, <span class="va">h2</span><span class="op">)</span></span>
+<span>    <span class="va">a2</span> <span class="op">&lt;-</span> <span class="fu">strategy2</span><span class="op">(</span><span class="va">h2</span>, <span class="va">h1</span><span class="op">)</span></span>
+<span>    <span class="va">key</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">a1</span>, <span class="va">a2</span><span class="op">)</span></span>
+<span>    <span class="va">pay</span> <span class="op">&lt;-</span> <span class="va">payoffs</span><span class="op">[[</span><span class="va">key</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">results</span>,</span>
+<span>                         <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>round <span class="op">=</span> <span class="va">r</span>, a1 <span class="op">=</span> <span class="va">a1</span>, a2 <span class="op">=</span> <span class="va">a2</span>,</span>
+<span>                                pay1 <span class="op">=</span> <span class="va">pay</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, pay2 <span class="op">=</span> <span class="va">pay</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">h1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">h1</span>, <span class="va">a1</span><span class="op">)</span></span>
+<span>    <span class="va">h2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">h2</span>, <span class="va">a2</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>cum_pay1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="va">pay1</span><span class="op">)</span>, cum_pay2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="va">pay2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Define strategies</span></span>
+<span><span class="va">always_defect</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="st">"D"</span></span>
+<span><span class="va">always_cooperate</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="st">"C"</span></span>
+<span><span class="va">tit_for_tat</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">opp</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="st">"C"</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">tail</a></span><span class="op">(</span><span class="va">opp</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">grim_trigger</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">opp</span> <span class="op">==</span> <span class="st">"D"</span><span class="op">)</span><span class="op">)</span> <span class="st">"D"</span> <span class="kw">else</span> <span class="st">"C"</span></span></code></pre></div>
+<div class="sourceCode" id="cb1026"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">matchups</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>s1 <span class="op">=</span> <span class="va">tit_for_tat</span>, s2 <span class="op">=</span> <span class="va">tit_for_tat</span>, name <span class="op">=</span> <span class="st">"TfT vs TfT"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>s1 <span class="op">=</span> <span class="va">always_defect</span>, s2 <span class="op">=</span> <span class="va">always_defect</span>, name <span class="op">=</span> <span class="st">"AllD vs AllD"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>s1 <span class="op">=</span> <span class="va">tit_for_tat</span>, s2 <span class="op">=</span> <span class="va">always_defect</span>, name <span class="op">=</span> <span class="st">"TfT vs AllD"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>s1 <span class="op">=</span> <span class="va">grim_trigger</span>, s2 <span class="op">=</span> <span class="va">tit_for_tat</span>, name <span class="op">=</span> <span class="st">"Grim vs TfT"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">arms_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="va">matchups</span>, <span class="kw">function</span><span class="op">(</span><span class="va">m</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu">simulate_arms_race</span><span class="op">(</span><span class="va">m</span><span class="op">$</span><span class="va">s1</span>, <span class="va">m</span><span class="op">$</span><span class="va">s2</span>, n_rounds <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span></span>
+<span>    <span class="va">sim</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">round</span>, cumulative <span class="op">=</span> <span class="va">cum_pay1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>player <span class="op">=</span> <span class="st">"Nation 1"</span>, matchup <span class="op">=</span> <span class="va">m</span><span class="op">$</span><span class="va">name</span><span class="op">)</span>,</span>
+<span>    <span class="va">sim</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">round</span>, cumulative <span class="op">=</span> <span class="va">cum_pay2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>player <span class="op">=</span> <span class="st">"Nation 2"</span>, matchup <span class="op">=</span> <span class="va">m</span><span class="op">$</span><span class="va">name</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_arms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">arms_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">round</span>, y <span class="op">=</span> <span class="va">cumulative</span>,</span>
+<span>                                colour <span class="op">=</span> <span class="va">player</span>, linetype <span class="op">=</span> <span class="va">player</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">matchup</span>, ncol <span class="op">=</span> <span class="fl">2</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">]</span>, name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_linetype_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"solid"</span>, <span class="st">"dashed"</span><span class="op">)</span>, name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Round"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Cumulative payoff"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Arms Race Dynamics: Iterated Prisoner's Dilemma"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_arms</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:arms-race"></span>
+<img src="35-conflict-cooperation_files/figure-html/arms-race-1.png" alt="Cumulative payoffs over 50 rounds of an arms race (iterated PD) under four strategy matchups. Tit-for-Tat sustains cooperation, while Always Defect locks both sides into low payoffs." width="80%"><p class="caption">
+Figure 36.2: Cumulative payoffs over 50 rounds of an arms race (iterated PD) under four strategy matchups. Tit-for-Tat sustains cooperation, while Always Defect locks both sides into low payoffs.
+</p>
+</div>
+<div class="sourceCode" id="cb1027"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_arms</span>, <span class="st">"arms-race-dynamics"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-32" class="section level2" number="36.4">
+<h2>
+<span class="header-section-number">36.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-32"><i class="fas fa-link"></i></a>
+</h2>
+<div id="cuban-missile-crisis-as-a-chicken-game" class="section level3" number="36.4.1">
+<h3>
+<span class="header-section-number">36.4.1</span> Cuban Missile Crisis as a Chicken game<a class="anchor" aria-label="anchor" href="#cuban-missile-crisis-as-a-chicken-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>In October 1962, the US and USSR faced a standoff over Soviet missiles in Cuba. We model this as a Chicken game with the following interpretation:</p>
+<ul>
+<li>
+<strong>Swerve</strong> = back down (US removes Turkish missiles / USSR removes Cuban missiles)</li>
+<li>
+<strong>Straight</strong> = hold firm (maintain military posture)</li>
+</ul>
+<div class="sourceCode" id="cb1028"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Payoff matrix (US perspective first, USSR second)</span></span>
+<span><span class="va">A_chicken</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">0</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                    dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Back Down"</span>, <span class="st">"Hold Firm"</span><span class="op">)</span>,</span>
+<span>                                   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Back Down"</span>, <span class="st">"Hold Firm"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_chicken</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">0</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                    dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Back Down"</span>, <span class="st">"Hold Firm"</span><span class="op">)</span>,</span>
+<span>                                   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Back Down"</span>, <span class="st">"Hold Firm"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"US payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; US payoffs:</code></pre>
+<div class="sourceCode" id="cb1030"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A_chicken</span></span></code></pre></div>
+<pre><code>#&gt;           Back Down Hold Firm
+#&gt; Back Down         3         2
+#&gt; Hold Firm         4         0</code></pre>
+<div class="sourceCode" id="cb1032"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nUSSR payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; USSR payoffs:</code></pre>
+<div class="sourceCode" id="cb1034"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">B_chicken</span></span></code></pre></div>
+<pre><code>#&gt;           Back Down Hold Firm
+#&gt; Back Down         3         4
+#&gt; Hold Firm         2         0</code></pre>
+<p><strong>Step 1: Find all Nash equilibria.</strong></p>
+<div class="sourceCode" id="cb1036"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"solvers.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pure_ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_pure_nash</span><span class="op">(</span><span class="va">A_chicken</span>, <span class="va">B_chicken</span><span class="op">)</span></span>
+<span><span class="va">mixed_ne</span> <span class="op">&lt;-</span> <span class="fu">solve_2x2_mixed_nash</span><span class="op">(</span><span class="va">A_chicken</span>, <span class="va">B_chicken</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Pure-strategy NE:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Pure-strategy NE:</code></pre>
+<div class="sourceCode" id="cb1038"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">pure_ne</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  (US: %s, USSR: %s) -&gt; payoffs (%d, %d)\n"</span>,</span>
+<span>              <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">A_chicken</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">A_chicken</span><span class="op">)</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>              <span class="va">A_chicken</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="va">B_chicken</span><span class="op">[</span><span class="va">eq</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">eq</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   (US: Back Down, USSR: Hold Firm) -&gt; payoffs (2, 4)
+#&gt;   (US: Hold Firm, USSR: Back Down) -&gt; payoffs (4, 2)</code></pre>
+<div class="sourceCode" id="cb1040"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nMixed NE: US backs down with p = %.2f, USSR backs down with q = %.2f\n"</span>,</span>
+<span>            <span class="va">mixed_ne</span><span class="op">$</span><span class="va">p</span>, <span class="va">mixed_ne</span><span class="op">$</span><span class="va">q</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Step 2: Analyze expected payoffs and crisis risk.</strong></p>
+<div class="sourceCode" id="cb1041"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="va">mixed_ne</span><span class="op">$</span><span class="va">p</span></span>
+<span><span class="va">q</span> <span class="op">&lt;-</span> <span class="va">mixed_ne</span><span class="op">$</span><span class="va">q</span></span>
+<span></span>
+<span><span class="co"># Probability of nuclear war (both hold firm)</span></span>
+<span><span class="va">p_war</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">q</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Probability of mutual escalation (war): %.1f%%\n"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">p_war</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Expected payoffs at mixed NE</span></span>
+<span><span class="va">eu_us</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">*</span> <span class="va">q</span> <span class="op">*</span> <span class="fl">3</span> <span class="op">+</span> <span class="va">p</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="va">q</span> <span class="op">*</span> <span class="fl">4</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0</span></span>
+<span><span class="va">eu_ussr</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">*</span> <span class="va">q</span> <span class="op">*</span> <span class="fl">3</span> <span class="op">+</span> <span class="va">p</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">4</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="va">q</span> <span class="op">*</span> <span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">q</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Expected payoff at mixed NE: US = %.2f, USSR = %.2f\n"</span>, <span class="va">eu_us</span>, <span class="va">eu_ussr</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Both sides would prefer mutual accommodation (3, 3).\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Both sides would prefer mutual accommodation (3, 3).</code></pre>
+<p><strong>Step 3: Commitment and credibility.</strong> In practice, the crisis was resolved because the US committed to a naval blockade (a costly signal of resolve) while offering a face-saving exit: a secret agreement to remove Jupiter missiles from Turkey. This transformed the game by changing the perceived payoffs — making “Hold Firm” more credible for the US while reducing the USSR’s cost of backing down.</p>
+</div>
+</div>
+<div id="extensions-34" class="section level2" number="36.5">
+<h2>
+<span class="header-section-number">36.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-34"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Evolutionary dynamics</strong> on Chicken and Stag Hunt are explored in <a href="#sec-evolutionary-dynamics"><strong>??</strong></a>, where mixed equilibria correspond to polymorphic population states.</li>
+<li>
+<strong>Repeated interaction</strong> transforms one-shot Chicken into a folk-theorem setting where cooperation can be sustained (<a href="sec-repeated-games.html#sec-repeated-games">8</a>).</li>
+<li>
+<strong>Incomplete information</strong> versions of Chicken model situations where each player is uncertain about the other’s resolve — see <span class="citation">Osborne (<a href="references.html#ref-osborne2004">2004</a>)</span> (Chapter 9).</li>
+<li>
+<strong>Network effects</strong> on coordination games are covered in <a href="#sec-networks"><strong>??</strong></a>, where Stag Hunt dynamics depend on the structure of social connections.</li>
+</ul>
+</div>
+<div id="exercises-34" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-34"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Risk dominance in Stag Hunt.</strong> Modify the Stag Hunt payoffs so that the mixed-NE threshold is <span class="math inline">\(p^* = 0.5\)</span> instead of <span class="math inline">\(0.75\)</span>. What values of <span class="math inline">\((a, b, c, d)\)</span> achieve this? Simulate the replicator dynamics and verify that the basins of attraction are now equal in size.</p></li>
+<li><p><strong>Chicken with asymmetric payoffs.</strong> Suppose the US values “holding firm” at 5 instead of 4 (more hawkish). Recompute the mixed-strategy NE. How does the probability of mutual escalation change? Interpret the result in terms of the paradox that greater resolve can increase the risk of catastrophe.</p></li>
+<li><p><strong>Arms race tournament.</strong> Implement a round-robin tournament among four strategies: Always Cooperate, Always Defect, Tit-for-Tat, and Grim Trigger. Each pair plays 100 rounds of the iterated PD. Compute total payoffs for each strategy and rank them. Which strategy wins? Does this match Axelrod’s tournament results?</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></div>
+<div class="next"><a href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-conflict-cooperation"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="nav-link" href="#learning-objectives-34">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-34"><span class="header-section-number">36.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-34"><span class="header-section-number">36.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-chicken-game"><span class="header-section-number">36.2.1</span> The Chicken game</a></li>
+<li><a class="nav-link" href="#stag-hunt"><span class="header-section-number">36.2.2</span> Stag Hunt</a></li>
+<li><a class="nav-link" href="#schelling-focal-points"><span class="header-section-number">36.2.3</span> Schelling focal points</a></li>
+<li><a class="nav-link" href="#arms-race-as-iterated-prisoners-dilemma"><span class="header-section-number">36.2.4</span> Arms race as iterated Prisoner’s Dilemma</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-conflict-implementation"><span class="header-section-number">36.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#stag-hunt-dynamics-under-varying-risk-dominance"><span class="header-section-number">36.3.1</span> Stag Hunt dynamics under varying risk dominance</a></li>
+<li><a class="nav-link" href="#phase-diagram-cooperation-vs.-defection-basins"><span class="header-section-number">36.3.2</span> Phase diagram: cooperation vs. defection basins</a></li>
+<li><a class="nav-link" href="#arms-race-simulation"><span class="header-section-number">36.3.3</span> Arms race simulation</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-32"><span class="header-section-number">36.4</span> Worked example</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#cuban-missile-crisis-as-a-chicken-game"><span class="header-section-number">36.4.1</span> Cuban Missile Crisis as a Chicken game</a></li></ul>
+</li>
+<li><a class="nav-link" href="#extensions-34"><span class="header-section-number">36.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-34">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/35-conflict-cooperation.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/35-conflict-cooperation.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

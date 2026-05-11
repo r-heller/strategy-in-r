@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 38 Ethical Frameworks for Strategic AI | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Consequentialism, deontology, and virtue ethics applied to AI decisions, with formal social welfare functions for resource allocation.  Learning objectives Distinguish consequentialist,...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 38 Ethical Frameworks for Strategic AI | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-ethics-frameworks.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Consequentialism, deontology, and virtue ethics applied to AI decisions, with formal social welfare functions for resource allocation.  Learning objectives Distinguish consequentialist,...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 38 Ethical Frameworks for Strategic AI | Strategy in R">
+<meta name="twitter:description" content="Consequentialism, deontology, and virtue ethics applied to AI decisions, with formal social welfare functions for resource allocation.  Learning objectives Distinguish consequentialist,...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 38 Ethical Frameworks for Strategic AI | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="active" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-ethics-frameworks" class="section level1" number="38">
+<h1>
+<span class="header-section-number">38</span> Ethical Frameworks for Strategic AI<a class="anchor" aria-label="anchor" href="#sec-ethics-frameworks"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Consequentialism, deontology, and virtue ethics applied to AI decisions, with formal social welfare functions for resource allocation.</p>
+</blockquote>
+<div id="learning-objectives-36" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-36"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Distinguish consequentialist, deontological, and virtue-ethics perspectives on strategic AI decisions.</li>
+<li>Formalize utilitarian, Rawlsian, and Nash social welfare functions and compute their optima.</li>
+<li>Implement and compare welfare criteria for multi-agent resource allocation in R.</li>
+<li>Identify Pareto-efficient allocations and locate welfare-maximizing points on the Pareto frontier.</li>
+</ul>
+</div>
+<div id="motivation-36" class="section level2" number="38.1">
+<h2>
+<span class="header-section-number">38.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-36"><i class="fas fa-link"></i></a>
+</h2>
+<p>An autonomous system must allocate a scarce resource — say, bandwidth, computing capacity, or medical supplies — among multiple agents. A purely strategic analysis tells us what equilibrium outcomes look like, but it says nothing about which equilibrium is <em>desirable</em>. Should we maximize total benefit (utilitarianism)? Protect the worst-off agent (Rawlsian maximin)? Find a balanced compromise (Nash bargaining)?</p>
+<p>These questions are not merely philosophical. Every multi-agent system that resolves conflicts among stakeholders implicitly embeds an ethical framework in its objective function. Making the framework explicit allows designers to reason about trade-offs, justify choices, and audit outcomes.</p>
+</div>
+<div id="theory-36" class="section level2" number="38.2">
+<h2>
+<span class="header-section-number">38.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-36"><i class="fas fa-link"></i></a>
+</h2>
+<div id="three-ethical-lenses" class="section level3" number="38.2.1">
+<h3>
+<span class="header-section-number">38.2.1</span> Three ethical lenses<a class="anchor" aria-label="anchor" href="#three-ethical-lenses"><i class="fas fa-link"></i></a>
+</h3>
+<p><strong>Consequentialism</strong> evaluates actions by their outcomes. In a game-theoretic setting, the most common consequentialist criterion is <em>utilitarianism</em>: choose the outcome that maximizes the sum of payoffs across all agents.</p>
+<p><strong>Deontology</strong> evaluates actions by whether they conform to rules or duties, regardless of consequences. In mechanism design this corresponds to <em>constraints</em> — for example, requiring that no agent is made worse off than their outside option (individual rationality) or that the mechanism treats agents symmetrically.</p>
+<p><strong>Virtue ethics</strong> asks what a well-functioning agent <em>would</em> do. In AI alignment, this maps to designing agents that exhibit desirable dispositions — honesty, fairness, cooperativeness — as stable character traits rather than case-by-case calculations.</p>
+</div>
+<div id="social-welfare-functions" class="section level3" number="38.2.2">
+<h3>
+<span class="header-section-number">38.2.2</span> Social welfare functions<a class="anchor" aria-label="anchor" href="#social-welfare-functions"><i class="fas fa-link"></i></a>
+</h3>
+<p>Given <span class="math inline">\(n\)</span> agents with utilities <span class="math inline">\(u_1, u_2, \ldots, u_n\)</span> over an allocation <span class="math inline">\(x\)</span>, we define three standard social welfare functions (SWFs):</p>
+<p><strong>Utilitarian SWF</strong> — maximize total welfare:
+<span class="math display" id="eq:utilitarian">\[\begin{equation}
+W_U(x) = \sum_{i=1}^{n} u_i(x)
+\tag{38.1}
+\end{equation}\]</span></p>
+<p><strong>Rawlsian (maximin) SWF</strong> — maximize the welfare of the worst-off agent:
+<span class="math display" id="eq:rawlsian">\[\begin{equation}
+W_R(x) = \min_{i} \; u_i(x)
+\tag{38.2}
+\end{equation}\]</span></p>
+<p><strong>Nash SWF</strong> — maximize the product of utilities (equivalent to Nash bargaining with equal bargaining power):
+<span class="math display" id="eq:nash-swf">\[\begin{equation}
+W_N(x) = \prod_{i=1}^{n} u_i(x)
+\tag{38.3}
+\end{equation}\]</span></p>
+<div class="rmdnote">
+<p><strong>Pareto efficiency</strong></p>
+<p>An allocation <span class="math inline">\(x\)</span> is <strong>Pareto efficient</strong> if there is no alternative <span class="math inline">\(x'\)</span> such that <span class="math inline">\(u_i(x') \geq u_i(x)\)</span> for all <span class="math inline">\(i\)</span> with strict inequality for at least one. All three SWF optima lie on the Pareto frontier, but they generally select different points.</p>
+</div>
+</div>
+<div id="impossibility-and-trade-offs" class="section level3" number="38.2.3">
+<h3>
+<span class="header-section-number">38.2.3</span> Impossibility and trade-offs<a class="anchor" aria-label="anchor" href="#impossibility-and-trade-offs"><i class="fas fa-link"></i></a>
+</h3>
+<p>Arrow’s impossibility theorem and its descendants show that no social welfare function can satisfy all desirable axioms simultaneously. In practice, the choice of SWF reflects a value judgement about how to weigh efficiency against equity. Utilitarianism favours efficiency, the Rawlsian criterion favours equity, and the Nash criterion offers a middle ground that is scale-invariant and satisfies the axioms of Nash bargaining.</p>
+</div>
+</div>
+<div id="sec-ethics-implementation" class="section level2" number="38.3">
+<h2>
+<span class="header-section-number">38.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-ethics-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<p>We consider a resource allocation problem: divide a budget <span class="math inline">\(B = 100\)</span> among three agents whose utilities are concave functions of their share.</p>
+<div class="sourceCode" id="cb1089"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Agent utility functions (concave — diminishing returns)</span></span>
+<span><span class="va">utility</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">alpha</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># CES-style utility: x^alpha, alpha in (0, 1) gives concavity</span></span>
+<span>  <span class="va">x</span><span class="op">^</span><span class="va">alpha</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Agent parameters: different elasticities</span></span>
+<span><span class="va">alphas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.8</span><span class="op">)</span></span>
+<span><span class="va">budget</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span><span class="va">n_agents</span> <span class="op">&lt;-</span> <span class="fl">3</span></span>
+<span></span>
+<span><span class="co"># Social welfare functions</span></span>
+<span><span class="va">swf_utilitarian</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">alloc</span>, <span class="va">alphas</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mapply.html">mapply</a></span><span class="op">(</span><span class="va">utility</span>, <span class="va">alloc</span>, <span class="va">alphas</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">swf_rawlsian</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">alloc</span>, <span class="va">alphas</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mapply.html">mapply</a></span><span class="op">(</span><span class="va">utility</span>, <span class="va">alloc</span>, <span class="va">alphas</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">swf_nash</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">alloc</span>, <span class="va">alphas</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">utils</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mapply.html">mapply</a></span><span class="op">(</span><span class="va">utility</span>, <span class="va">alloc</span>, <span class="va">alphas</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">utils</span> <span class="op">&lt;=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/prod.html">prod</a></span><span class="op">(</span><span class="va">utils</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div id="grid-search-over-allocations" class="section level3" number="38.3.1">
+<h3>
+<span class="header-section-number">38.3.1</span> Grid search over allocations<a class="anchor" aria-label="anchor" href="#grid-search-over-allocations"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1090"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Generate feasible allocations on a grid (x1 + x2 + x3 = budget)</span></span>
+<span><span class="va">step</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html">expand.grid</a></span><span class="op">(</span></span>
+<span>  x1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="va">step</span>, <span class="va">budget</span> <span class="op">-</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">step</span>, by <span class="op">=</span> <span class="va">step</span><span class="op">)</span>,</span>
+<span>  x2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="va">step</span>, <span class="va">budget</span> <span class="op">-</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">step</span>, by <span class="op">=</span> <span class="va">step</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>x3 <span class="op">=</span> <span class="va">budget</span> <span class="op">-</span> <span class="va">x1</span> <span class="op">-</span> <span class="va">x2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">x3</span> <span class="op">&gt;=</span> <span class="va">step</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute utilities and welfare for each allocation</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="va">grid</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    u1 <span class="op">=</span> <span class="fu">utility</span><span class="op">(</span><span class="va">x1</span>, <span class="va">alphas</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    u2 <span class="op">=</span> <span class="fu">utility</span><span class="op">(</span><span class="va">x2</span>, <span class="va">alphas</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    u3 <span class="op">=</span> <span class="fu">utility</span><span class="op">(</span><span class="va">x3</span>, <span class="va">alphas</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    W_util <span class="op">=</span> <span class="va">u1</span> <span class="op">+</span> <span class="va">u2</span> <span class="op">+</span> <span class="va">u3</span>,</span>
+<span>    W_rawls <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">u1</span>, <span class="va">u2</span>, <span class="va">u3</span><span class="op">)</span>,</span>
+<span>    W_nash <span class="op">=</span> <span class="va">u1</span> <span class="op">*</span> <span class="va">u2</span> <span class="op">*</span> <span class="va">u3</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Find optima</span></span>
+<span><span class="va">opt_util</span>  <span class="op">&lt;-</span> <span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">W_util</span>, n <span class="op">=</span> <span class="fl">1</span>, with_ties <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">opt_rawls</span> <span class="op">&lt;-</span> <span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">W_rawls</span>, n <span class="op">=</span> <span class="fl">1</span>, with_ties <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">opt_nash</span>  <span class="op">&lt;-</span> <span class="va">results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_max</a></span><span class="op">(</span><span class="va">W_nash</span>, n <span class="op">=</span> <span class="fl">1</span>, with_ties <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Utilitarian optimum:  x ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">opt_util</span><span class="op">$</span><span class="va">x1</span>, <span class="va">opt_util</span><span class="op">$</span><span class="va">x2</span>, <span class="va">opt_util</span><span class="op">$</span><span class="va">x3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Utilitarian optimum:  x = 2 2 96</code></pre>
+<div class="sourceCode" id="cb1092"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Rawlsian optimum:    x ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">opt_rawls</span><span class="op">$</span><span class="va">x1</span>, <span class="va">opt_rawls</span><span class="op">$</span><span class="va">x2</span>, <span class="va">opt_rawls</span><span class="op">$</span><span class="va">x3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Rawlsian optimum:    x = 80 14 6</code></pre>
+<div class="sourceCode" id="cb1094"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Nash optimum:        x ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">opt_nash</span><span class="op">$</span><span class="va">x1</span>, <span class="va">opt_nash</span><span class="op">$</span><span class="va">x2</span>, <span class="va">opt_nash</span><span class="op">$</span><span class="va">x3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Nash optimum:        x = 18 32 50</code></pre>
+</div>
+<div id="pareto-frontier-with-welfare-optima" class="section level3" number="38.3.2">
+<h3>
+<span class="header-section-number">38.3.2</span> Pareto frontier with welfare optima<a class="anchor" aria-label="anchor" href="#pareto-frontier-with-welfare-optima"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1096"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Identify Pareto-efficient allocations (no other allocation dominates)</span></span>
+<span><span class="va">is_dominated</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">u</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">u1</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">df</span><span class="op">$</span><span class="va">u2</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">df</span><span class="op">$</span><span class="va">u3</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span></span>
+<span>    <span class="va">df</span><span class="op">$</span><span class="va">u1</span> <span class="op">&gt;=</span> <span class="va">u</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&amp;</span> <span class="va">df</span><span class="op">$</span><span class="va">u2</span> <span class="op">&gt;=</span> <span class="va">u</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&amp;</span> <span class="va">df</span><span class="op">$</span><span class="va">u3</span> <span class="op">&gt;=</span> <span class="va">u</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">&amp;</span></span>
+<span>    <span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">u1</span> <span class="op">&gt;</span> <span class="va">u</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">|</span> <span class="va">df</span><span class="op">$</span><span class="va">u2</span> <span class="op">&gt;</span> <span class="va">u</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">|</span> <span class="va">df</span><span class="op">$</span><span class="va">u3</span> <span class="op">&gt;</span> <span class="va">u</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">pareto_mask</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span><span class="op">)</span>, <span class="va">is_dominated</span>, df <span class="op">=</span> <span class="va">results</span><span class="op">)</span></span>
+<span><span class="va">pareto</span> <span class="op">&lt;-</span> <span class="va">results</span><span class="op">[</span><span class="va">pareto_mask</span>, <span class="op">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb1097"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">optima_points</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span></span>
+<span>  <span class="va">opt_util</span>  <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>criterion <span class="op">=</span> <span class="st">"Utilitarian"</span><span class="op">)</span>,</span>
+<span>  <span class="va">opt_rawls</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>criterion <span class="op">=</span> <span class="st">"Rawlsian"</span><span class="op">)</span>,</span>
+<span>  <span class="va">opt_nash</span>  <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>criterion <span class="op">=</span> <span class="st">"Nash"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">results</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span><span class="op">)</span>,</span>
+<span>             colour <span class="op">=</span> <span class="st">"grey80"</span>, size <span class="op">=</span> <span class="fl">0.5</span>, alpha <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">pareto</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span><span class="op">)</span>,</span>
+<span>             colour <span class="op">=</span> <span class="st">"grey40"</span>, size <span class="op">=</span> <span class="fl">1</span>, alpha <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">optima_points</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span>, colour <span class="op">=</span> <span class="va">criterion</span><span class="op">)</span>,</span>
+<span>             size <span class="op">=</span> <span class="fl">4</span>, shape <span class="op">=</span> <span class="fl">17</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Utilitarian"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Rawlsian"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Nash"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"Welfare criterion"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Pareto Frontier with Social Welfare Optima"</span>,</span>
+<span>    x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">~</span> <span class="st">"(Agent 1 utility)"</span><span class="op">)</span>,</span>
+<span>    y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">~</span> <span class="st">"(Agent 2 utility)"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:pareto-frontier-plot"></span>
+<img src="37-ethics-frameworks_files/figure-html/pareto-frontier-plot-1.png" alt="Pareto frontier projected onto agents 1 and 2 utility space. The utilitarian (orange), Rawlsian (blue), and Nash (green) optima select different points on the frontier, reflecting different equity-efficiency trade-offs." width="80%"><p class="caption">
+Figure 38.1: Pareto frontier projected onto agents 1 and 2 utility space. The utilitarian (orange), Rawlsian (blue), and Nash (green) optima select different points on the frontier, reflecting different equity-efficiency trade-offs.
+</p>
+</div>
+<div class="sourceCode" id="cb1098"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p1</span>, <span class="st">"ethics-pareto-frontier"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="welfare-comparison-across-methods" class="section level3" number="38.3.3">
+<h3>
+<span class="header-section-number">38.3.3</span> Welfare comparison across methods<a class="anchor" aria-label="anchor" href="#welfare-comparison-across-methods"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1099"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="va">optima_points</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">criterion</span>, <span class="va">u1</span>, <span class="va">u2</span>, <span class="va">u3</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">u1</span>, <span class="va">u2</span>, <span class="va">u3</span><span class="op">)</span>,</span>
+<span>               names_to <span class="op">=</span> <span class="st">"agent"</span>, values_to <span class="op">=</span> <span class="st">"utility"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>agent <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/recode.html">recode</a></span><span class="op">(</span><span class="va">agent</span>, u1 <span class="op">=</span> <span class="st">"Agent 1"</span>, u2 <span class="op">=</span> <span class="st">"Agent 2"</span>, u3 <span class="op">=</span> <span class="st">"Agent 3"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">comparison</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">criterion</span>, y <span class="op">=</span> <span class="va">utility</span>, fill <span class="op">=</span> <span class="va">agent</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html">position_dodge</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Agent 1"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Agent 2"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Agent 3"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"Agent"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Welfare Comparison Across Allocation Methods"</span>,</span>
+<span>    x <span class="op">=</span> <span class="st">"Welfare criterion"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Individual utility"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p2</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:welfare-comparison"></span>
+<img src="37-ethics-frameworks_files/figure-html/welfare-comparison-1.png" alt="Individual agent utilities under each welfare criterion. The utilitarian optimum concentrates resources on the agent with highest marginal utility (agent 3), while the Rawlsian criterion equalizes utilities across agents." width="80%"><p class="caption">
+Figure 33.1: Individual agent utilities under each welfare criterion. The utilitarian optimum concentrates resources on the agent with highest marginal utility (agent 3), while the Rawlsian criterion equalizes utilities across agents.
+</p>
+</div>
+<div class="sourceCode" id="cb1100"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p2</span>, <span class="st">"ethics-welfare-comparison"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-34" class="section level2" number="38.4">
+<h2>
+<span class="header-section-number">38.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-34"><i class="fas fa-link"></i></a>
+</h2>
+<p>Consider three agents sharing a budget of <span class="math inline">\(B = 100\)</span> with utility functions <span class="math inline">\(u_i(x_i) = x_i^{\alpha_i}\)</span> where <span class="math inline">\(\alpha_1 = 0.3\)</span>, <span class="math inline">\(\alpha_2 = 0.5\)</span>, and <span class="math inline">\(\alpha_3 = 0.8\)</span>. Agent 3 has the highest elasticity — each additional unit of resource generates more utility for agent 3 than for the others.</p>
+<p><strong>Step 1 — Utilitarian optimum.</strong> The utilitarian criterion maximizes <span class="math inline">\(\sum u_i\)</span>. Because agent 3’s marginal utility decreases most slowly (<span class="math inline">\(\alpha_3 = 0.8\)</span>), the utilitarian solution allocates the most resources to agent 3.</p>
+<div class="sourceCode" id="cb1101"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"=== Worked Example: 3-Agent Resource Allocation ===\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; === Worked Example: 3-Agent Resource Allocation ===</code></pre>
+<div class="sourceCode" id="cb1103"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Agent parameters (alpha):"</span>, <span class="va">alphas</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Agent parameters (alpha): 0.3 0.5 0.8</code></pre>
+<div class="sourceCode" id="cb1105"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Budget:"</span>, <span class="va">budget</span>, <span class="st">"\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Budget: 100</code></pre>
+<div class="sourceCode" id="cb1107"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Report allocations and utilities for each criterion</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">lbl</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Utilitarian"</span>, <span class="st">"Rawlsian"</span>, <span class="st">"Nash"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">row</span> <span class="op">&lt;-</span> <span class="va">optima_points</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">criterion</span> <span class="op">==</span> <span class="va">lbl</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%s optimum:\n"</span>, <span class="va">lbl</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Allocation: (%.0f, %.0f, %.0f)\n"</span>, <span class="va">row</span><span class="op">$</span><span class="va">x1</span>, <span class="va">row</span><span class="op">$</span><span class="va">x2</span>, <span class="va">row</span><span class="op">$</span><span class="va">x3</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Utilities:  (%.3f, %.3f, %.3f)\n"</span>, <span class="va">row</span><span class="op">$</span><span class="va">u1</span>, <span class="va">row</span><span class="op">$</span><span class="va">u2</span>, <span class="va">row</span><span class="op">$</span><span class="va">u3</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Sum: %.3f | Min: %.3f | Product: %.3f\n\n"</span>,</span>
+<span>              <span class="va">row</span><span class="op">$</span><span class="va">u1</span> <span class="op">+</span> <span class="va">row</span><span class="op">$</span><span class="va">u2</span> <span class="op">+</span> <span class="va">row</span><span class="op">$</span><span class="va">u3</span>,</span>
+<span>              <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">u1</span>, <span class="va">row</span><span class="op">$</span><span class="va">u2</span>, <span class="va">row</span><span class="op">$</span><span class="va">u3</span><span class="op">)</span>,</span>
+<span>              <span class="va">row</span><span class="op">$</span><span class="va">u1</span> <span class="op">*</span> <span class="va">row</span><span class="op">$</span><span class="va">u2</span> <span class="op">*</span> <span class="va">row</span><span class="op">$</span><span class="va">u3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt; Utilitarian optimum:
+#&gt;   Allocation: (2, 2, 96)
+#&gt;   Utilities:  (1.231, 1.414, 38.532)
+#&gt;   Sum: 41.177 | Min: 1.231 | Product: 67.087
+#&gt; 
+#&gt; Rawlsian optimum:
+#&gt;   Allocation: (80, 14, 6)
+#&gt;   Utilities:  (3.723, 3.742, 4.193)
+#&gt;   Sum: 11.658 | Min: 3.723 | Product: 58.413
+#&gt; 
+#&gt; Nash optimum:
+#&gt;   Allocation: (18, 32, 50)
+#&gt;   Utilities:  (2.380, 5.657, 22.865)
+#&gt;   Sum: 30.902 | Min: 2.380 | Product: 307.845</code></pre>
+<p><strong>Step 2 — Rawlsian optimum.</strong> The maximin criterion equalizes utilities as much as possible. Because agent 1 has the most concave utility function, it requires a larger share of the budget to achieve the same utility as the others.</p>
+<p><strong>Step 3 — Nash optimum.</strong> The Nash product criterion finds a middle ground. It is the unique allocation satisfying the axioms of symmetry, Pareto efficiency, independence of irrelevant alternatives, and scale invariance from Nash’s bargaining theory.</p>
+<p><strong>Interpretation.</strong> The three criteria represent genuine ethical disagreements. A designer choosing among them is making a normative choice: how much inequality is acceptable in exchange for higher total welfare? There is no objectively correct answer, but formalizing the alternatives allows transparent discussion and principled selection.</p>
+</div>
+<div id="extensions-36" class="section level2" number="38.5">
+<h2>
+<span class="header-section-number">38.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-36"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Weighted welfare functions.</strong> Assign different weights <span class="math inline">\(w_i\)</span> to agents: <span class="math inline">\(W_U(x) = \sum w_i u_i(x)\)</span>. This can represent priority given to disadvantaged groups or domain-specific considerations.</li>
+<li>
+<strong>Mechanism design</strong> (<a href="sec-mechanism-design.html#sec-mechanism-design">33</a>) connects welfare functions to incentive-compatible mechanisms: can we design rules that achieve a desired welfare criterion even when agents act strategically?</li>
+<li>
+<strong>Fairness in ML</strong> (<a href="sec-fairness-ml.html#sec-fairness-ml">39</a>) applies similar trade-offs to machine learning classifiers, where “agents” are demographic groups and “utility” is prediction accuracy.</li>
+<li>For philosophical foundations, see <span class="citation">Sen (<a href="references.html#ref-sen1999">1999</a>)</span> and <span class="citation">Rawls (<a href="references.html#ref-rawls1971">1971</a>)</span>. For the game-theoretic connection, <span class="citation">Moulin (<a href="references.html#ref-moulin2004">2004</a>)</span> provides an axiomatic treatment of fair division.</li>
+</ul>
+</div>
+<div id="exercises-36" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-36"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Weighted utilitarianism.</strong> Modify the grid search to maximize <span class="math inline">\(W(x) = 2 u_1(x) + u_2(x) + u_3(x)\)</span>, giving agent 1 double weight. How does the optimal allocation change compared to equal-weight utilitarianism? Plot the result on the Pareto frontier.</p></li>
+<li><p><strong>Four agents.</strong> Extend the implementation to four agents with <span class="math inline">\(\alpha = (0.2, 0.4, 0.6, 0.9)\)</span> and budget <span class="math inline">\(B = 200\)</span>. Compare the utilitarian and Rawlsian allocations. Which agent gains the most from switching to the Rawlsian criterion?</p></li>
+<li><p><strong>Leximin refinement.</strong> The Rawlsian criterion only considers the worst-off agent. Implement the <em>leximin</em> refinement, which first maximizes the minimum utility, then (among allocations achieving this maximum) maximizes the second-lowest utility, and so on. Does leximin ever differ from plain maximin in the three-agent example?</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></div>
+<div class="next"><a href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-ethics-frameworks"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="nav-link" href="#learning-objectives-36">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-36"><span class="header-section-number">38.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-36"><span class="header-section-number">38.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#three-ethical-lenses"><span class="header-section-number">38.2.1</span> Three ethical lenses</a></li>
+<li><a class="nav-link" href="#social-welfare-functions"><span class="header-section-number">38.2.2</span> Social welfare functions</a></li>
+<li><a class="nav-link" href="#impossibility-and-trade-offs"><span class="header-section-number">38.2.3</span> Impossibility and trade-offs</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-ethics-implementation"><span class="header-section-number">38.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#grid-search-over-allocations"><span class="header-section-number">38.3.1</span> Grid search over allocations</a></li>
+<li><a class="nav-link" href="#pareto-frontier-with-welfare-optima"><span class="header-section-number">38.3.2</span> Pareto frontier with welfare optima</a></li>
+<li><a class="nav-link" href="#welfare-comparison-across-methods"><span class="header-section-number">38.3.3</span> Welfare comparison across methods</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-34"><span class="header-section-number">38.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-36"><span class="header-section-number">38.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-36">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/37-ethics-frameworks.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/37-ethics-frameworks.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

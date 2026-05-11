@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 10 The R Environment | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="A practical guide to setting up RStudio or Positron for game-theoretic computation in R, managing reproducibility with renv, organizing projects with a consistent directory layout, and configuring...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 10 The R Environment | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-r-environment.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="A practical guide to setting up RStudio or Positron for game-theoretic computation in R, managing reproducibility with renv, organizing projects with a consistent directory layout, and configuring...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 10 The R Environment | Strategy in R">
+<meta name="twitter:description" content="A practical guide to setting up RStudio or Positron for game-theoretic computation in R, managing reproducibility with renv, organizing projects with a consistent directory layout, and configuring...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 10 The R Environment | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="active" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-r-environment" class="section level1" number="10">
+<h1>
+<span class="header-section-number">10</span> The R Environment<a class="anchor" aria-label="anchor" href="#sec-r-environment"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>A practical guide to setting up RStudio or Positron for game-theoretic computation in R, managing reproducibility with renv, organizing projects with a consistent directory layout, and configuring the shared R/_common.R pattern and knitr options used throughout this book.</p>
+</blockquote>
+<div id="learning-objectives-8" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-8"><i class="fas fa-link"></i></a>
+</h2>
+<p>After completing this chapter you will be able to:</p>
+<ul>
+<li>Configure RStudio or Positron for efficient game-theoretic computation, including essential settings and recommended pane layouts.</li>
+<li>Use <code>renv</code> to create reproducible, self-contained R projects with locked dependency snapshots.</li>
+<li>Organize a game theory project using a conventional directory layout with separate folders for code, data, images, and output.</li>
+<li>Understand and extend the <code>R/_common.R</code> shared-setup pattern used throughout this book.</li>
+<li>Set appropriate <code>knitr</code> chunk options for reproducible, publication-quality document rendering.</li>
+</ul>
+</div>
+<div id="motivation-8" class="section level2" number="10.1">
+<h2>
+<span class="header-section-number">10.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-8"><i class="fas fa-link"></i></a>
+</h2>
+<p>When you first encounter a game-theoretic model — say the Prisoner’s Dilemma introduced in <a href="sec-what-is-a-game.html#sec-what-is-a-game">2</a> — it is tempting to open a fresh R script and start coding immediately. For a single exercise, that approach works. But real research and coursework involve dozens of interrelated scripts, multiple chapters or reports, shared utility functions, and results that must be reproducible months or years later. Without a disciplined project environment, you will eventually face the dreaded situation where code that ran perfectly last semester no longer works because a package was updated, a file path changed, or a helper function was silently overwritten.</p>
+<p>This chapter addresses the infrastructure layer beneath the game theory content. Just as <span class="citation">Neumann &amp; Morgenstern (<a href="references.html#ref-von-neumann1944">1944</a>)</span> needed a formal language before proving theorems about games, we need a well-configured computational environment before implementing those theorems in R. The payoff is large: a properly structured project lets you focus on the economics and mathematics rather than on debugging file paths and package conflicts.</p>
+<p>The tools we cover — RStudio/Positron as an IDE, <code>renv</code> for dependency management, the <code>here</code> package for portable paths, and a shared <code>_common.R</code> script for consistent defaults — form the backbone of every chapter in this book. Understanding them once will save hours of frustration throughout the rest of your game theory work.</p>
+</div>
+<div id="theory-8" class="section level2" number="10.2">
+<h2>
+<span class="header-section-number">10.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-8"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-reproducibility-stack" class="section level3" number="10.2.1">
+<h3>
+<span class="header-section-number">10.2.1</span> The reproducibility stack<a class="anchor" aria-label="anchor" href="#the-reproducibility-stack"><i class="fas fa-link"></i></a>
+</h3>
+<p>Reproducibility in computational research operates at several layers, each building on the one below:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Environment.</strong> The IDE, R version, and operating system. RStudio (by Posit) is the most widely used R IDE; Positron is Posit’s newer, open-source, multilingual IDE built on VS Code technology. Both provide integrated consoles, editors, and project management.</p></li>
+<li><p><strong>Dependencies.</strong> The specific versions of R packages your code uses. The <code>renv</code> package creates a project-local library and a lockfile (<code>renv.lock</code>) that records the exact version of every package. Collaborators (or your future self) can call <code><a href="https://rstudio.github.io/renv/reference/restore.html">renv::restore()</a></code> to recreate the identical package environment.</p></li>
+<li><p><strong>Project structure.</strong> A conventional directory layout ensures that scripts, data, and output live in predictable locations. The <code>here</code> package provides a project-root-aware path constructor so that <code>here("R", "_common.R")</code> resolves correctly regardless of the working directory.</p></li>
+<li><p><strong>Rendering options.</strong> Quarto and <code>knitr</code> chunk options control how code is executed, cached, and displayed. Consistent defaults — set once in a shared file — prevent output discrepancies across chapters.</p></li>
+</ol>
+</div>
+<div id="why-ide-configuration-matters-for-game-theory" class="section level3" number="10.2.2">
+<h3>
+<span class="header-section-number">10.2.2</span> Why IDE configuration matters for game theory<a class="anchor" aria-label="anchor" href="#why-ide-configuration-matters-for-game-theory"><i class="fas fa-link"></i></a>
+</h3>
+<p>Game-theoretic computation involves particular workflows that benefit from IDE tuning. Computing Nash equilibria (see <a href="sec-nash-equilibrium.html#sec-nash-equilibrium">4</a>) often requires iterative debugging of matrix algebra. Simulating evolutionary dynamics requires monitoring long-running loops. Producing publication figures demands a graphics device with adequate resolution. A well-configured IDE makes each of these tasks smoother.</p>
+<p>Key settings include:</p>
+<ul>
+<li>
+<strong>Soft-wrap long lines.</strong> Game-theoretic payoff definitions can produce wide lines; soft wrapping prevents horizontal scrolling.</li>
+<li>
+<strong>Increase console buffer.</strong> Simulations with many iterations produce verbose output; a larger buffer preserves the full log.</li>
+<li>
+<strong>Default working directory.</strong> Set the working directory to the project root at startup so that <code><a href="https://here.r-lib.org/reference/here.html">here()</a></code> paths resolve immediately.</li>
+<li>
+<strong>Disable <code>.RData</code> saving.</strong> Leftover workspace objects from a previous session can introduce silent errors. Starting each session with a clean workspace forces your scripts to be self-contained.</li>
+</ul>
+</div>
+<div id="the-shared-setup-pattern" class="section level3" number="10.2.3">
+<h3>
+<span class="header-section-number">10.2.3</span> The shared setup pattern<a class="anchor" aria-label="anchor" href="#the-shared-setup-pattern"><i class="fas fa-link"></i></a>
+</h3>
+<p>A recurring pattern in multi-chapter projects is to place all shared setup code in a single file that every chapter sources at the top. In this book, that file is <code>R/_common.R</code>. It loads packages, sets <code>knitr</code> options, seeds the random number generator, and sources helper files for the publication theme and figure-saving utility. This pattern has three benefits:</p>
+<ul>
+<li>
+<strong>Consistency.</strong> Every chapter starts with the same packages, theme, and seed.</li>
+<li>
+<strong>Maintainability.</strong> Changing a default (e.g., switching from 300 to 600 DPI) requires editing one file, not forty.</li>
+<li>
+<strong>Discoverability.</strong> A reader who wants to understand the computational setup can read a single, short file.</li>
+</ul>
+</div>
+</div>
+<div id="implementation-in-r-7" class="section level2" number="10.3">
+<h2>
+<span class="header-section-number">10.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#implementation-in-r-7"><i class="fas fa-link"></i></a>
+</h2>
+<div id="project-directory-layout" class="section level3" number="10.3.1">
+<h3>
+<span class="header-section-number">10.3.1</span> Project directory layout<a class="anchor" aria-label="anchor" href="#project-directory-layout"><i class="fas fa-link"></i></a>
+</h3>
+<p>The directory structure used in this book is a good template for any game theory research project:</p>
+<div class="sourceCode" id="cb236"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Display the project layout as a tidy table</span></span>
+<span><span class="va">layout</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span></span>
+<span>  <span class="op">~</span><span class="va">Folder</span>,           <span class="op">~</span><span class="va">Purpose</span>,</span>
+<span></span>
+<span>  <span class="st">"R/"</span>,              <span class="st">"Shared R scripts: _common.R, theme_publication.R, save_pub_fig.R, custom solvers"</span>,</span>
+<span>  <span class="st">"part-1-foundations/"</span>, <span class="st">"Quarto chapters for Part I (game theory foundations)"</span>,</span>
+<span>  <span class="st">"part-2-r-toolkit/"</span>,  <span class="st">"Quarto chapters for Part II (R packages and tools)"</span>,</span>
+<span>  <span class="st">"images/"</span>,         <span class="st">"Generated figures (PNG + PDF) from save_pub_fig()"</span>,</span>
+<span>  <span class="st">"data/"</span>,           <span class="st">"Raw and processed data files"</span>,</span>
+<span>  <span class="st">"appendices/"</span>,     <span class="st">"Supplementary material: refresher, solutions, glossary"</span>,</span>
+<span>  <span class="st">"_book/"</span>,          <span class="st">"Rendered output (HTML, PDF, EPUB) --- not committed to Git"</span>,</span>
+<span>  <span class="st">"renv/"</span>,           <span class="st">"Project-local package library managed by renv"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">layout</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">gt</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tab_header</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Standard Project Directory Layout"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">cols_label</span><span class="op">(</span>Folder <span class="op">=</span> <span class="st">"Directory"</span>, Purpose <span class="op">=</span> <span class="st">"Contents and purpose"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">cols_width</span><span class="op">(</span><span class="va">Folder</span> <span class="op">~</span> <span class="fu">px</span><span class="op">(</span><span class="fl">180</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div id="qeayjdrzqo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qeayjdrzqo table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#qeayjdrzqo thead, #qeayjdrzqo tbody, #qeayjdrzqo tfoot, #qeayjdrzqo tr, #qeayjdrzqo td, #qeayjdrzqo th {
+  border-style: none;
+}
+
+#qeayjdrzqo p {
+  margin: 0;
+  padding: 0;
+}
+
+#qeayjdrzqo .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#qeayjdrzqo .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qeayjdrzqo .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qeayjdrzqo .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qeayjdrzqo .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#qeayjdrzqo .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qeayjdrzqo .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qeayjdrzqo .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qeayjdrzqo .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#qeayjdrzqo .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qeayjdrzqo .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_left {
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_center {
+  text-align: center;
+}
+
+#qeayjdrzqo .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qeayjdrzqo .gt_font_normal {
+  font-weight: normal;
+}
+
+#qeayjdrzqo .gt_font_bold {
+  font-weight: bold;
+}
+
+#qeayjdrzqo .gt_font_italic {
+  font-style: italic;
+}
+
+#qeayjdrzqo .gt_super {
+  font-size: 65%;
+}
+
+#qeayjdrzqo .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#qeayjdrzqo .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#qeayjdrzqo .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#qeayjdrzqo .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#qeayjdrzqo .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#qeayjdrzqo .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#qeayjdrzqo .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#qeayjdrzqo .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#qeayjdrzqo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" style="table-layout:fixed;" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<colgroup>
+<col style="width:180px;">
+<col>
+</colgroup>
+<thead>
+<tr class="gt_heading">
+<td colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Standard Project Directory Layout</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Folder">Directory</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Purpose">Contents and purpose</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Folder" class="gt_row gt_left">R/</td>
+<td headers="Purpose" class="gt_row gt_left">Shared R scripts: _common.R, theme_publication.R, save_pub_fig.R, custom solvers</td>
+</tr>
+<tr>
+<td headers="Folder" class="gt_row gt_left">part-1-foundations/</td>
+<td headers="Purpose" class="gt_row gt_left">Quarto chapters for Part I (game theory foundations)</td>
+</tr>
+<tr>
+<td headers="Folder" class="gt_row gt_left">part-2-r-toolkit/</td>
+<td headers="Purpose" class="gt_row gt_left">Quarto chapters for Part II (R packages and tools)</td>
+</tr>
+<tr>
+<td headers="Folder" class="gt_row gt_left">images/</td>
+<td headers="Purpose" class="gt_row gt_left">Generated figures (PNG + PDF) from save_pub_fig()</td>
+</tr>
+<tr>
+<td headers="Folder" class="gt_row gt_left">data/</td>
+<td headers="Purpose" class="gt_row gt_left">Raw and processed data files</td>
+</tr>
+<tr>
+<td headers="Folder" class="gt_row gt_left">appendices/</td>
+<td headers="Purpose" class="gt_row gt_left">Supplementary material: refresher, solutions, glossary</td>
+</tr>
+<tr>
+<td headers="Folder" class="gt_row gt_left">_book/</td>
+<td headers="Purpose" class="gt_row gt_left">Rendered output (HTML, PDF, EPUB) --- not committed to Git</td>
+</tr>
+<tr>
+<td headers="Folder" class="gt_row gt_left">renv/</td>
+<td headers="Purpose" class="gt_row gt_left">Project-local package library managed by renv</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div id="benchmarking-vectorized-vs.-loop-based-payoff-computation" class="section level3" number="10.3.2">
+<h3>
+<span class="header-section-number">10.3.2</span> Benchmarking vectorized vs. loop-based payoff computation<a class="anchor" aria-label="anchor" href="#benchmarking-vectorized-vs.-loop-based-payoff-computation"><i class="fas fa-link"></i></a>
+</h3>
+<p>A common performance concern in game-theoretic computation is whether to use loops or vectorized operations when building payoff matrices. We benchmark both approaches to illustrate why vectorized code matters — and to demonstrate how to produce a publication-quality benchmark figure.</p>
+<div class="sourceCode" id="cb237"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Benchmark: computing a payoff matrix for an n-strategy symmetric game</span></span>
+<span><span class="co"># Payoff function: u(i,j) = sin(i/n * pi) * cos(j/n * pi) (arbitrary smooth payoffs)</span></span>
+<span></span>
+<span><span class="va">benchmark_payoff</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span>, <span class="va">method</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"loop"</span>, <span class="st">"vectorized"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span></span>
+<span>  <span class="va">method</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html">match.arg</a></span><span class="op">(</span><span class="va">method</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">method</span> <span class="op">==</span> <span class="st">"loop"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">mat</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="va">i</span> <span class="op">/</span> <span class="va">n</span> <span class="op">*</span> <span class="va">pi</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">cos</a></span><span class="op">(</span><span class="va">j</span> <span class="op">/</span> <span class="va">n</span> <span class="op">*</span> <span class="va">pi</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>    <span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>    <span class="va">mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html">outer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="va">rows</span> <span class="op">/</span> <span class="va">n</span> <span class="op">*</span> <span class="va">pi</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">cos</a></span><span class="op">(</span><span class="va">cols</span> <span class="op">/</span> <span class="va">n</span> <span class="op">*</span> <span class="va">pi</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">mat</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Run benchmarks for various matrix sizes</span></span>
+<span><span class="va">sizes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">50</span>, <span class="fl">100</span>, <span class="fl">200</span>, <span class="fl">500</span>, <span class="fl">1000</span><span class="op">)</span></span>
+<span><span class="va">n_reps</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
+<span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">map_dfr</span><span class="op">(</span><span class="va">sizes</span>, <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">loop_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="va">n_reps</span>, <span class="op">{</span></span>
+<span>    <span class="va">start</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/proc.time.html">proc.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span></span>
+<span>    <span class="fu">benchmark_payoff</span><span class="op">(</span><span class="va">n</span>, <span class="st">"loop"</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/proc.time.html">proc.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span> <span class="op">-</span> <span class="va">start</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">vec_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="va">n_reps</span>, <span class="op">{</span></span>
+<span>    <span class="va">start</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/proc.time.html">proc.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span></span>
+<span>    <span class="fu">benchmark_payoff</span><span class="op">(</span><span class="va">n</span>, <span class="st">"vectorized"</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/proc.time.html">proc.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="st">"elapsed"</span><span class="op">]</span> <span class="op">-</span> <span class="va">start</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu">tibble</span><span class="op">(</span></span>
+<span>    n <span class="op">=</span> <span class="va">n</span>,</span>
+<span>    method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Loop"</span>, <span class="st">"Vectorized"</span><span class="op">)</span>, each <span class="op">=</span> <span class="va">n_reps</span><span class="op">)</span>,</span>
+<span>    time_sec <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">loop_times</span>, <span class="va">vec_times</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Summarize</span></span>
+<span><span class="va">bench_summary</span> <span class="op">&lt;-</span> <span class="va">results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">n</span>, <span class="va">method</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">summarise</span><span class="op">(</span></span>
+<span>    mean_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">time_sec</span><span class="op">)</span>,</span>
+<span>    sd_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">time_sec</span><span class="op">)</span>,</span>
+<span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb238"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p_bench</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="va">bench_summary</span>,</span>
+<span>                  <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">n</span>, y <span class="op">=</span> <span class="va">mean_time</span>, colour <span class="op">=</span> <span class="va">method</span>, shape <span class="op">=</span> <span class="va">method</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_line</span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_errorbar</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>ymin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">mean_time</span> <span class="op">-</span> <span class="va">sd_time</span><span class="op">)</span>,</span>
+<span>                    ymax <span class="op">=</span> <span class="va">mean_time</span> <span class="op">+</span> <span class="va">sd_time</span><span class="op">)</span>,</span>
+<span>                width <span class="op">=</span> <span class="fl">0.05</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_colour_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>                      name <span class="op">=</span> <span class="st">"Method"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_shape_manual</span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">16</span>, <span class="fl">17</span><span class="op">)</span>, name <span class="op">=</span> <span class="st">"Method"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_x_log10</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Matrix dimension (n)"</span>,</span>
+<span>                breaks <span class="op">=</span> <span class="va">sizes</span>,</span>
+<span>                labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/comma.html">comma</a></span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_y_log10</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Time (seconds)"</span>,</span>
+<span>                labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html">label_number</a></span><span class="op">(</span>accuracy <span class="op">=</span> <span class="fl">0.0001</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Payoff Matrix Construction: Loop vs. Vectorized"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme</span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"bottom"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_bench</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:benchmark-vectorized"></span>
+<img src="09-r-environment_files/figure-html/benchmark-vectorized-1.png" alt="Computation time for building an n-by-n payoff matrix using a nested loop versus vectorized outer product. Vectorized operations maintain near-constant time across matrix sizes, while loop-based computation scales quadratically. Error bars show plus or minus one standard deviation over five replications." width="80%"><p class="caption">
+Figure 10.1: Computation time for building an n-by-n payoff matrix using a nested loop versus vectorized outer product. Vectorized operations maintain near-constant time across matrix sizes, while loop-based computation scales quadratically. Error bars show plus or minus one standard deviation over five replications.
+</p>
+</div>
+</div>
+<div id="the-_common.r-file-explained" class="section level3" number="10.3.3">
+<h3>
+<span class="header-section-number">10.3.3</span> The <code>_common.R</code> file explained<a class="anchor" aria-label="anchor" href="#the-_common.r-file-explained"><i class="fas fa-link"></i></a>
+</h3>
+<p>The shared setup file used in this book contains four key sections. Let us walk through each:</p>
+<div class="sourceCode" id="cb239"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># --- Section 1: Load packages silently ---</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/message.html">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>   <span class="co"># data manipulation and plotting</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://here.r-lib.org/">here</a></span><span class="op">)</span>        <span class="co"># project-root-relative paths</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/">glue</a></span><span class="op">)</span>        <span class="co"># string interpolation</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://gt.rstudio.com">gt</a></span><span class="op">)</span>          <span class="co"># publication-quality tables</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://scales.r-lib.org">scales</a></span><span class="op">)</span>      <span class="co"># axis formatting helpers</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># --- Section 2: knitr defaults ---</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/knitr/man/opts_chunk.html">opts_chunk</a></span><span class="op">$</span><span class="fu">set</span><span class="op">(</span></span>
+<span>  dev     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"png"</span>, <span class="st">"pdf"</span><span class="op">)</span>,   <span class="co"># dual output for HTML and PDF</span></span>
+<span></span>
+<span>  dpi     <span class="op">=</span> <span class="fl">300</span>,               <span class="co"># print-quality resolution</span></span>
+<span>  fig.align <span class="op">=</span> <span class="st">"center"</span>,</span>
+<span>  fig.width  <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>  fig.height <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  out.width  <span class="op">=</span> <span class="st">"80%"</span>,</span>
+<span>  comment    <span class="op">=</span> <span class="st">"#&gt;"</span>            <span class="co"># prefix for R output lines</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># --- Section 3: Reproducibility ---</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span>                    <span class="co"># global seed for all stochastic operations</span></span>
+<span></span>
+<span><span class="co"># --- Section 4: Custom helpers ---</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"theme_publication.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"save_pub_fig.R"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Section 1 loads the tidyverse ecosystem, which provides <code>dplyr</code>, <code>ggplot2</code>, <code>purrr</code>, <code>tibble</code>, and <code>stringr</code> — all essential for game-theoretic data wrangling and visualization. The <code>here</code> package ensures that file paths like <code>here("data", "tournament.csv")</code> work from any subdirectory. The <code>gt</code> package formats tables for publication, and <code>scales</code> provides axis label formatters.</p>
+<p>Section 2 configures knitr to produce both PNG (for HTML output) and PDF (for LaTeX output) figures at 300 DPI. The <code>comment</code> option prefixes all R output with <code>#&gt;</code>, making it visually distinct from code.</p>
+<p>Section 3 sets a global random seed. This is critical for reproducibility in stochastic game-theoretic computations like Monte Carlo Shapley value estimation and evolutionary simulations.</p>
+<p>Section 4 sources two helper files: <code>theme_publication.R</code> defines a clean ggplot2 theme with the Okabe-Ito colour palette, and <code>save_pub_fig.R</code> provides <code>save_pub_fig()</code> for dual PDF/PNG export.</p>
+</div>
+<div id="initializing-renv" class="section level3" number="10.3.4">
+<h3>
+<span class="header-section-number">10.3.4</span> Initializing <code>renv</code><a class="anchor" aria-label="anchor" href="#initializing-renv"><i class="fas fa-link"></i></a>
+</h3>
+<p>The <code>renv</code> workflow for a new project consists of three commands:</p>
+<div class="sourceCode" id="cb240"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 1. Initialize renv in a new project</span></span>
+<span><span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/init.html">init</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 2. After installing or updating packages, snapshot the current state</span></span>
+<span><span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 3. On a new machine or after cloning, restore the exact package versions</span></span>
+<span><span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/restore.html">restore</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>The <code><a href="https://rstudio.github.io/renv/reference/init.html">renv::init()</a></code> call creates a project-local library in <code>renv/library/</code>, a lockfile <code>renv.lock</code> that records every package name, version, and source, and an <code>.Rprofile</code> that activates <code>renv</code> automatically when the project is opened. The lockfile is committed to version control; the library itself is not (it is listed in <code>.gitignore</code>).</p>
+</div>
+</div>
+<div id="worked-example-8" class="section level2" number="10.4">
+<h2>
+<span class="header-section-number">10.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-8"><i class="fas fa-link"></i></a>
+</h2>
+<p>We now walk through setting up a new game theory analysis project from scratch, as if starting a term paper on Nash equilibrium computations.</p>
+<p><strong>Step 1 — Create the project.</strong> In RStudio, select <em>File &gt; New Project &gt; New Directory &gt; New Project</em>. Name it <code>nash-equilibrium-analysis</code> and check “Use renv with this project.” In Positron, create a folder and run <code><a href="https://rstudio.github.io/renv/reference/init.html">renv::init()</a></code> from the R console.</p>
+<p><strong>Step 2 — Establish the directory layout.</strong></p>
+<div class="sourceCode" id="cb241"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create the standard directory structure</span></span>
+<span><span class="va">dirs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"data"</span>, <span class="st">"images"</span>, <span class="st">"output"</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">d</span> <span class="kw">in</span> <span class="va">dirs</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/files2.html">dir.create</a></span><span class="op">(</span><span class="va">d</span>, showWarnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Step 3 — Write the shared setup file.</strong> Create <code>R/_common.R</code> with package loads and knitr defaults, following the pattern shown above. This file will be sourced at the top of every <code>.qmd</code> chapter.</p>
+<p><strong>Step 4 — Install and snapshot dependencies.</strong></p>
+<div class="sourceCode" id="cb242"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Install the packages needed for game theory work</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"tidyverse"</span>, <span class="st">"here"</span>, <span class="st">"glue"</span>, <span class="st">"gt"</span>, <span class="st">"scales"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Lock the current state</span></span>
+<span><span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/snapshot.html">snapshot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>After this step, <code>renv.lock</code> contains a complete record of every package and its version. Sharing this file (along with the code) allows anyone to recreate the exact environment.</p>
+<p><strong>Step 5 — Create the first analysis file.</strong> Create <code>01-pd-analysis.qmd</code> in the project root:</p>
+<div class="sourceCode" id="cb243"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># At the top of 01-pd-analysis.qmd:</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/source.html">source</a></span><span class="op">(</span><span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="st">"R"</span>, <span class="st">"_common.R"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Define the Prisoner's Dilemma payoff matrix</span></span>
+<span><span class="va">pd_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                    dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span>,</span>
+<span>                                   <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">pd_matrix</span></span></code></pre></div>
+<p><strong>Step 6 — Configure IDE settings.</strong> In RStudio, go to <em>Tools &gt; Global Options</em>:</p>
+<ul>
+<li>Under <em>General</em>, uncheck “Restore .RData into workspace at startup” and set “Save workspace to .RData on exit” to “Never.”</li>
+<li>Under <em>Code &gt; Display</em>, enable “Soft-wrap R source files.”</li>
+<li>Under <em>Appearance</em>, choose a font with clear distinction between <code>0</code> and <code>O</code>, such as Fira Code or JetBrains Mono.</li>
+</ul>
+<p>In Positron, equivalent settings live in the Settings editor (Ctrl+,). The key setting is <code>"r.restoreWorkspace": false</code>.</p>
+<p><strong>Step 7 — Verify reproducibility.</strong> Close and reopen the project. Run <code><a href="https://rstudio.github.io/renv/reference/status.html">renv::status()</a></code> to confirm all packages are synchronized. Then render the first analysis file. If it produces output without errors, the environment is correctly configured.</p>
+<div class="sourceCode" id="cb244"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Verify that our environment is properly configured</span></span>
+<span><span class="va">env_info</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span></span>
+<span>  <span class="op">~</span><span class="va">Component</span>,        <span class="op">~</span><span class="va">Value</span>,</span>
+<span>  <span class="st">"R version"</span>,       <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">R.version</span><span class="op">$</span><span class="va">major</span>, <span class="va">R.version</span><span class="op">$</span><span class="va">minor</span>, sep <span class="op">=</span> <span class="st">"."</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Platform"</span>,        <span class="va">R.version</span><span class="op">$</span><span class="va">platform</span>,</span>
+<span>  <span class="st">"tidyverse"</span>,       <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html">packageVersion</a></span><span class="op">(</span><span class="st">"tidyverse"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="st">"ggplot2"</span>,         <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html">packageVersion</a></span><span class="op">(</span><span class="st">"ggplot2"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="st">"here"</span>,            <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html">packageVersion</a></span><span class="op">(</span><span class="st">"here"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="st">"gt"</span>,              <span class="fu"><a href="https://rdrr.io/r/base/character.html">as.character</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/packageDescription.html">packageVersion</a></span><span class="op">(</span><span class="st">"gt"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Project root"</span>,    <span class="fu">here</span><span class="fu">::</span><span class="fu"><a href="https://here.r-lib.org/reference/here.html">here</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">env_info</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html">tab_header</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Current R Environment"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/cols_label.html">cols_label</a></span><span class="op">(</span>Component <span class="op">=</span> <span class="st">"Component"</span>, Value <span class="op">=</span> <span class="st">"Detected value"</span><span class="op">)</span></span></code></pre></div>
+<div id="xgdyentzro" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#xgdyentzro table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#xgdyentzro thead, #xgdyentzro tbody, #xgdyentzro tfoot, #xgdyentzro tr, #xgdyentzro td, #xgdyentzro th {
+  border-style: none;
+}
+
+#xgdyentzro p {
+  margin: 0;
+  padding: 0;
+}
+
+#xgdyentzro .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#xgdyentzro .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#xgdyentzro .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#xgdyentzro .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#xgdyentzro .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#xgdyentzro .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#xgdyentzro .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#xgdyentzro .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#xgdyentzro .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#xgdyentzro .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#xgdyentzro .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#xgdyentzro .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#xgdyentzro .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#xgdyentzro .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#xgdyentzro .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#xgdyentzro .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#xgdyentzro .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#xgdyentzro .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#xgdyentzro .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#xgdyentzro .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_left {
+  text-align: left;
+}
+
+#xgdyentzro .gt_center {
+  text-align: center;
+}
+
+#xgdyentzro .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#xgdyentzro .gt_font_normal {
+  font-weight: normal;
+}
+
+#xgdyentzro .gt_font_bold {
+  font-weight: bold;
+}
+
+#xgdyentzro .gt_font_italic {
+  font-style: italic;
+}
+
+#xgdyentzro .gt_super {
+  font-size: 65%;
+}
+
+#xgdyentzro .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#xgdyentzro .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#xgdyentzro .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#xgdyentzro .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#xgdyentzro .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#xgdyentzro .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#xgdyentzro .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#xgdyentzro .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#xgdyentzro div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading">
+<td colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Current R Environment</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Component">Component</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Value">Detected value</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Component" class="gt_row gt_left">R version</td>
+<td headers="Value" class="gt_row gt_left">4.6.0</td>
+</tr>
+<tr>
+<td headers="Component" class="gt_row gt_left">Platform</td>
+<td headers="Value" class="gt_row gt_left">x86_64-pc-linux-gnu</td>
+</tr>
+<tr>
+<td headers="Component" class="gt_row gt_left">tidyverse</td>
+<td headers="Value" class="gt_row gt_left">2.0.0</td>
+</tr>
+<tr>
+<td headers="Component" class="gt_row gt_left">ggplot2</td>
+<td headers="Value" class="gt_row gt_left">4.0.3</td>
+</tr>
+<tr>
+<td headers="Component" class="gt_row gt_left">here</td>
+<td headers="Value" class="gt_row gt_left">1.0.2</td>
+</tr>
+<tr>
+<td headers="Component" class="gt_row gt_left">gt</td>
+<td headers="Value" class="gt_row gt_left">1.3.0</td>
+</tr>
+<tr>
+<td headers="Component" class="gt_row gt_left">Project root</td>
+<td headers="Value" class="gt_row gt_left">/home/runner/work/strategy-in-r/strategy-in-r</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div id="extensions-8" class="section level2" number="10.5">
+<h2>
+<span class="header-section-number">10.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-8"><i class="fas fa-link"></i></a>
+</h2>
+<p>The project setup described here can be extended in several directions:</p>
+<ul>
+<li>
+<strong>Docker containers.</strong> For maximum reproducibility, wrap the entire R environment in a Docker image. The <code>rocker</code> project provides pre-built images with R, RStudio Server, and the tidyverse. This guarantees identical results regardless of the host operating system.</li>
+<li>
+<strong>Continuous integration.</strong> Services like GitHub Actions can render your Quarto book on every push, catching errors early. This book uses a GitHub Actions workflow that installs dependencies via <code><a href="https://rstudio.github.io/renv/reference/restore.html">renv::restore()</a></code> and renders all chapters.</li>
+<li>
+<strong>Targets pipelines.</strong> The <code>targets</code> package extends reproducibility from package management to workflow management, tracking which outputs are up-to-date and re-running only what has changed. This is particularly valuable for long-running game-theoretic simulations.</li>
+<li>
+<strong>Computational environments for teaching.</strong> Posit Cloud (formerly RStudio Cloud) provides browser-based R environments with pre-configured packages, eliminating setup friction for students new to R. Each student gets an isolated workspace with the correct package versions.</li>
+</ul>
+<p>For further reading on reproducible workflows in R, see <span class="citation">Osborne (<a href="references.html#ref-osborne2004">2004</a>)</span> for the mathematical context that motivates careful computation, and <span class="citation">Shoham &amp; Leyton-Brown (<a href="references.html#ref-shoham2009">2009</a>)</span> for the algorithmic perspective on game-theoretic implementation.</p>
+</div>
+<div id="exercises-8" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-8"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Project initialization.</strong> Create a new R project called <code>stag-hunt-analysis</code> with <code>renv</code> enabled. Install <code>tidyverse</code>, <code>here</code>, and <code>gt</code>. Write a <code>R/_common.R</code> file that loads these packages, sets a random seed, and configures knitr to produce PNG output at 300 DPI. Snapshot the environment with <code><a href="https://rstudio.github.io/renv/reference/snapshot.html">renv::snapshot()</a></code> and verify that <code>renv.lock</code> contains all three packages.</p></li>
+<li><p><strong>Vectorization practice.</strong> Extend the benchmark from this chapter to include a third method that uses <code><a href="https://purrr.tidyverse.org/reference/map2.html">purrr::map2_dbl()</a></code> inside a <code><a href="https://tidyr.tidyverse.org/reference/expand.html">tidyr::crossing()</a></code> grid. Plot all three methods on the same benchmark figure. Where does <code>purrr</code> fall relative to the loop and <code><a href="https://rdrr.io/r/base/outer.html">outer()</a></code> approaches?</p></li>
+<li><p><strong>Path portability.</strong> A collaborator sends you a script that begins with <code>setwd("C:/Users/alice/games/")</code> and then reads a file with <code>read_csv("data/payoffs.csv")</code>. Explain why this will fail on your machine. Rewrite the first two lines using <code><a href="https://here.r-lib.org/reference/here.html">here()</a></code> so that the script works for any collaborator who clones the repository.</p></li>
+<li><p><strong>Custom knitr options.</strong> Modify the <code>_common.R</code> pattern to include a conditional: if the output format is HTML, set <code>fig.width = 8</code>; if PDF, set <code>fig.width = 6</code>. <em>(Hint: use <code><a href="https://rdrr.io/pkg/knitr/man/output_type.html">knitr::is_html_output()</a></code>.)</em> Explain why different widths might be appropriate for the two formats.</p></li>
+<li><p><strong>Dependency audit.</strong> Run <code><a href="https://rstudio.github.io/renv/reference/status.html">renv::status()</a></code> on a project of your choice and interpret the output. Identify any packages that are installed but not recorded in the lockfile, and any that are recorded but not installed. Explain what <code><a href="https://rstudio.github.io/renv/reference/snapshot.html">renv::snapshot()</a></code> and <code><a href="https://rstudio.github.io/renv/reference/restore.html">renv::restore()</a></code> would each do in this situation.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></div>
+<div class="next"><a href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-r-environment"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="nav-link" href="#learning-objectives-8">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-8"><span class="header-section-number">10.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-8"><span class="header-section-number">10.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-reproducibility-stack"><span class="header-section-number">10.2.1</span> The reproducibility stack</a></li>
+<li><a class="nav-link" href="#why-ide-configuration-matters-for-game-theory"><span class="header-section-number">10.2.2</span> Why IDE configuration matters for game theory</a></li>
+<li><a class="nav-link" href="#the-shared-setup-pattern"><span class="header-section-number">10.2.3</span> The shared setup pattern</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#implementation-in-r-7"><span class="header-section-number">10.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#project-directory-layout"><span class="header-section-number">10.3.1</span> Project directory layout</a></li>
+<li><a class="nav-link" href="#benchmarking-vectorized-vs.-loop-based-payoff-computation"><span class="header-section-number">10.3.2</span> Benchmarking vectorized vs. loop-based payoff computation</a></li>
+<li><a class="nav-link" href="#the-_common.r-file-explained"><span class="header-section-number">10.3.3</span> The _common.R file explained</a></li>
+<li><a class="nav-link" href="#initializing-renv"><span class="header-section-number">10.3.4</span> Initializing renv</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-8"><span class="header-section-number">10.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-8"><span class="header-section-number">10.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-8">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/09-r-environment.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/09-r-environment.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

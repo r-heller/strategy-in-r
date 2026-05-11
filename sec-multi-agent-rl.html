@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 27 Multi-Agent RL | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Independent learners, joint-action learners, minimax-Q for zero-sum games, and the conceptual foundations of MADDPG and PSRO.  Learning objectives Distinguish independent learners from...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 27 Multi-Agent RL | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-multi-agent-rl.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Independent learners, joint-action learners, minimax-Q for zero-sum games, and the conceptual foundations of MADDPG and PSRO.  Learning objectives Distinguish independent learners from...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 27 Multi-Agent RL | Strategy in R">
+<meta name="twitter:description" content="Independent learners, joint-action learners, minimax-Q for zero-sum games, and the conceptual foundations of MADDPG and PSRO.  Learning objectives Distinguish independent learners from...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 27 Multi-Agent RL | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="active" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-multi-agent-rl" class="section level1" number="27">
+<h1>
+<span class="header-section-number">27</span> Multi-Agent RL<a class="anchor" aria-label="anchor" href="#sec-multi-agent-rl"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Independent learners, joint-action learners, minimax-Q for zero-sum games, and the conceptual foundations of MADDPG and PSRO.</p>
+</blockquote>
+<div id="learning-objectives-25" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-25"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Distinguish independent learners from joint-action learners and explain why joint-action learning addresses non-stationarity.</li>
+<li>Implement minimax-Q learning for two-player zero-sum games in base R and show convergence to the minimax strategy.</li>
+<li>Describe the centralized-training, decentralized-execution paradigm underlying MADDPG.</li>
+<li>Explain how Policy Space Response Oracles (PSRO) combine reinforcement learning with game-theoretic solution concepts.</li>
+</ul>
+</div>
+<div id="motivation-25" class="section level2" number="27.1">
+<h2>
+<span class="header-section-number">27.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-25"><i class="fas fa-link"></i></a>
+</h2>
+<p>Chapter <a href="sec-q-learning.html#sec-q-learning">26</a> showed that independent Q-learners converge in coordination games but cycle in zero-sum games like Matching Pennies. This failure is not a bug in the algorithm — it reflects a fundamental limitation. Each agent treats the other as part of a stationary environment, but both are simultaneously adapting. The environment is anything but stationary.</p>
+<p>Multi-agent reinforcement learning (MARL) addresses this challenge through algorithms that explicitly account for the presence of other learners. The simplest upgrade is <strong>joint-action learning</strong>, where each agent observes the opponent’s actions and maintains Q-values over joint action profiles. More sophisticated approaches include <strong>minimax-Q</strong> <span class="citation">(<a href="references.html#ref-littman1994">Littman, 1994</a>)</span>, which finds optimal strategies in zero-sum games, and <strong>MADDPG</strong> <span class="citation">(<a href="references.html#ref-lowe2017">Lowe et al., 2017</a>)</span>, which scales to continuous action spaces. At the frontier, <strong>PSRO</strong> <span class="citation">(<a href="references.html#ref-lanctot2017">Lanctot et al., 2017</a>)</span> bridges MARL with classical game-theoretic solution concepts.</p>
+<p>Understanding these approaches is essential for anyone working on competitive AI systems, from game-playing agents to adversarial robustness in machine learning.</p>
+</div>
+<div id="theory-25" class="section level2" number="27.2">
+<h2>
+<span class="header-section-number">27.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-25"><i class="fas fa-link"></i></a>
+</h2>
+<div id="independent-vs.-joint-action-learners" class="section level3" number="27.2.1">
+<h3>
+<span class="header-section-number">27.2.1</span> Independent vs. joint-action learners<a class="anchor" aria-label="anchor" href="#independent-vs.-joint-action-learners"><i class="fas fa-link"></i></a>
+</h3>
+<p>An <strong>independent learner</strong> (IL) maintains Q-values <span class="math inline">\(Q_i(a_i)\)</span> over its own actions only, as in <a href="sec-q-learning.html#sec-q-learning">26</a>. It ignores the opponent entirely.</p>
+<p>A <strong>joint-action learner</strong> (JAL) observes the opponent’s action after each round and maintains Q-values over the joint action profile: <span class="math inline">\(Q_i(a_i, a_{-i})\)</span>. The agent also tracks an empirical model of the opponent’s action frequencies <span class="math inline">\(\hat{\pi}_{-i}(a_{-i})\)</span> and selects actions that maximize expected payoff under that model:</p>
+<p><span class="math display" id="eq:jal-action">\[\begin{equation}
+a_i^* = \arg\max_{a_i} \sum_{a_{-i}} \hat{\pi}_{-i}(a_{-i}) \, Q_i(a_i, a_{-i})
+\tag{27.1}
+\end{equation}\]</span></p>
+<p>JAL addresses non-stationarity by adapting its strategy to the opponent’s observed behavior. However, it still assumes the opponent’s policy is stationary — an assumption that breaks when both agents are learning.</p>
+</div>
+<div id="minimax-q-learning" class="section level3" number="27.2.2">
+<h3>
+<span class="header-section-number">27.2.2</span> Minimax-Q learning<a class="anchor" aria-label="anchor" href="#minimax-q-learning"><i class="fas fa-link"></i></a>
+</h3>
+<p>For two-player zero-sum games, <span class="citation">Littman (<a href="references.html#ref-littman1994">1994</a>)</span> proposed <strong>minimax-Q</strong>, which replaces the <span class="math inline">\(\max\)</span> operator in Q-learning with a minimax calculation. Instead of learning a deterministic best action, the agent learns a <strong>mixed strategy</strong> <span class="math inline">\(\pi_i\)</span> that maximizes its worst-case expected payoff:</p>
+<p><span class="math display" id="eq:minimax-value">\[\begin{equation}
+V_i = \max_{\pi_i} \min_{a_{-i}} \sum_{a_i} \pi_i(a_i) \, Q_i(a_i, a_{-i})
+\tag{27.2}
+\end{equation}\]</span></p>
+<p>The Q-value update becomes:</p>
+<p><span class="math display" id="eq:minimax-q-update">\[\begin{equation}
+Q_i(a_i, a_{-i}) \leftarrow Q_i(a_i, a_{-i}) + \alpha \left[ r_i + \gamma \, V_i - Q_i(a_i, a_{-i}) \right]
+\tag{27.3}
+\end{equation}\]</span></p>
+<p>In the stateless (matrix game) setting, <span class="math inline">\(\gamma = 0\)</span> and the update simplifies to:</p>
+<p><span class="math display" id="eq:minimax-q-stateless">\[\begin{equation}
+Q_i(a_i, a_{-i}) \leftarrow Q_i(a_i, a_{-i}) + \alpha \left[ r_i - Q_i(a_i, a_{-i}) \right]
+\tag{27.4}
+\end{equation}\]</span></p>
+<p>The key insight is that Q-values converge to the game’s payoff matrix, and the minimax strategy over those Q-values converges to the Nash equilibrium mixed strategy.</p>
+</div>
+<div id="maddpg-centralized-training-decentralized-execution" class="section level3" number="27.2.3">
+<h3>
+<span class="header-section-number">27.2.3</span> MADDPG: centralized training, decentralized execution<a class="anchor" aria-label="anchor" href="#maddpg-centralized-training-decentralized-execution"><i class="fas fa-link"></i></a>
+</h3>
+<p><strong>Multi-Agent Deep Deterministic Policy Gradient</strong> <span class="citation">(<a href="references.html#ref-lowe2017">Lowe et al., 2017</a>)</span> extends actor-critic methods to multi-agent settings. The core idea is <strong>centralized training with decentralized execution</strong>:</p>
+<ul>
+<li>
+<strong>During training</strong>, each agent’s <em>critic</em> has access to the actions and observations of all agents. This makes the environment stationary from the critic’s perspective — it sees the full joint state.</li>
+<li>
+<strong>During execution</strong>, each agent’s <em>actor</em> uses only its own observations to select actions. No communication is needed at deployment time.</li>
+</ul>
+<p>This paradigm elegantly sidesteps the non-stationarity problem during learning while maintaining practical deployability. MADDPG requires neural network function approximation (beyond our available packages), but the architectural principle — train with global information, execute with local information — is broadly applicable.</p>
+</div>
+<div id="policy-space-response-oracles-psro" class="section level3" number="27.2.4">
+<h3>
+<span class="header-section-number">27.2.4</span> Policy Space Response Oracles (PSRO)<a class="anchor" aria-label="anchor" href="#policy-space-response-oracles-psro"><i class="fas fa-link"></i></a>
+</h3>
+<p><strong>PSRO</strong> <span class="citation">(<a href="references.html#ref-lanctot2017">Lanctot et al., 2017</a>)</span> takes a fundamentally different approach. Instead of training a single policy per agent, it maintains a <strong>population of policies</strong> and iteratively expands it:</p>
+<ol style="list-style-type: decimal">
+<li>Start with an initial policy for each agent.</li>
+<li>Compute a <strong>meta-game</strong> payoff matrix: the expected payoff when each agent plays each policy in its population.</li>
+<li>Solve the meta-game for a <strong>meta-strategy</strong> (e.g., a Nash equilibrium over the policy populations).</li>
+<li>Train a new <strong>best response</strong> policy for each agent against the opponent’s current meta-strategy.</li>
+<li>Add the new policies to the populations and repeat.</li>
+</ol>
+<p>PSRO unifies several earlier approaches. When the meta-strategy solver is a Nash equilibrium computation and the best-response oracle is an RL algorithm, PSRO recovers the <strong>double oracle</strong> method from classical game theory. The framework has been applied to large-scale games including StarCraft <span class="citation">(<a href="references.html#ref-vinyals2019">Vinyals et al., 2019</a>)</span>.</p>
+</div>
+</div>
+<div id="sec-marl-impl" class="section level2" number="27.3">
+<h2>
+<span class="header-section-number">27.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-marl-impl"><i class="fas fa-link"></i></a>
+</h2>
+<div id="joint-action-learner" class="section level3" number="27.3.1">
+<h3>
+<span class="header-section-number">27.3.1</span> Joint-action learner<a class="anchor" aria-label="anchor" href="#joint-action-learner"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb729"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">jal_agent_create</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_own</span>, <span class="va">n_opp</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">Q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">n_own</span>, ncol <span class="op">=</span> <span class="va">n_opp</span><span class="op">)</span></span>
+<span>  <span class="va">opp_counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">n_opp</span><span class="op">)</span>  <span class="co"># Laplace smoothing</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>    choose <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">opp_freq</span> <span class="op">&lt;-</span> <span class="va">opp_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">opp_counts</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">epsilon</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">n_own</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="va">ev</span> <span class="op">&lt;-</span> <span class="va">Q</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">opp_freq</span></span>
+<span>        <span class="va">ties</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">ev</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">ev</span><span class="op">)</span><span class="op">)</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">ties</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span>,</span>
+<span>    update <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">own_action</span>, <span class="va">opp_action</span>, <span class="va">reward</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">Q</span><span class="op">[</span><span class="va">own_action</span>, <span class="va">opp_action</span><span class="op">]</span> <span class="op">&lt;&lt;-</span> <span class="va">Q</span><span class="op">[</span><span class="va">own_action</span>, <span class="va">opp_action</span><span class="op">]</span> <span class="op">+</span></span>
+<span>        <span class="va">alpha</span> <span class="op">*</span> <span class="op">(</span><span class="va">reward</span> <span class="op">-</span> <span class="va">Q</span><span class="op">[</span><span class="va">own_action</span>, <span class="va">opp_action</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="va">opp_counts</span><span class="op">[</span><span class="va">opp_action</span><span class="op">]</span> <span class="op">&lt;&lt;-</span> <span class="va">opp_counts</span><span class="op">[</span><span class="va">opp_action</span><span class="op">]</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>    <span class="op">}</span>,</span>
+<span>    get_Q <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="va">Q</span>,</span>
+<span>    get_opp_model <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="va">opp_counts</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">opp_counts</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="minimax-q-solver" class="section level3" number="27.3.2">
+<h3>
+<span class="header-section-number">27.3.2</span> Minimax-Q solver<a class="anchor" aria-label="anchor" href="#minimax-q-solver"><i class="fas fa-link"></i></a>
+</h3>
+<p>For a <span class="math inline">\(2 \times 2\)</span> zero-sum game, the minimax mixed strategy has a closed-form solution. The row player’s optimal probability on action 1 is:</p>
+<div class="sourceCode" id="cb730"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">solve_minimax_2x2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">Q</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Q is a 2x2 matrix of row player's Q-values</span></span>
+<span>  <span class="co"># Returns optimal mixed strategy (probability on action 1)</span></span>
+<span>  <span class="va">denom</span> <span class="op">&lt;-</span> <span class="va">Q</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="va">Q</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="va">Q</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">Q</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">denom</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">0.5</span><span class="op">)</span></span>
+<span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">Q</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="va">Q</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">/</span> <span class="va">denom</span></span>
+<span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">p</span><span class="op">)</span><span class="op">)</span>  <span class="co"># clamp to [0, 1]</span></span>
+<span>  <span class="va">p</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="minimax-q-agent" class="section level3" number="27.3.3">
+<h3>
+<span class="header-section-number">27.3.3</span> Minimax-Q agent<a class="anchor" aria-label="anchor" href="#minimax-q-agent"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb731"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">minimax_q_create</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_own</span>, <span class="va">n_opp</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">Q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">n_own</span>, ncol <span class="op">=</span> <span class="va">n_opp</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>    choose <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">solve_minimax_2x2</span><span class="op">(</span><span class="va">Q</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">p</span><span class="op">)</span> <span class="fl">1L</span> <span class="kw">else</span> <span class="fl">2L</span></span>
+<span>    <span class="op">}</span>,</span>
+<span>    update <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">own_action</span>, <span class="va">opp_action</span>, <span class="va">reward</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">Q</span><span class="op">[</span><span class="va">own_action</span>, <span class="va">opp_action</span><span class="op">]</span> <span class="op">&lt;&lt;-</span> <span class="va">Q</span><span class="op">[</span><span class="va">own_action</span>, <span class="va">opp_action</span><span class="op">]</span> <span class="op">+</span></span>
+<span>        <span class="va">alpha</span> <span class="op">*</span> <span class="op">(</span><span class="va">reward</span> <span class="op">-</span> <span class="va">Q</span><span class="op">[</span><span class="va">own_action</span>, <span class="va">opp_action</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="op">}</span>,</span>
+<span>    get_Q <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="va">Q</span>,</span>
+<span>    get_strategy <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">solve_minimax_2x2</span><span class="op">(</span><span class="va">Q</span><span class="op">)</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">p</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="simulation-independent-vs.-joint-action-learners" class="section level3" number="27.3.4">
+<h3>
+<span class="header-section-number">27.3.4</span> Simulation: independent vs. joint-action learners<a class="anchor" aria-label="anchor" href="#simulation-independent-vs.-joint-action-learners"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb732"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">il_agent_create</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_actions</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">env</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">new.env</a></span><span class="op">(</span>parent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">emptyenv</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">env</span><span class="op">$</span><span class="va">Q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_actions</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>    choose <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">&lt;</span> <span class="va">epsilon</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">n_actions</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="kw">else</span> <span class="op">{</span> <span class="va">ties</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">env</span><span class="op">$</span><span class="va">Q</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="va">env</span><span class="op">$</span><span class="va">Q</span><span class="op">)</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">ties</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">}</span></span>
+<span>    <span class="op">}</span>,</span>
+<span>    update <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">opp_a</span>, <span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">env</span><span class="op">$</span><span class="va">Q</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">env</span><span class="op">$</span><span class="va">Q</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">+</span> <span class="va">alpha</span> <span class="op">*</span> <span class="op">(</span><span class="va">r</span> <span class="op">-</span> <span class="va">env</span><span class="op">$</span><span class="va">Q</span><span class="op">[</span><span class="va">a</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">run_il_vs_jal</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span>, <span class="va">episodes</span> <span class="op">=</span> <span class="fl">5000</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>                           <span class="va">epsilon</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">type</span> <span class="op">=</span> <span class="st">"IL"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">n1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>; <span class="va">n2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">type</span> <span class="op">==</span> <span class="st">"IL"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">agent1</span> <span class="op">&lt;-</span> <span class="fu">il_agent_create</span><span class="op">(</span><span class="va">n1</span>, <span class="va">alpha</span>, <span class="va">epsilon</span><span class="op">)</span></span>
+<span>    <span class="va">agent2</span> <span class="op">&lt;-</span> <span class="fu">il_agent_create</span><span class="op">(</span><span class="va">n2</span>, <span class="va">alpha</span>, <span class="va">epsilon</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">agent1</span> <span class="op">&lt;-</span> <span class="fu">jal_agent_create</span><span class="op">(</span><span class="va">n1</span>, <span class="va">n2</span>, <span class="va">alpha</span>, <span class="va">epsilon</span><span class="op">)</span></span>
+<span>    <span class="va">agent2</span> <span class="op">&lt;-</span> <span class="fu">jal_agent_create</span><span class="op">(</span><span class="va">n2</span>, <span class="va">n1</span>, <span class="va">alpha</span>, <span class="va">epsilon</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">rewards</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">ep</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">a1</span> <span class="op">&lt;-</span> <span class="va">agent1</span><span class="op">$</span><span class="fu">choose</span><span class="op">(</span><span class="op">)</span>; <span class="va">a2</span> <span class="op">&lt;-</span> <span class="va">agent2</span><span class="op">$</span><span class="fu">choose</span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="va">a1</span>, <span class="va">a2</span><span class="op">]</span>; <span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">[</span><span class="va">a1</span>, <span class="va">a2</span><span class="op">]</span></span>
+<span>    <span class="va">agent1</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">a1</span>, <span class="va">a2</span>, <span class="va">r1</span><span class="op">)</span>; <span class="va">agent2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">a2</span>, <span class="va">a1</span>, <span class="va">r2</span><span class="op">)</span></span>
+<span>    <span class="va">rewards</span><span class="op">[</span><span class="va">ep</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">r1</span> <span class="op">+</span> <span class="va">r2</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">rewards</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb733"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Coordination game: both players want to match</span></span>
+<span><span class="va">A_coord</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">B_coord</span> <span class="op">&lt;-</span> <span class="va">A_coord</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">n_runs</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
+<span><span class="va">episodes</span> <span class="op">&lt;-</span> <span class="fl">3000</span></span>
+<span><span class="va">window</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span></span>
+<span><span class="va">il_runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="va">n_runs</span>, <span class="fu">run_il_vs_jal</span><span class="op">(</span><span class="va">A_coord</span>, <span class="va">B_coord</span>,</span>
+<span>                      episodes <span class="op">=</span> <span class="va">episodes</span>, type <span class="op">=</span> <span class="st">"IL"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">jal_runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="va">n_runs</span>, <span class="fu">run_il_vs_jal</span><span class="op">(</span><span class="va">A_coord</span>, <span class="va">B_coord</span>,</span>
+<span>                       episodes <span class="op">=</span> <span class="va">episodes</span>, type <span class="op">=</span> <span class="st">"JAL"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">smooth_rewards</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">runs</span>, <span class="va">window</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">runs</span>, <span class="fl">2</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">r</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">window</span>, <span class="va">window</span><span class="op">)</span>, sides <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowMeans</a></span><span class="op">(</span>na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">df_curves</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  episode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  reward <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu">smooth_rewards</span><span class="op">(</span><span class="va">il_runs</span>, <span class="va">window</span><span class="op">)</span>,</span>
+<span>             <span class="fu">smooth_rewards</span><span class="op">(</span><span class="va">jal_runs</span>, <span class="va">window</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  learner <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Independent"</span>, <span class="st">"Joint-Action"</span><span class="op">)</span>, each <span class="op">=</span> <span class="va">episodes</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">reward</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb734"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p_curves</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df_curves</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">episode</span>, y <span class="op">=</span> <span class="va">reward</span>, colour <span class="op">=</span> <span class="va">learner</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">4</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">2800</span>, y <span class="op">=</span> <span class="fl">3.85</span>, label <span class="op">=</span> <span class="st">"Optimal (both play A)"</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">3</span>, colour <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Independent"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                                  <span class="st">"Joint-Action"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Independent vs. Joint-Action Learners"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Episode"</span>, y <span class="op">=</span> <span class="st">"Joint Payoff (smoothed)"</span>,</span>
+<span>       colour <span class="op">=</span> <span class="st">"Learner Type"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_curves</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:learning-curves"></span>
+<img src="26-multi-agent-rl_files/figure-html/learning-curves-1.png" alt="Learning curves in a coordination game (joint payoff, smoothed over 100 episodes, averaged over 20 runs). Joint-action learners coordinate faster and more reliably than independent learners because they model the opponent's action frequencies." width="80%"><p class="caption">
+Figure 27.1: Learning curves in a coordination game (joint payoff, smoothed over 100 episodes, averaged over 20 runs). Joint-action learners coordinate faster and more reliably than independent learners because they model the opponent’s action frequencies.
+</p>
+</div>
+<div class="sourceCode" id="cb735"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_curves</span>, <span class="st">"marl-learning-curves"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="win-rate-matrix-across-strategies" class="section level3" number="27.3.5">
+<h3>
+<span class="header-section-number">27.3.5</span> Win-rate matrix across strategies<a class="anchor" aria-label="anchor" href="#win-rate-matrix-across-strategies"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb736"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Matching Pennies tournament: IL vs JAL vs Minimax-Q</span></span>
+<span><span class="va">play_match</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">create_p1</span>, <span class="va">create_p2</span>, <span class="va">A</span>, <span class="va">B</span>, <span class="va">episodes</span> <span class="op">=</span> <span class="fl">5000</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">create_p1</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu">create_p2</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">wins</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">ep</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">a1</span> <span class="op">&lt;-</span> <span class="va">p1</span><span class="op">$</span><span class="fu">choose</span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="va">a2</span> <span class="op">&lt;-</span> <span class="va">p2</span><span class="op">$</span><span class="fu">choose</span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="va">a1</span>, <span class="va">a2</span><span class="op">]</span></span>
+<span>    <span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">[</span><span class="va">a1</span>, <span class="va">a2</span><span class="op">]</span></span>
+<span>    <span class="va">p1</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">a1</span>, <span class="va">a2</span>, <span class="va">r1</span><span class="op">)</span></span>
+<span>    <span class="va">p2</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">a2</span>, <span class="va">a1</span>, <span class="va">r2</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">r1</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="va">wins</span> <span class="op">&lt;-</span> <span class="va">wins</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">wins</span> <span class="op">/</span> <span class="va">episodes</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">A_mp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">B_mp</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="va">A_mp</span></span>
+<span></span>
+<span><span class="va">make_il</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fu">il_agent_create</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="va">make_jal</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fu">jal_agent_create</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">0.1</span>, <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="va">make_minimax</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">a</span> <span class="op">&lt;-</span> <span class="fu">minimax_q_create</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">0.1</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>choose <span class="op">=</span> <span class="va">a</span><span class="op">$</span><span class="va">choose</span>, update <span class="op">=</span> <span class="va">a</span><span class="op">$</span><span class="va">update</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
+<span><span class="va">strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>IL <span class="op">=</span> <span class="va">make_il</span>, JAL <span class="op">=</span> <span class="va">make_jal</span>, Minimax <span class="op">=</span> <span class="va">make_minimax</span><span class="op">)</span></span>
+<span><span class="va">n_strats</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">strategies</span><span class="op">)</span></span>
+<span><span class="va">win_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_strats</span>, <span class="va">n_strats</span>,</span>
+<span>                     dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">strategies</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">strategies</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">n_matches</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_strats</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_strats</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">rates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="va">n_matches</span>,</span>
+<span>      <span class="fu">play_match</span><span class="op">(</span><span class="va">strategies</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, <span class="va">strategies</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span>, <span class="va">A_mp</span>, <span class="va">B_mp</span>, episodes <span class="op">=</span> <span class="fl">2000</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">win_matrix</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">rates</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb737"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">df_heat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span><span class="op">(</span></span>
+<span>  row_strategy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">win_matrix</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">win_matrix</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  col_strategy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">win_matrix</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">win_matrix</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>win_rate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html">as.vector</a></span><span class="op">(</span><span class="va">win_matrix</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_heat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">df_heat</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">col_strategy</span>, y <span class="op">=</span> <span class="va">row_strategy</span>,</span>
+<span>                               fill <span class="op">=</span> <span class="va">win_rate</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html">geom_tile</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"white"</span>, linewidth <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%.1f%%"</span>, <span class="va">win_rate</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">4.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span><span class="op">(</span>low <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, mid <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                       midpoint <span class="op">=</span> <span class="fl">0.5</span>, limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.7</span><span class="op">)</span>,</span>
+<span>                       labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/percent_format.html">percent</a></span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Win Rate Matrix: Matching Pennies"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Column Player Strategy"</span>, y <span class="op">=</span> <span class="st">"Row Player Strategy"</span>,</span>
+<span>       fill <span class="op">=</span> <span class="st">"Row Player\nWin Rate"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_heat</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:win-rate-matrix"></span>
+<img src="26-multi-agent-rl_files/figure-html/win-rate-matrix-1.png" alt="Win-rate matrix in Matching Pennies (row player's win rate). Minimax-Q achieves near 50% against all opponents --- the theoretically optimal rate in a zero-sum game --- while independent and joint-action learners show exploitable biases." width="80%"><p class="caption">
+Figure 27.2: Win-rate matrix in Matching Pennies (row player’s win rate). Minimax-Q achieves near 50% against all opponents — the theoretically optimal rate in a zero-sum game — while independent and joint-action learners show exploitable biases.
+</p>
+</div>
+<div class="sourceCode" id="cb738"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_heat</span>, <span class="st">"marl-win-rate-matrix"</span>, width <span class="op">=</span> <span class="fl">6</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-23" class="section level2" number="27.4">
+<h2>
+<span class="header-section-number">27.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-23"><i class="fas fa-link"></i></a>
+</h2>
+<p>We trace minimax-Q learning in Matching Pennies, showing convergence to the minimax strategy of playing each action with probability 0.5.</p>
+<div class="sourceCode" id="cb739"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">agent</span> <span class="op">&lt;-</span> <span class="fu">minimax_q_create</span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, alpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
+<span><span class="va">episodes</span> <span class="op">&lt;-</span> <span class="fl">5000</span></span>
+<span></span>
+<span><span class="va">strategy_history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="va">episodes</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">q_history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="cn">NA</span>, nrow <span class="op">=</span> <span class="va">episodes</span>, ncol <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">ep</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">episodes</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">a1</span> <span class="op">&lt;-</span> <span class="va">agent</span><span class="op">$</span><span class="fu">choose</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">a2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>  <span class="co"># opponent plays uniformly</span></span>
+<span>  <span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">A_mp</span><span class="op">[</span><span class="va">a1</span>, <span class="va">a2</span><span class="op">]</span></span>
+<span>  <span class="va">agent</span><span class="op">$</span><span class="fu">update</span><span class="op">(</span><span class="va">a1</span>, <span class="va">a2</span>, <span class="va">r1</span><span class="op">)</span></span>
+<span>  <span class="va">strategy_history</span><span class="op">[</span><span class="va">ep</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="va">agent</span><span class="op">$</span><span class="fu">get_strategy</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">Q</span> <span class="op">&lt;-</span> <span class="va">agent</span><span class="op">$</span><span class="fu">get_Q</span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">q_history</span><span class="op">[</span><span class="va">ep</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html">as.vector</a></span><span class="op">(</span><span class="va">Q</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Minimax-Q convergence in Matching Pennies:\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Minimax-Q convergence in Matching Pennies:</code></pre>
+<div class="sourceCode" id="cb741"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">checkpoints</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">500</span>, <span class="fl">1000</span>, <span class="fl">2000</span>, <span class="fl">5000</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">ep</span> <span class="kw">in</span> <span class="va">checkpoints</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">strategy_history</span><span class="op">[</span><span class="va">ep</span>, <span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Episode %4d: P(Heads) = %.3f, P(Tails) = %.3f\n"</span>,</span>
+<span>              <span class="va">ep</span>, <span class="va">s</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">s</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   Episode  100: P(Heads) = 0.516, P(Tails) = 0.484
+#&gt;   Episode  500: P(Heads) = 0.500, P(Tails) = 0.500
+#&gt;   Episode 1000: P(Heads) = 0.500, P(Tails) = 0.500
+#&gt;   Episode 2000: P(Heads) = 0.500, P(Tails) = 0.500
+#&gt;   Episode 5000: P(Heads) = 0.500, P(Tails) = 0.500</code></pre>
+<div class="sourceCode" id="cb743"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nFinal Q-values:\n"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Final Q-values:</code></pre>
+<div class="sourceCode" id="cb745"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Q_final</span> <span class="op">&lt;-</span> <span class="va">agent</span><span class="op">$</span><span class="fu">get_Q</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">Q_final</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"T"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">Q_final</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"H"</span>, <span class="st">"T"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">Q_final</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;    H  T
+#&gt; H  1 -1
+#&gt; T -1  1</code></pre>
+<div class="sourceCode" id="cb747"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nThe Nash equilibrium is P(Heads) = 0.500."</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; The Nash equilibrium is P(Heads) = 0.500.</code></pre>
+<div class="sourceCode" id="cb749"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nFinal strategy: P(Heads) = %.3f --- convergence achieved.\n"</span>,</span>
+<span>            <span class="va">strategy_history</span><span class="op">[</span><span class="va">episodes</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Final strategy: P(Heads) = 0.500 --- convergence achieved.</code></pre>
+<p>The minimax-Q agent converges to a strategy near <span class="math inline">\((0.5, 0.5)\)</span>. Unlike independent Q-learners (which cycle endlessly in this game, as shown in <a href="sec-q-learning.html#sec-q-learning">26</a>), the minimax formulation explicitly optimizes for worst-case performance. The Q-values converge to approximate the true payoff matrix, and the minimax calculation over those Q-values yields the Nash equilibrium mixed strategy.</p>
+<p>The key advantage is robustness: the minimax strategy guarantees an expected payoff of zero regardless of the opponent’s play. No deterministic strategy can make this guarantee.</p>
+</div>
+<div id="extensions-25" class="section level2" number="27.5">
+<h2>
+<span class="header-section-number">27.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-25"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Win-or-Learn-Fast (WoLF-PHC)</strong>: Varies the learning rate depending on whether the agent is currently winning or losing relative to its equilibrium payoff. This achieves convergence in a wider class of games than standard Q-learning.</li>
+<li>
+<strong>Nash-Q</strong>: Extends minimax-Q to general-sum games by computing a Nash equilibrium at each update step. Computationally expensive but theoretically more general.</li>
+<li>
+<strong>Opponent modelling</strong>: Rather than assuming worst-case play, agents can explicitly model the opponent’s learning dynamics and best-respond to predicted future behavior.</li>
+<li>
+<strong>Self-play</strong> (<a href="sec-self-play.html#sec-self-play">28</a>) combines RL with self-play to learn without any opponent model, scaling to games like Go and chess.</li>
+<li>
+<strong>Counterfactual regret minimization</strong> (<a href="sec-cfr.html#sec-cfr">29</a>) provides an alternative to RL-based approaches for imperfect-information games.</li>
+</ul>
+<p>For a comprehensive survey of MARL, see <span class="citation">Shoham &amp; Leyton-Brown (<a href="references.html#ref-shoham2009">2009</a>)</span>. The PSRO framework is detailed in <span class="citation">Lanctot et al. (<a href="references.html#ref-lanctot2017">2017</a>)</span>.</p>
+</div>
+<div id="exercises-25" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-25"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Joint-action learner in Prisoner’s Dilemma.</strong> Implement two joint-action learners playing the Prisoner’s Dilemma (<span class="math inline">\(T=5, R=3, P=1, S=0\)</span>) for 5000 episodes. Does the JAL converge to mutual defection? Compare the convergence speed to independent learners from <a href="sec-q-learning.html#sec-q-learning">26</a>.</p></li>
+<li><p><strong>Minimax-Q with decaying learning rate.</strong> Modify the minimax-Q agent to use a decaying learning rate <span class="math inline">\(\alpha_t = 1 / (1 + 0.001 \cdot t)\)</span>. Run the Matching Pennies experiment again. Does the decaying rate improve convergence stability? Plot the strategy trajectory <span class="math inline">\(P(\text{Heads})\)</span> over episodes for both constant and decaying rates.</p></li>
+<li><p><strong>PSRO by hand.</strong> Consider Rock-Paper-Scissors. Start with a population of two policies for each player: “always Rock” and “always Paper.” Compute the <span class="math inline">\(2 \times 2\)</span> meta-game payoff matrix. Find the Nash equilibrium of this meta-game. What best-response policy should be added next? Repeat for one more iteration and discuss whether the meta-strategy converges toward the full-game Nash equilibrium of <span class="math inline">\((1/3, 1/3, 1/3)\)</span>.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></div>
+<div class="next"><a href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-multi-agent-rl"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="nav-link" href="#learning-objectives-25">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-25"><span class="header-section-number">27.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-25"><span class="header-section-number">27.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#independent-vs.-joint-action-learners"><span class="header-section-number">27.2.1</span> Independent vs. joint-action learners</a></li>
+<li><a class="nav-link" href="#minimax-q-learning"><span class="header-section-number">27.2.2</span> Minimax-Q learning</a></li>
+<li><a class="nav-link" href="#maddpg-centralized-training-decentralized-execution"><span class="header-section-number">27.2.3</span> MADDPG: centralized training, decentralized execution</a></li>
+<li><a class="nav-link" href="#policy-space-response-oracles-psro"><span class="header-section-number">27.2.4</span> Policy Space Response Oracles (PSRO)</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-marl-impl"><span class="header-section-number">27.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#joint-action-learner"><span class="header-section-number">27.3.1</span> Joint-action learner</a></li>
+<li><a class="nav-link" href="#minimax-q-solver"><span class="header-section-number">27.3.2</span> Minimax-Q solver</a></li>
+<li><a class="nav-link" href="#minimax-q-agent"><span class="header-section-number">27.3.3</span> Minimax-Q agent</a></li>
+<li><a class="nav-link" href="#simulation-independent-vs.-joint-action-learners"><span class="header-section-number">27.3.4</span> Simulation: independent vs. joint-action learners</a></li>
+<li><a class="nav-link" href="#win-rate-matrix-across-strategies"><span class="header-section-number">27.3.5</span> Win-rate matrix across strategies</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-23"><span class="header-section-number">27.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-25"><span class="header-section-number">27.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-25">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/26-multi-agent-rl.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/26-multi-agent-rl.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

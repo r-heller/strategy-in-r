@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 37 Empirical Case Studies | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Real-world applications of game theory analyzed with R — spectrum auctions, kidney exchange, and Braess’s paradox in traffic routing.  Learning objectives Model an FCC-style spectrum auction as a...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 37 Empirical Case Studies | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-case-studies.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Real-world applications of game theory analyzed with R — spectrum auctions, kidney exchange, and Braess’s paradox in traffic routing.  Learning objectives Model an FCC-style spectrum auction as a...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 37 Empirical Case Studies | Strategy in R">
+<meta name="twitter:description" content="Real-world applications of game theory analyzed with R — spectrum auctions, kidney exchange, and Braess’s paradox in traffic routing.  Learning objectives Model an FCC-style spectrum auction as a...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 37 Empirical Case Studies | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="active" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-case-studies" class="section level1" number="37">
+<h1>
+<span class="header-section-number">37</span> Empirical Case Studies<a class="anchor" aria-label="anchor" href="#sec-case-studies"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Real-world applications of game theory analyzed with R — spectrum auctions, kidney exchange, and Braess’s paradox in traffic routing.</p>
+</blockquote>
+<div id="learning-objectives-35" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-35"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Model an FCC-style spectrum auction as a multi-unit sealed-bid simulation and analyze revenue outcomes.</li>
+<li>Formulate kidney exchange as a matching problem on a compatibility graph and compute maximal matchings.</li>
+<li>Explain Braess’s paradox and compute Wardrop equilibria for simple traffic networks in R.</li>
+<li>Visualize network structures and compare equilibrium outcomes with socially optimal flows.</li>
+</ul>
+</div>
+<div id="motivation-35" class="section level2" number="37.1">
+<h2>
+<span class="header-section-number">37.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-35"><i class="fas fa-link"></i></a>
+</h2>
+<p>Game theory is not merely an abstract discipline — it has reshaped multi-billion-dollar markets and saved thousands of lives. The FCC’s spectrum auctions raised over $200 billion by applying auction theory. Kidney exchange programs, designed using matching theory, enable thousands of transplants annually that would otherwise be impossible. And traffic engineers have discovered, counterintuitively, that adding roads can <em>increase</em> total travel time — a phenomenon predicted by game-theoretic models.</p>
+<p>This chapter applies computational game theory to three landmark case studies, demonstrating how the tools developed throughout this book operate in practice.</p>
+</div>
+<div id="theory-35" class="section level2" number="37.2">
+<h2>
+<span class="header-section-number">37.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-35"><i class="fas fa-link"></i></a>
+</h2>
+<div id="spectrum-auctions" class="section level3" number="37.2.1">
+<h3>
+<span class="header-section-number">37.2.1</span> Spectrum auctions<a class="anchor" aria-label="anchor" href="#spectrum-auctions"><i class="fas fa-link"></i></a>
+</h3>
+<p>The FCC allocates wireless spectrum licenses through <strong>simultaneous ascending auctions</strong>. Multiple licenses are sold concurrently; bidders submit bids in rounds, prices rise, and bidders can switch across licenses. The design aims to achieve an <strong>efficient allocation</strong> — licenses go to firms that value them most — while generating revenue for the government.</p>
+<p>We simplify this to a <strong>multi-unit sealed-bid auction</strong> where <span class="math inline">\(n\)</span> bidders submit bids for <span class="math inline">\(k\)</span> identical licenses, and the <span class="math inline">\(k\)</span> highest bidders win at the <span class="math inline">\((k+1)\)</span>-th highest bid (a Vickrey-style rule that incentivizes truthful bidding).</p>
+</div>
+<div id="kidney-exchange" class="section level3" number="37.2.2">
+<h3>
+<span class="header-section-number">37.2.2</span> Kidney exchange<a class="anchor" aria-label="anchor" href="#kidney-exchange"><i class="fas fa-link"></i></a>
+</h3>
+<p>A patient needing a kidney often has a willing but biologically incompatible donor. <strong>Kidney exchange</strong> matches incompatible patient-donor pairs: if Patient A’s donor is compatible with Patient B, and Patient B’s donor is compatible with Patient A, a <strong>pairwise exchange</strong> can save both lives.</p>
+<p>The problem maps to a <strong>directed graph</strong> where nodes are patient-donor pairs and edges indicate compatibility. A matching is a set of disjoint cycles (typically of length 2 or 3) that maximizes the number of transplants. This is equivalent to a <strong>maximum weight matching</strong> problem.</p>
+</div>
+<div id="braesss-paradox" class="section level3" number="37.2.3">
+<h3>
+<span class="header-section-number">37.2.3</span> Braess’s paradox<a class="anchor" aria-label="anchor" href="#braesss-paradox"><i class="fas fa-link"></i></a>
+</h3>
+<div class="rmdnote">
+<p><strong>Definition: Braess’s Paradox</strong></p>
+<p><strong>Braess’s paradox</strong> occurs when adding a new road to a traffic network <em>increases</em> the total travel time for all users at the Wardrop equilibrium.</p>
+</div>
+<p>In a <strong>Wardrop equilibrium</strong> (the traffic analog of Nash equilibrium), every used route has equal travel time, and no driver can reduce their travel time by unilaterally switching routes. The paradox arises because selfish routing ignores congestion externalities — each driver’s route choice increases travel times for others.</p>
+<p>Consider a 4-node network from origin <span class="math inline">\(O\)</span> to destination <span class="math inline">\(D\)</span> with two intermediate nodes <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>:</p>
+<ul>
+<li>Route 1: <span class="math inline">\(O \to A \to D\)</span> with costs <span class="math inline">\(c_{OA}(x) = x/100\)</span> and <span class="math inline">\(c_{AD} = 45\)</span>.</li>
+<li>Route 2: <span class="math inline">\(O \to B \to D\)</span> with costs <span class="math inline">\(c_{OB} = 45\)</span> and <span class="math inline">\(c_{BD}(x) = x/100\)</span>.</li>
+</ul>
+<p>With 4,000 drivers, the Wardrop equilibrium splits traffic equally: 2,000 on each route, total time 65 per driver. Now add a zero-cost road <span class="math inline">\(A \to B\)</span>. A third route <span class="math inline">\(O \to A \to B \to D\)</span> becomes available, and the new equilibrium has all 4,000 drivers using this route — total time 80. The added road made everyone worse off.</p>
+</div>
+</div>
+<div id="sec-cases-implementation" class="section level2" number="37.3">
+<h2>
+<span class="header-section-number">37.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-cases-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="spectrum-auction-simulation" class="section level3" number="37.3.1">
+<h3>
+<span class="header-section-number">37.3.1</span> Spectrum auction simulation<a class="anchor" aria-label="anchor" href="#spectrum-auction-simulation"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1043"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">simulate_spectrum_auction</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_bidders</span>, <span class="va">n_licenses</span>, <span class="va">n_sims</span> <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Each bidder's value drawn from Uniform(0, 100)</span></span>
+<span>  <span class="co"># Vickrey rule: k highest bidders win, pay (k+1)-th bid</span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_sims</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">sim</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="va">n_bidders</span>, <span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="va">winners</span> <span class="op">&lt;-</span> <span class="va">values</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_licenses</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">price</span> <span class="op">&lt;-</span> <span class="va">values</span><span class="op">[</span><span class="va">n_licenses</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span>  <span class="co"># (k+1)-th highest bid</span></span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>sim <span class="op">=</span> <span class="va">sim</span>, revenue <span class="op">=</span> <span class="va">n_licenses</span> <span class="op">*</span> <span class="va">price</span>,</span>
+<span>           avg_winner_surplus <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">winners</span> <span class="op">-</span> <span class="va">price</span><span class="op">)</span>,</span>
+<span>           price <span class="op">=</span> <span class="va">price</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="va">results</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">auction_results</span> <span class="op">&lt;-</span> <span class="fu">simulate_spectrum_auction</span><span class="op">(</span>n_bidders <span class="op">=</span> <span class="fl">10</span>, n_licenses <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Mean revenue (10 bidders, 3 licenses): $%.1f\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">auction_results</span><span class="op">$</span><span class="va">revenue</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Mean revenue (10 bidders, 3 licenses): $191.8</code></pre>
+<div class="sourceCode" id="cb1045"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Mean winner surplus: $%.1f\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">auction_results</span><span class="op">$</span><span class="va">avg_winner_surplus</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Mean winner surplus: $18.0</code></pre>
+<div class="sourceCode" id="cb1047"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Mean clearing price: $%.1f\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">auction_results</span><span class="op">$</span><span class="va">price</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Mean clearing price: $63.9</code></pre>
+</div>
+<div id="kidney-exchange-matching" class="section level3" number="37.3.2">
+<h3>
+<span class="header-section-number">37.3.2</span> Kidney exchange matching<a class="anchor" aria-label="anchor" href="#kidney-exchange-matching"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1049"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">build_compatibility_graph</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_pairs</span>, <span class="va">compatibility_prob</span> <span class="op">=</span> <span class="fl">0.15</span>,</span>
+<span>                                      <span class="va">seed</span> <span class="op">=</span> <span class="fl">42</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
+<span>  <span class="co"># Each pair has a patient blood type and donor blood type</span></span>
+<span>  <span class="va">blood_types</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"O"</span>, <span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"AB"</span><span class="op">)</span></span>
+<span>  <span class="co"># Simplified compatibility: O donates to all, AB receives from all</span></span>
+<span>  <span class="va">can_donate</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">donor_bt</span>, <span class="va">patient_bt</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">donor_bt</span> <span class="op">==</span> <span class="st">"O"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">donor_bt</span> <span class="op">==</span> <span class="va">patient_bt</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">patient_bt</span> <span class="op">==</span> <span class="st">"AB"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="cn">FALSE</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    pair_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_pairs</span><span class="op">)</span>,</span>
+<span>    patient_bt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">blood_types</span>, <span class="va">n_pairs</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                        prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.44</span>, <span class="fl">0.42</span>, <span class="fl">0.10</span>, <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    donor_bt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">blood_types</span>, <span class="va">n_pairs</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                      prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.44</span>, <span class="fl">0.42</span>, <span class="fl">0.10</span>, <span class="fl">0.04</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="co"># Exclude already-compatible pairs (they don't need exchange)</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html">map2_lgl</a></span><span class="op">(</span><span class="va">donor_bt</span>, <span class="va">patient_bt</span>, <span class="va">can_donate</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">pairs</span><span class="op">)</span></span>
+<span>  <span class="co"># Build adjacency: edge from i to j if i's donor is compatible with j's patient</span></span>
+<span>  <span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">from</span> <span class="op">!=</span> <span class="va">to</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>      compatible <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html">map2_lgl</a></span><span class="op">(</span><span class="va">from</span>, <span class="va">to</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span>, <span class="va">j</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="fu">can_donate</span><span class="op">(</span><span class="va">pairs</span><span class="op">$</span><span class="va">donor_bt</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">pairs</span><span class="op">$</span><span class="va">patient_bt</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>          <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">&lt;</span> <span class="op">(</span><span class="fl">1</span> <span class="op">+</span> <span class="va">compatibility_prob</span><span class="op">)</span>  <span class="co"># crossmatch factor</span></span>
+<span>      <span class="op">}</span><span class="op">)</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">compatible</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>pairs <span class="op">=</span> <span class="va">pairs</span>, edges <span class="op">=</span> <span class="va">edges</span>, n <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">find_pairwise_matches</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Greedy maximal matching on pairwise exchanges (2-cycles)</span></span>
+<span>  <span class="va">edges</span> <span class="op">&lt;-</span> <span class="va">graph</span><span class="op">$</span><span class="va">edges</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="va">graph</span><span class="op">$</span><span class="va">n</span></span>
+<span>  <span class="va">matched</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">matches</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Find all 2-cycles: i-&gt;j and j-&gt;i both exist</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">idx</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">edges</span><span class="op">$</span><span class="va">from</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span></span>
+<span>    <span class="va">j</span> <span class="op">&lt;-</span> <span class="va">edges</span><span class="op">$</span><span class="va">to</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">matched</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">||</span> <span class="va">matched</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="kw">next</span></span>
+<span>    <span class="co"># Check reverse edge exists</span></span>
+<span>    <span class="va">reverse</span> <span class="op">&lt;-</span> <span class="va">edges</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">from</span> <span class="op">==</span> <span class="va">j</span>, <span class="va">to</span> <span class="op">==</span> <span class="va">i</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">reverse</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">matched</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>      <span class="va">matched</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>      <span class="va">matches</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">matches</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">i</span>, <span class="va">j</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>matches <span class="op">=</span> <span class="va">matches</span>, n_matched <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">matched</span><span class="op">)</span>, n_total <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu">build_compatibility_graph</span><span class="op">(</span>n_pairs <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">matching</span> <span class="op">&lt;-</span> <span class="fu">find_pairwise_matches</span><span class="op">(</span><span class="va">graph</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Pairs in pool: %d\n"</span>, <span class="va">matching</span><span class="op">$</span><span class="va">n_total</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Pairs in pool: 9</code></pre>
+<div class="sourceCode" id="cb1051"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Pairwise exchanges found: %d (saving %d patients)\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">matching</span><span class="op">$</span><span class="va">matches</span><span class="op">)</span>, <span class="va">matching</span><span class="op">$</span><span class="va">n_matched</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Pairwise exchanges found: 0 (saving 0 patients)</code></pre>
+</div>
+<div id="kidney-exchange-network-visualization" class="section level3" number="37.3.3">
+<h3>
+<span class="header-section-number">37.3.3</span> Kidney exchange network visualization<a class="anchor" aria-label="anchor" href="#kidney-exchange-network-visualization"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1053"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Layout nodes in a circle</span></span>
+<span><span class="va">n_nodes</span> <span class="op">&lt;-</span> <span class="va">graph</span><span class="op">$</span><span class="va">n</span></span>
+<span><span class="va">angles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span>, length.out <span class="op">=</span> <span class="va">n_nodes</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="op">(</span><span class="va">n_nodes</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">node_data</span> <span class="op">&lt;-</span> <span class="va">graph</span><span class="op">$</span><span class="va">pairs</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">cos</a></span><span class="op">(</span><span class="va">angles</span><span class="op">)</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="va">angles</span><span class="op">)</span>,</span>
+<span>         node_id <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html">row_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Edge data</span></span>
+<span><span class="va">edge_data</span> <span class="op">&lt;-</span> <span class="va">graph</span><span class="op">$</span><span class="va">edges</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">node_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">node_id</span>, <span class="va">x</span>, <span class="va">y</span><span class="op">)</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"from"</span> <span class="op">=</span> <span class="st">"node_id"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>x_from <span class="op">=</span> <span class="va">x</span>, y_from <span class="op">=</span> <span class="va">y</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">node_data</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">node_id</span>, <span class="va">x</span>, <span class="va">y</span><span class="op">)</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"to"</span> <span class="op">=</span> <span class="st">"node_id"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html">rename</a></span><span class="op">(</span>x_to <span class="op">=</span> <span class="va">x</span>, y_to <span class="op">=</span> <span class="va">y</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Matched edges</span></span>
+<span><span class="va">matched_pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">matching</span><span class="op">$</span><span class="va">matches</span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">matched_pairs</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">matched_edge_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">matched_pairs</span><span class="op">)</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="va">matched_pairs</span><span class="op">[</span><span class="va">r</span>, <span class="fl">1</span><span class="op">]</span></span>
+<span>    <span class="va">j</span> <span class="op">&lt;-</span> <span class="va">matched_pairs</span><span class="op">[</span><span class="va">r</span>, <span class="fl">2</span><span class="op">]</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>x_from <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">x</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, y_from <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>             x_to <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">x</span><span class="op">[</span><span class="va">j</span><span class="op">]</span>, y_to <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>x_from <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">x</span><span class="op">[</span><span class="va">j</span><span class="op">]</span>, y_from <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="va">j</span><span class="op">]</span>,</span>
+<span>             x_to <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">x</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, y_to <span class="op">=</span> <span class="va">node_data</span><span class="op">$</span><span class="va">y</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="va">matched_edge_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>x_from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="op">)</span>, y_from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                              x_to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="op">)</span>, y_to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Colour by blood type</span></span>
+<span><span class="va">bt_colours</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"O"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="st">"A"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>                <span class="st">"B"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="st">"AB"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_kidney</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">edge_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x_from</span>, y <span class="op">=</span> <span class="va">y_from</span>,</span>
+<span>                                      xend <span class="op">=</span> <span class="va">x_to</span>, yend <span class="op">=</span> <span class="va">y_to</span><span class="op">)</span>,</span>
+<span>               colour <span class="op">=</span> <span class="st">"grey80"</span>, linewidth <span class="op">=</span> <span class="fl">0.3</span>, alpha <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">matched_edge_data</span>,</span>
+<span>               <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x_from</span>, y <span class="op">=</span> <span class="va">y_from</span>, xend <span class="op">=</span> <span class="va">x_to</span>, yend <span class="op">=</span> <span class="va">y_to</span><span class="op">)</span>,</span>
+<span>               colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">node_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, fill <span class="op">=</span> <span class="va">patient_bt</span><span class="op">)</span>,</span>
+<span>             shape <span class="op">=</span> <span class="fl">21</span>, size <span class="op">=</span> <span class="fl">4</span>, colour <span class="op">=</span> <span class="st">"black"</span>, stroke <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">bt_colours</span>, name <span class="op">=</span> <span class="st">"Patient\nblood type"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_equal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>, axis.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>, panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Kidney Exchange Compatibility Network"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_kidney</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:kidney-exchange-plot"></span>
+<img src="36-empirical-case-studies_files/figure-html/kidney-exchange-plot-1.png" alt="Kidney exchange compatibility network. Nodes represent incompatible patient-donor pairs (coloured by patient blood type). Edges show potential donations. Highlighted thick edges are matched pairwise exchanges." width="80%"><p class="caption">
+Figure 37.1: Kidney exchange compatibility network. Nodes represent incompatible patient-donor pairs (coloured by patient blood type). Edges show potential donations. Highlighted thick edges are matched pairwise exchanges.
+</p>
+</div>
+<div class="sourceCode" id="cb1054"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_kidney</span>, <span class="st">"kidney-exchange-network"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="braesss-paradox-1" class="section level3" number="37.3.4">
+<h3>
+<span class="header-section-number">37.3.4</span> Braess’s paradox<a class="anchor" aria-label="anchor" href="#braesss-paradox-1"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1055"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">braess_network</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_drivers</span> <span class="op">=</span> <span class="fl">4000</span>, <span class="va">has_shortcut</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Routes in 4-node network: O -&gt; A -&gt; D, O -&gt; B -&gt; D, and optionally O -&gt; A -&gt; B -&gt; D</span></span>
+<span>  <span class="co"># Cost functions: c_OA(x) = x/100, c_AD = 45, c_OB = 45, c_BD(x) = x/100</span></span>
+<span>  <span class="co"># Shortcut A -&gt; B costs 0</span></span>
+<span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="va">has_shortcut</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Without shortcut: two routes, symmetric =&gt; equilibrium splits equally</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">n_drivers</span> <span class="op">/</span> <span class="fl">2</span></span>
+<span>    <span class="va">time_r1</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">/</span> <span class="fl">100</span> <span class="op">+</span> <span class="fl">45</span>       <span class="co"># O-&gt;A-&gt;D</span></span>
+<span>    <span class="va">time_r2</span> <span class="op">&lt;-</span> <span class="fl">45</span> <span class="op">+</span> <span class="va">x</span> <span class="op">/</span> <span class="fl">100</span>       <span class="co"># O-&gt;B-&gt;D</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>routes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"O-A-D"</span>, <span class="st">"O-B-D"</span><span class="op">)</span>,</span>
+<span>                flows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">x</span><span class="op">)</span>,</span>
+<span>                times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">time_r1</span>, <span class="va">time_r2</span><span class="op">)</span>,</span>
+<span>                total_time <span class="op">=</span> <span class="va">n_drivers</span> <span class="op">*</span> <span class="va">time_r1</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="co"># With shortcut: Wardrop equilibrium</span></span>
+<span></span>
+<span>  <span class="co"># Route 3: O-&gt;A-&gt;B-&gt;D has cost x_OA/100 + 0 + x_BD/100</span></span>
+<span>  <span class="co"># At equilibrium, all used routes have equal cost</span></span>
+<span>  <span class="co"># Solving: all drivers use O-&gt;A-&gt;B-&gt;D, each segment carries 4000</span></span>
+<span>  <span class="co"># Time = 4000/100 + 0 + 4000/100 = 80</span></span>
+<span>  <span class="va">x_all</span> <span class="op">&lt;-</span> <span class="va">n_drivers</span></span>
+<span>  <span class="va">time_shortcut</span> <span class="op">&lt;-</span> <span class="va">x_all</span> <span class="op">/</span> <span class="fl">100</span> <span class="op">+</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">x_all</span> <span class="op">/</span> <span class="fl">100</span></span>
+<span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>routes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"O-A-D"</span>, <span class="st">"O-B-D"</span>, <span class="st">"O-A-B-D"</span><span class="op">)</span>,</span>
+<span>              flows <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="va">x_all</span><span class="op">)</span>,</span>
+<span>              times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="cn">NA</span>, <span class="va">time_shortcut</span><span class="op">)</span>,</span>
+<span>              total_time <span class="op">=</span> <span class="va">n_drivers</span> <span class="op">*</span> <span class="va">time_shortcut</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Social optimum with shortcut: solve by splitting traffic</span></span>
+<span><span class="va">social_optimum_shortcut</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_drivers</span> <span class="op">=</span> <span class="fl">4000</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># Optimize over flow split: x on O-A-D, y on O-B-D, z on O-A-B-D</span></span>
+<span>  <span class="co"># x + y + z = n_drivers</span></span>
+<span>  <span class="co"># Minimize total travel time</span></span>
+<span>  <span class="va">best</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>total <span class="op">=</span> <span class="cn">Inf</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">x</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_drivers</span>, by <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">y</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_drivers</span> <span class="op">-</span> <span class="va">x</span>, by <span class="op">=</span> <span class="fl">100</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">z</span> <span class="op">&lt;-</span> <span class="va">n_drivers</span> <span class="op">-</span> <span class="va">x</span> <span class="op">-</span> <span class="va">y</span></span>
+<span>      <span class="va">flow_OA</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">+</span> <span class="va">z</span></span>
+<span>      <span class="va">flow_BD</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">+</span> <span class="va">z</span></span>
+<span>      <span class="va">time_r1</span> <span class="op">&lt;-</span> <span class="va">flow_OA</span> <span class="op">/</span> <span class="fl">100</span> <span class="op">+</span> <span class="fl">45</span></span>
+<span>      <span class="va">time_r2</span> <span class="op">&lt;-</span> <span class="fl">45</span> <span class="op">+</span> <span class="va">flow_BD</span> <span class="op">/</span> <span class="fl">100</span></span>
+<span>      <span class="va">time_r3</span> <span class="op">&lt;-</span> <span class="va">flow_OA</span> <span class="op">/</span> <span class="fl">100</span> <span class="op">+</span> <span class="fl">0</span> <span class="op">+</span> <span class="va">flow_BD</span> <span class="op">/</span> <span class="fl">100</span></span>
+<span>      <span class="va">total</span> <span class="op">&lt;-</span> <span class="va">x</span> <span class="op">*</span> <span class="va">time_r1</span> <span class="op">+</span> <span class="va">y</span> <span class="op">*</span> <span class="va">time_r2</span> <span class="op">+</span> <span class="va">z</span> <span class="op">*</span> <span class="va">time_r3</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">total</span> <span class="op">&lt;</span> <span class="va">best</span><span class="op">$</span><span class="va">total</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">best</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, z <span class="op">=</span> <span class="va">z</span>, total <span class="op">=</span> <span class="va">total</span>,</span>
+<span>                     times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">time_r1</span>, <span class="va">time_r2</span>, <span class="va">time_r3</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">best</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">no_shortcut</span> <span class="op">&lt;-</span> <span class="fu">braess_network</span><span class="op">(</span><span class="fl">4000</span>, has_shortcut <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">with_shortcut</span> <span class="op">&lt;-</span> <span class="fu">braess_network</span><span class="op">(</span><span class="fl">4000</span>, has_shortcut <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">social_opt</span> <span class="op">&lt;-</span> <span class="fu">social_optimum_shortcut</span><span class="op">(</span><span class="fl">4000</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"=== Without shortcut ===\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; === Without shortcut ===</code></pre>
+<div class="sourceCode" id="cb1057"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Each route: %d drivers, travel time: %.0f\n"</span>,</span>
+<span>            <span class="va">no_shortcut</span><span class="op">$</span><span class="va">flows</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">no_shortcut</span><span class="op">$</span><span class="va">times</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Each route: 2000 drivers, travel time: 65</code></pre>
+<div class="sourceCode" id="cb1059"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Total travel time: %s\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span><span class="op">(</span><span class="va">no_shortcut</span><span class="op">$</span><span class="va">total_time</span>, big.mark <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Total travel time: 260,000</code></pre>
+<div class="sourceCode" id="cb1061"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\n=== With shortcut (Wardrop equilibrium) ===\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; === With shortcut (Wardrop equilibrium) ===</code></pre>
+<div class="sourceCode" id="cb1063"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  All %d drivers use O-A-B-D, travel time: %.0f\n"</span>,</span>
+<span>            <span class="va">with_shortcut</span><span class="op">$</span><span class="va">flows</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">with_shortcut</span><span class="op">$</span><span class="va">times</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   All 4000 drivers use O-A-B-D, travel time: 80</code></pre>
+<div class="sourceCode" id="cb1065"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Total travel time: %s\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span><span class="op">(</span><span class="va">with_shortcut</span><span class="op">$</span><span class="va">total_time</span>, big.mark <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Total travel time: 320,000</code></pre>
+<div class="sourceCode" id="cb1067"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\n=== With shortcut (social optimum) ===\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; === With shortcut (social optimum) ===</code></pre>
+<div class="sourceCode" id="cb1069"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  O-A-D: %d, O-B-D: %d, O-A-B-D: %d\n"</span>,</span>
+<span>            <span class="va">social_opt</span><span class="op">$</span><span class="va">x</span>, <span class="va">social_opt</span><span class="op">$</span><span class="va">y</span>, <span class="va">social_opt</span><span class="op">$</span><span class="va">z</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   O-A-D: 1700, O-B-D: 1700, O-A-B-D: 600</code></pre>
+<div class="sourceCode" id="cb1071"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Total travel time: %s\n"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html">format</a></span><span class="op">(</span><span class="va">social_opt</span><span class="op">$</span><span class="va">total</span>, big.mark <span class="op">=</span> <span class="st">","</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Total travel time: 258,800</code></pre>
+<div class="sourceCode" id="cb1073"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nBraess's paradox: adding the shortcut increased travel time by %.0f%%\n"</span>,</span>
+<span>            <span class="fl">100</span> <span class="op">*</span> <span class="op">(</span><span class="va">with_shortcut</span><span class="op">$</span><span class="va">total_time</span> <span class="op">-</span> <span class="va">no_shortcut</span><span class="op">$</span><span class="va">total_time</span><span class="op">)</span> <span class="op">/</span></span>
+<span>              <span class="va">no_shortcut</span><span class="op">$</span><span class="va">total_time</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Braess's paradox: adding the shortcut increased travel time by 23%</code></pre>
+</div>
+<div id="braesss-paradox-visualization" class="section level3" number="37.3.5">
+<h3>
+<span class="header-section-number">37.3.5</span> Braess’s paradox visualization<a class="anchor" aria-label="anchor" href="#braesss-paradox-visualization"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1075"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">braess_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  scenario <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"No shortcut\n(Wardrop eq.)"</span>,</span>
+<span>                       <span class="st">"With shortcut\n(Wardrop eq.)"</span>,</span>
+<span>                       <span class="st">"With shortcut\n(Social optimum)"</span><span class="op">)</span>,</span>
+<span>                     levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"No shortcut\n(Wardrop eq.)"</span>,</span>
+<span>                                <span class="st">"With shortcut\n(Wardrop eq.)"</span>,</span>
+<span>                                <span class="st">"With shortcut\n(Social optimum)"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  total_time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">no_shortcut</span><span class="op">$</span><span class="va">total_time</span>,</span>
+<span>                 <span class="va">with_shortcut</span><span class="op">$</span><span class="va">total_time</span>,</span>
+<span>                 <span class="va">social_opt</span><span class="op">$</span><span class="va">total</span><span class="op">)</span>,</span>
+<span>  per_driver <span class="op">=</span> <span class="va">total_time</span> <span class="op">/</span> <span class="fl">4000</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_braess</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">braess_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">scenario</span>, y <span class="op">=</span> <span class="va">per_driver</span>,</span>
+<span>                                    fill <span class="op">=</span> <span class="va">scenario</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.6</span>, show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%.0f min"</span>, <span class="va">per_driver</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span>, size <span class="op">=</span> <span class="fl">4</span>, fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">6</span>, <span class="fl">3</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Travel time per driver (minutes)"</span>,</span>
+<span>                     limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">95</span><span class="op">)</span>, expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_discrete.html">scale_x_discrete</a></span><span class="op">(</span>name <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Braess's Paradox: Adding a Road Increases Congestion"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_braess</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:braess-paradox-plot"></span>
+<img src="36-empirical-case-studies_files/figure-html/braess-paradox-plot-1.png" alt="Total travel time in the 4-node network under three scenarios. Adding a shortcut road increases total travel time at the selfish (Wardrop) equilibrium compared to the original network — Braess's paradox. A social planner can do better by controlling route assignments." width="80%"><p class="caption">
+Figure 37.2: Total travel time in the 4-node network under three scenarios. Adding a shortcut road increases total travel time at the selfish (Wardrop) equilibrium compared to the original network — Braess’s paradox. A social planner can do better by controlling route assignments.
+</p>
+</div>
+<div class="sourceCode" id="cb1076"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_braess</span>, <span class="st">"braess-paradox"</span>, width <span class="op">=</span> <span class="fl">6</span>, height <span class="op">=</span> <span class="fl">4.5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-33" class="section level2" number="37.4">
+<h2>
+<span class="header-section-number">37.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-33"><i class="fas fa-link"></i></a>
+</h2>
+<div id="braesss-paradox-with-a-4-node-network" class="section level3" number="37.4.1">
+<h3>
+<span class="header-section-number">37.4.1</span> Braess’s paradox with a 4-node network<a class="anchor" aria-label="anchor" href="#braesss-paradox-with-a-4-node-network"><i class="fas fa-link"></i></a>
+</h3>
+<p>Consider 4,000 commuters traveling from <span class="math inline">\(O\)</span> to <span class="math inline">\(D\)</span> through nodes <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>. Edge costs: <span class="math inline">\(c_{OA}(x) = x/100\)</span>, <span class="math inline">\(c_{AD} = 45\)</span>, <span class="math inline">\(c_{OB} = 45\)</span>, <span class="math inline">\(c_{BD}(x) = x/100\)</span>.</p>
+<div class="sourceCode" id="cb1077"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Step 1: Without shortcut — symmetric equilibrium splits traffic equally</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Without shortcut: 2000 on each route, time = 2000/100 + 45 = 65 min\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Without shortcut: 2000 on each route, time = 2000/100 + 45 = 65 min</code></pre>
+<div class="sourceCode" id="cb1079"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Step 2: Add shortcut A-&gt;B (cost 0). New route O-&gt;A-&gt;B-&gt;D dominates.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"With shortcut: all 4000 use O-A-B-D, time = 40 + 0 + 40 = 80 min\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; With shortcut: all 4000 use O-A-B-D, time = 40 + 0 + 40 = 80 min</code></pre>
+<div class="sourceCode" id="cb1081"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Increase: 65 -&gt; 80 minutes (+%.1f%%)\n"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="fl">15</span> <span class="op">/</span> <span class="fl">65</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Increase: 65 -&gt; 80 minutes (+23.1%)</code></pre>
+<div class="sourceCode" id="cb1083"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Step 3: Social optimum</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nSocial optimum: O-A-D=%d, O-B-D=%d, O-A-B-D=%d\n"</span>,</span>
+<span>            <span class="va">social_opt</span><span class="op">$</span><span class="va">x</span>, <span class="va">social_opt</span><span class="op">$</span><span class="va">y</span>, <span class="va">social_opt</span><span class="op">$</span><span class="va">z</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Social optimum: O-A-D=1700, O-B-D=1700, O-A-B-D=600</code></pre>
+<div class="sourceCode" id="cb1085"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Social optimum time: %.0f min/driver\n"</span>, <span class="va">social_opt</span><span class="op">$</span><span class="va">total</span> <span class="op">/</span> <span class="fl">4000</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Social optimum time: 65 min/driver</code></pre>
+<div class="sourceCode" id="cb1087"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Price of anarchy = %.0f / %.0f = %.2f\n"</span>,</span>
+<span>            <span class="va">with_shortcut</span><span class="op">$</span><span class="va">total_time</span>, <span class="va">social_opt</span><span class="op">$</span><span class="va">total</span>,</span>
+<span>            <span class="va">with_shortcut</span><span class="op">$</span><span class="va">total_time</span> <span class="op">/</span> <span class="va">social_opt</span><span class="op">$</span><span class="va">total</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Price of anarchy = 320000 / 258800 = 1.24</code></pre>
+<p>The gap between the Wardrop equilibrium and the social optimum is the <strong>price of anarchy</strong>. Cities can close this gap using congestion pricing, or by removing the paradox-inducing road – as Seoul did when it demolished the Cheonggyecheon Expressway in 2003 and traffic improved.</p>
+</div>
+</div>
+<div id="extensions-35" class="section level2" number="37.5">
+<h2>
+<span class="header-section-number">37.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-35"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Combinatorial auctions</strong> extend spectrum auctions to bundled items, requiring more sophisticated bidding languages and winner-determination algorithms.</li>
+<li>
+<strong>Kidney exchange chains</strong> initiated by altruistic donors allow longer exchange cycles, dramatically increasing the number of feasible transplants. See <span class="citation">Roth &amp; Sotomayor (<a href="references.html#ref-roth2004">1992</a>)</span> for the foundational design.</li>
+<li>
+<strong>Algorithmic game theory</strong> provides bounds on the price of anarchy for general network routing games — see <span class="citation">Roughgarden &amp; Tardos (<a href="references.html#ref-roughgarden2005">2002</a>)</span> for the definitive treatment.</li>
+<li>
+<strong>Mechanism design</strong> (<a href="sec-mechanism-design.html#sec-mechanism-design">33</a>) provides the theoretical foundation for designing auctions and matching markets that achieve desired social outcomes.</li>
+</ul>
+</div>
+<div id="exercises-35" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-35"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Auction revenue and competition.</strong> Using <code>simulate_spectrum_auction()</code>, plot mean revenue as a function of the number of bidders (from 5 to 30) for <span class="math inline">\(k = 3\)</span> licenses. How does revenue scale? Derive the expected revenue analytically for the Vickrey auction with uniform valuations and compare.</p></li>
+<li><p><strong>Kidney exchange pool size.</strong> Run <code>build_compatibility_graph()</code> and <code>find_pairwise_matches()</code> for pool sizes of 20, 50, 100, and 200 pairs. Plot the fraction of pairs matched as a function of pool size. Explain why larger pools yield disproportionately more matches (the “thick market” effect).</p></li>
+<li><p><strong>Braess with tolls.</strong> Suppose a social planner can impose a toll <span class="math inline">\(\tau\)</span> on the shortcut road <span class="math inline">\(A \to B\)</span>. Find the value of <span class="math inline">\(\tau\)</span> that makes the Wardrop equilibrium coincide with the social optimum (i.e., the Pigouvian toll). Implement the computation in R and verify that the resulting travel times equal the social optimum from the worked example.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></div>
+<div class="next"><a href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-case-studies"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li><a class="nav-link" href="#learning-objectives-35">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-35"><span class="header-section-number">37.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-35"><span class="header-section-number">37.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#spectrum-auctions"><span class="header-section-number">37.2.1</span> Spectrum auctions</a></li>
+<li><a class="nav-link" href="#kidney-exchange"><span class="header-section-number">37.2.2</span> Kidney exchange</a></li>
+<li><a class="nav-link" href="#braesss-paradox"><span class="header-section-number">37.2.3</span> Braess’s paradox</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-cases-implementation"><span class="header-section-number">37.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#spectrum-auction-simulation"><span class="header-section-number">37.3.1</span> Spectrum auction simulation</a></li>
+<li><a class="nav-link" href="#kidney-exchange-matching"><span class="header-section-number">37.3.2</span> Kidney exchange matching</a></li>
+<li><a class="nav-link" href="#kidney-exchange-network-visualization"><span class="header-section-number">37.3.3</span> Kidney exchange network visualization</a></li>
+<li><a class="nav-link" href="#braesss-paradox-1"><span class="header-section-number">37.3.4</span> Braess’s paradox</a></li>
+<li><a class="nav-link" href="#braesss-paradox-visualization"><span class="header-section-number">37.3.5</span> Braess’s paradox visualization</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-33"><span class="header-section-number">37.4</span> Worked example</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#braesss-paradox-with-a-4-node-network"><span class="header-section-number">37.4.1</span> Braess’s paradox with a 4-node network</a></li></ul>
+</li>
+<li><a class="nav-link" href="#extensions-35"><span class="header-section-number">37.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-35">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/36-empirical-case-studies.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/36-empirical-case-studies.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

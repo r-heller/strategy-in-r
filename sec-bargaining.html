@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 35 Bargaining Theory | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Nash bargaining and ultimatum games — axiomatic solutions, alternating-offers models, and computational implementations in R.  Learning objectives State the four axioms of the Nash bargaining...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 35 Bargaining Theory | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-bargaining.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Nash bargaining and ultimatum games — axiomatic solutions, alternating-offers models, and computational implementations in R.  Learning objectives State the four axioms of the Nash bargaining...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 35 Bargaining Theory | Strategy in R">
+<meta name="twitter:description" content="Nash bargaining and ultimatum games — axiomatic solutions, alternating-offers models, and computational implementations in R.  Learning objectives State the four axioms of the Nash bargaining...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 35 Bargaining Theory | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="active" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-bargaining" class="section level1" number="35">
+<h1>
+<span class="header-section-number">35</span> Bargaining Theory<a class="anchor" aria-label="anchor" href="#sec-bargaining"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Nash bargaining and ultimatum games — axiomatic solutions, alternating-offers models, and computational implementations in R.</p>
+</blockquote>
+<div id="learning-objectives-33" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-33"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>State the four axioms of the Nash bargaining solution and derive the solution as the maximizer of the Nash product.</li>
+<li>Formulate the Rubinstein alternating-offers model and compute its subgame perfect equilibrium for given discount factors.</li>
+<li>Implement the Nash bargaining solution and Rubinstein equilibrium computations in R.</li>
+<li>Visualize feasible bargaining sets, Nash product contours, and equilibrium shares as functions of patience.</li>
+</ul>
+</div>
+<div id="motivation-33" class="section level2" number="35.1">
+<h2>
+<span class="header-section-number">35.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-33"><i class="fas fa-link"></i></a>
+</h2>
+<p>A union and a firm sit across the negotiating table. The union wants higher wages; the firm wants lower labor costs. Both prefer a deal to a strike, but each wants the deal tilted in their favor. How should they split the surplus?</p>
+<p>This question arises whenever two parties must agree on how to divide gains from trade: merger negotiations, international treaties, or even splitting a dinner bill. Game theory provides two foundational approaches. The <strong>Nash bargaining solution</strong> uses axioms to identify a unique fair division. The <strong>Rubinstein alternating-offers model</strong> derives the same outcome from a non-cooperative bargaining protocol where impatience drives agreement.</p>
+</div>
+<div id="theory-33" class="section level2" number="35.2">
+<h2>
+<span class="header-section-number">35.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-33"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-bargaining-problem" class="section level3" number="35.2.1">
+<h3>
+<span class="header-section-number">35.2.1</span> The bargaining problem<a class="anchor" aria-label="anchor" href="#the-bargaining-problem"><i class="fas fa-link"></i></a>
+</h3>
+<p>A <strong>bargaining problem</strong> is a pair <span class="math inline">\((S, d)\)</span> where <span class="math inline">\(S \subset \mathbb{R}^2\)</span> is a compact, convex set of feasible payoff pairs and <span class="math inline">\(d = (d_1, d_2) \in S\)</span> is the <strong>disagreement point</strong> — the payoffs each player receives if no agreement is reached. The set of individually rational outcomes is <span class="math inline">\(\{(u_1, u_2) \in S : u_1 \geq d_1, u_2 \geq d_2\}\)</span>.</p>
+</div>
+<div id="nash-bargaining-solution" class="section level3" number="35.2.2">
+<h3>
+<span class="header-section-number">35.2.2</span> Nash bargaining solution<a class="anchor" aria-label="anchor" href="#nash-bargaining-solution"><i class="fas fa-link"></i></a>
+</h3>
+<div class="rmdnote">
+<p><strong>Definition: Nash Bargaining Solution</strong></p>
+<p>The <strong>Nash bargaining solution</strong> selects the feasible payoff pair that maximizes the Nash product:</p>
+<p><span class="math display" id="eq:nash-bargaining">\[\begin{equation}
+(u_1^*, u_2^*) = \arg\max_{(u_1, u_2) \in S} (u_1 - d_1)(u_2 - d_2)
+\tag{35.1}
+\end{equation}\]</span></p>
+<p>subject to <span class="math inline">\(u_1 \geq d_1\)</span> and <span class="math inline">\(u_2 \geq d_2\)</span>.</p>
+</div>
+<p>Nash <span class="citation">(<a href="references.html#ref-nash1950">1950</a>)</span> showed this is the unique solution satisfying four axioms:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Pareto efficiency</strong> — no feasible outcome makes both players strictly better off.</li>
+<li>
+<strong>Symmetry</strong> — if the problem is symmetric, the solution gives equal payoffs.</li>
+<li>
+<strong>Independence of irrelevant alternatives (IIA)</strong> — removing feasible outcomes that are not chosen does not change the solution.</li>
+<li>
+<strong>Scale invariance</strong> — the solution is invariant to positive affine transformations of utility.</li>
+</ol>
+<p>For a linear frontier <span class="math inline">\(u_1 + u_2 = v\)</span> with disagreement point <span class="math inline">\((0, 0)\)</span>, the Nash bargaining solution gives each player <span class="math inline">\(v / 2\)</span> — an equal split.</p>
+</div>
+<div id="asymmetric-nash-bargaining" class="section level3" number="35.2.3">
+<h3>
+<span class="header-section-number">35.2.3</span> Asymmetric Nash bargaining<a class="anchor" aria-label="anchor" href="#asymmetric-nash-bargaining"><i class="fas fa-link"></i></a>
+</h3>
+<p>When players have different bargaining powers <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(1 - \alpha\)</span> (with <span class="math inline">\(\alpha \in (0, 1)\)</span>), the <strong>asymmetric Nash bargaining solution</strong> maximizes the generalized Nash product:</p>
+<p><span class="math display" id="eq:asymmetric-nash">\[\begin{equation}
+(u_1^*, u_2^*) = \arg\max_{(u_1, u_2) \in S} (u_1 - d_1)^\alpha (u_2 - d_2)^{1-\alpha}
+\tag{35.2}
+\end{equation}\]</span></p>
+</div>
+<div id="rubinstein-alternating-offers-model" class="section level3" number="35.2.4">
+<h3>
+<span class="header-section-number">35.2.4</span> Rubinstein alternating-offers model<a class="anchor" aria-label="anchor" href="#rubinstein-alternating-offers-model"><i class="fas fa-link"></i></a>
+</h3>
+<p>Rubinstein <span class="citation">(<a href="references.html#ref-rubinstein1982">1982</a>)</span> modeled bargaining as a sequential game. Two players take turns proposing how to split a surplus of size 1. Player 1 proposes in odd periods, Player 2 in even periods. Each player has a discount factor <span class="math inline">\(\delta_i \in (0, 1)\)</span> — waiting is costly.</p>
+<div class="rmdtip">
+<p><strong>Theorem: Rubinstein Equilibrium</strong></p>
+<p>The unique subgame perfect equilibrium of the alternating-offers game gives Player 1 a share:</p>
+<p><span class="math display" id="eq:rubinstein">\[\begin{equation}
+x_1^* = \frac{1 - \delta_2}{1 - \delta_1 \delta_2}
+\tag{35.3}
+\end{equation}\]</span></p>
+<p>and Player 2 receives <span class="math inline">\(1 - x_1^*\)</span>. When <span class="math inline">\(\delta_1 = \delta_2 = \delta\)</span>, the split converges to <span class="math inline">\((1/2, 1/2)\)</span> as <span class="math inline">\(\delta \to 1\)</span>.</p>
+</div>
+<p>The intuition is that a more patient player (higher <span class="math inline">\(\delta\)</span>) obtains a larger share because they can credibly wait longer. The first-mover advantage shrinks as both players become more patient.</p>
+</div>
+</div>
+<div id="sec-bargaining-implementation" class="section level2" number="35.3">
+<h2>
+<span class="header-section-number">35.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-bargaining-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="nash-bargaining-solution-computation" class="section level3" number="35.3.1">
+<h3>
+<span class="header-section-number">35.3.1</span> Nash bargaining solution computation<a class="anchor" aria-label="anchor" href="#nash-bargaining-solution-computation"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb988"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">nash_bargaining</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">frontier_fn</span>, <span class="va">d</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="va">alpha</span> <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>                            <span class="va">n_grid</span> <span class="op">=</span> <span class="fl">1000</span>, <span class="va">u1_max</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
+<span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">u1_max</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Find where frontier_fn(u1) drops to d[2] by searching adaptively</span></span>
+<span>    <span class="va">hi</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>    <span class="kw">while</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html">is.finite</a></span><span class="op">(</span><span class="fu">frontier_fn</span><span class="op">(</span><span class="va">hi</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu">frontier_fn</span><span class="op">(</span><span class="va">hi</span><span class="op">)</span> <span class="op">&gt;</span> <span class="va">d</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">&amp;&amp;</span> <span class="va">hi</span> <span class="op">&lt;</span> <span class="fl">1e6</span><span class="op">)</span> <span class="va">hi</span> <span class="op">&lt;-</span> <span class="va">hi</span> <span class="op">*</span> <span class="fl">2</span></span>
+<span>    <span class="va">u1_upper</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/uniroot.html">uniroot</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">u1</span><span class="op">)</span> <span class="fu">frontier_fn</span><span class="op">(</span><span class="va">u1</span><span class="op">)</span> <span class="op">-</span> <span class="va">d</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>                         <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">d</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">hi</span>, <span class="fl">1e6</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">root</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">u1_upper</span> <span class="op">&lt;-</span> <span class="va">u1_max</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">u1_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="va">d</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">u1_upper</span>, length.out <span class="op">=</span> <span class="va">n_grid</span><span class="op">)</span></span>
+<span>  <span class="va">u2_seq</span> <span class="op">&lt;-</span> <span class="fu">frontier_fn</span><span class="op">(</span><span class="va">u1_seq</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">valid</span> <span class="op">&lt;-</span> <span class="va">u1_seq</span> <span class="op">&gt;=</span> <span class="va">d</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&amp;</span> <span class="va">u2_seq</span> <span class="op">&gt;=</span> <span class="va">d</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span>  <span class="va">u1_seq</span> <span class="op">&lt;-</span> <span class="va">u1_seq</span><span class="op">[</span><span class="va">valid</span><span class="op">]</span></span>
+<span>  <span class="va">u2_seq</span> <span class="op">&lt;-</span> <span class="va">u2_seq</span><span class="op">[</span><span class="va">valid</span><span class="op">]</span></span>
+<span></span>
+<span>  <span class="va">nash_product</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">u1_seq</span> <span class="op">-</span> <span class="va">d</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="va">alpha</span> <span class="op">*</span> <span class="op">(</span><span class="va">u2_seq</span> <span class="op">-</span> <span class="va">d</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">^</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">alpha</span><span class="op">)</span></span>
+<span>  <span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html">which.max</a></span><span class="op">(</span><span class="va">nash_product</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>u1 <span class="op">=</span> <span class="va">u1_seq</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span>, u2 <span class="op">=</span> <span class="va">u2_seq</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span>,</span>
+<span>       nash_product <span class="op">=</span> <span class="va">nash_product</span><span class="op">[</span><span class="va">idx</span><span class="op">]</span>,</span>
+<span>       frontier <span class="op">=</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>u1 <span class="op">=</span> <span class="va">u1_seq</span>, u2 <span class="op">=</span> <span class="va">u2_seq</span>, np <span class="op">=</span> <span class="va">nash_product</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Example: linear frontier u1 + u2 = 10, disagreement (1, 2)</span></span>
+<span><span class="va">frontier</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">u1</span><span class="op">)</span> <span class="fl">10</span> <span class="op">-</span> <span class="va">u1</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">nash_bargaining</span><span class="op">(</span><span class="va">frontier</span>, d <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Nash bargaining solution: (%.2f, %.2f)\n"</span>, <span class="va">result</span><span class="op">$</span><span class="va">u1</span>, <span class="va">result</span><span class="op">$</span><span class="va">u2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Nash bargaining solution: (4.50, 5.50)</code></pre>
+<div class="sourceCode" id="cb990"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Nash product: %.4f\n"</span>, <span class="va">result</span><span class="op">$</span><span class="va">nash_product</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Nash product: 3.5000</code></pre>
+</div>
+<div id="nash-bargaining-visualization" class="section level3" number="35.3.2">
+<h3>
+<span class="header-section-number">35.3.2</span> Nash bargaining visualization<a class="anchor" aria-label="anchor" href="#nash-bargaining-visualization"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb992"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Concave frontier: u2 = sqrt(100 - u1^2) (quarter-circle, radius 10)</span></span>
+<span><span class="va">frontier_concave</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">u1</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span><span class="op">(</span><span class="fl">100</span> <span class="op">-</span> <span class="va">u1</span><span class="op">^</span><span class="fl">2</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">d_point</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">sol</span> <span class="op">&lt;-</span> <span class="fu">nash_bargaining</span><span class="op">(</span><span class="va">frontier_concave</span>, d <span class="op">=</span> <span class="va">d_point</span>, u1_max <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Nash product contour grid</span></span>
+<span><span class="va">grid_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tidyr.tidyverse.org/reference/expand_grid.html">expand_grid</a></span><span class="op">(</span>u1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span>, length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>,</span>
+<span>                         u2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span>, length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>np <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">u1</span> <span class="op">&gt;=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&amp;</span> <span class="va">u2</span> <span class="op">&gt;=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>                     <span class="op">(</span><span class="va">u1</span> <span class="op">-</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="va">u2</span> <span class="op">-</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_nash</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_contour.html">geom_contour</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">grid_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span>, z <span class="op">=</span> <span class="va">np</span><span class="op">)</span>,</span>
+<span>               colour <span class="op">=</span> <span class="st">"grey70"</span>, linewidth <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>               breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">30</span>, by <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">frontier</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span><span class="op">)</span>,</span>
+<span>            colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">u1</span>, y <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">u2</span><span class="op">)</span>,</span>
+<span>             colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>, size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, y <span class="op">=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>             colour <span class="op">=</span> <span class="st">"black"</span>, size <span class="op">=</span> <span class="fl">3</span>, shape <span class="op">=</span> <span class="fl">16</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, y <span class="op">=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>                   xend <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">u1</span>, yend <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">u2</span><span class="op">)</span>,</span>
+<span>               linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">u1</span> <span class="op">+</span> <span class="fl">0.4</span>, y <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">u2</span> <span class="op">+</span> <span class="fl">0.4</span>,</span>
+<span>           label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"NBS (%.1f, %.1f)"</span>, <span class="va">sol</span><span class="op">$</span><span class="va">u1</span>, <span class="va">sol</span><span class="op">$</span><span class="va">u2</span><span class="op">)</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">3.5</span>, colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>, fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="fl">0.6</span>, y <span class="op">=</span> <span class="va">d_point</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0.5</span>,</span>
+<span>           label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"d = (%d, %d)"</span>, <span class="va">d_point</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">d_point</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>, limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">11</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Nash Bargaining Solution"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_nash</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:nash-bargaining"></span>
+<img src="34-bargaining_files/figure-html/nash-bargaining-1.png" alt="Nash bargaining solution for a concave feasible frontier. The orange curve marks the Pareto frontier. Grey contours show the Nash product. The red point is the Nash bargaining solution and the black point is the disagreement outcome." width="80%"><p class="caption">
+Figure 35.1: Nash bargaining solution for a concave feasible frontier. The orange curve marks the Pareto frontier. Grey contours show the Nash product. The red point is the Nash bargaining solution and the black point is the disagreement outcome.
+</p>
+</div>
+<div class="sourceCode" id="cb993"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_nash</span>, <span class="st">"nash-bargaining-solution"</span>, width <span class="op">=</span> <span class="fl">6</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="rubinstein-alternating-offers-model-1" class="section level3" number="35.3.3">
+<h3>
+<span class="header-section-number">35.3.3</span> Rubinstein alternating-offers model<a class="anchor" aria-label="anchor" href="#rubinstein-alternating-offers-model-1"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb994"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rubinstein_equilibrium</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">delta1</span>, <span class="va">delta2</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">x1</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">delta2</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">delta1</span> <span class="op">*</span> <span class="va">delta2</span><span class="op">)</span></span>
+<span>  <span class="va">x2</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">x1</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>share1 <span class="op">=</span> <span class="va">x1</span>, share2 <span class="op">=</span> <span class="va">x2</span>, delta1 <span class="op">=</span> <span class="va">delta1</span>, delta2 <span class="op">=</span> <span class="va">delta2</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Example: symmetric discounting</span></span>
+<span><span class="va">eq_sym</span> <span class="op">&lt;-</span> <span class="fu">rubinstein_equilibrium</span><span class="op">(</span><span class="fl">0.9</span>, <span class="fl">0.9</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Symmetric (delta=0.9): Player 1 gets %.4f, Player 2 gets %.4f\n"</span>,</span>
+<span>            <span class="va">eq_sym</span><span class="op">$</span><span class="va">share1</span>, <span class="va">eq_sym</span><span class="op">$</span><span class="va">share2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Symmetric (delta=0.9): Player 1 gets 0.5263, Player 2 gets 0.4737</code></pre>
+<div class="sourceCode" id="cb996"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Asymmetric: Player 1 more patient</span></span>
+<span><span class="va">eq_asym</span> <span class="op">&lt;-</span> <span class="fu">rubinstein_equilibrium</span><span class="op">(</span><span class="fl">0.95</span>, <span class="fl">0.8</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Asymmetric (d1=0.95, d2=0.8): Player 1 gets %.4f, Player 2 gets %.4f\n"</span>,</span>
+<span>            <span class="va">eq_asym</span><span class="op">$</span><span class="va">share1</span>, <span class="va">eq_asym</span><span class="op">$</span><span class="va">share2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Asymmetric (d1=0.95, d2=0.8): Player 1 gets 0.8333, Player 2 gets 0.1667</code></pre>
+</div>
+<div id="rubinstein-equilibrium-shares-by-discount-factor" class="section level3" number="35.3.4">
+<h3>
+<span class="header-section-number">35.3.4</span> Rubinstein equilibrium shares by discount factor<a class="anchor" aria-label="anchor" href="#rubinstein-equilibrium-shares-by-discount-factor"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb998"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">delta2_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.99</span>, length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rubinstein_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.7</span>, <span class="fl">0.85</span>, <span class="fl">0.95</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">d1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    delta2 <span class="op">=</span> <span class="va">delta2_seq</span>,</span>
+<span>    share1 <span class="op">=</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">delta2_seq</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">d1</span> <span class="op">*</span> <span class="va">delta2_seq</span><span class="op">)</span>,</span>
+<span>    delta1_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"delta[1] == %s"</span>, <span class="va">d1</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_rub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">rubinstein_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">delta2</span>, y <span class="op">=</span> <span class="va">share1</span>,</span>
+<span>                                     colour <span class="op">=</span> <span class="va">delta1_label</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/parse.html">parse</a></span><span class="op">(</span>text <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="va">rubinstein_data</span><span class="op">$</span><span class="va">delta1_label</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="va">delta</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">~</span> <span class="st">"(Player 2 discount factor)"</span><span class="op">)</span>,</span>
+<span>                     limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Player 1 equilibrium share"</span>,</span>
+<span>                     limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/percent_format.html">percent</a></span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Rubinstein Equilibrium Shares"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_rub</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:rubinstein-shares"></span>
+<img src="34-bargaining_files/figure-html/rubinstein-shares-1.png" alt="Rubinstein equilibrium share of Player 1 as a function of Player 2's discount factor, for three values of Player 1's discount factor. More patient players (higher delta) receive a larger share." width="80%"><p class="caption">
+Figure 35.2: Rubinstein equilibrium share of Player 1 as a function of Player 2’s discount factor, for three values of Player 1’s discount factor. More patient players (higher delta) receive a larger share.
+</p>
+</div>
+<div class="sourceCode" id="cb999"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_rub</span>, <span class="st">"rubinstein-shares"</span>, width <span class="op">=</span> <span class="fl">6</span>, height <span class="op">=</span> <span class="fl">4.5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-31" class="section level2" number="35.4">
+<h2>
+<span class="header-section-number">35.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-31"><i class="fas fa-link"></i></a>
+</h2>
+<div id="labor-management-negotiation" class="section level3" number="35.4.1">
+<h3>
+<span class="header-section-number">35.4.1</span> Labor-management negotiation<a class="anchor" aria-label="anchor" href="#labor-management-negotiation"><i class="fas fa-link"></i></a>
+</h3>
+<p>A firm and its union bargain over how to split a surplus of $10 million generated by a new contract. If negotiations fail, the firm earns $2 million from replacement workers and the union’s members earn $1 million from outside options. The union’s bargaining power is <span class="math inline">\(\alpha = 0.6\)</span> due to strong labor laws.</p>
+<p><strong>Step 1: Set up the bargaining problem.</strong></p>
+<div class="sourceCode" id="cb1000"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">surplus</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
+<span><span class="va">d_firm</span> <span class="op">&lt;-</span> <span class="fl">2</span>   <span class="co"># disagreement payoff: firm</span></span>
+<span><span class="va">d_union</span> <span class="op">&lt;-</span> <span class="fl">1</span>  <span class="co"># disagreement payoff: union</span></span>
+<span><span class="va">alpha</span> <span class="op">&lt;-</span> <span class="fl">0.6</span>  <span class="co"># union bargaining power</span></span>
+<span></span>
+<span><span class="co"># Linear frontier: u_firm + u_union = surplus</span></span>
+<span><span class="co"># Nash product: (u_firm - d_firm)^(1-alpha) * (u_union - d_union)^alpha</span></span></code></pre></div>
+<p><strong>Step 2: Solve analytically.</strong> For a linear frontier <span class="math inline">\(u_f + u_u = V\)</span> the asymmetric NBS has a closed-form solution:</p>
+<p><span class="math display">\[
+u_u^* = d_u + \alpha(V - d_f - d_u), \quad u_f^* = d_f + (1-\alpha)(V - d_f - d_u)
+\]</span></p>
+<div class="sourceCode" id="cb1001"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">net_surplus</span> <span class="op">&lt;-</span> <span class="va">surplus</span> <span class="op">-</span> <span class="va">d_firm</span> <span class="op">-</span> <span class="va">d_union</span></span>
+<span><span class="va">u_union</span> <span class="op">&lt;-</span> <span class="va">d_union</span> <span class="op">+</span> <span class="va">alpha</span> <span class="op">*</span> <span class="va">net_surplus</span></span>
+<span><span class="va">u_firm</span> <span class="op">&lt;-</span> <span class="va">d_firm</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">alpha</span><span class="op">)</span> <span class="op">*</span> <span class="va">net_surplus</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Net surplus: $%.0fM\n"</span>, <span class="va">net_surplus</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Net surplus: $7M</code></pre>
+<div class="sourceCode" id="cb1003"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Union payoff: $%.1fM (disagree) + $%.1fM = $%.1fM\n"</span>,</span>
+<span>            <span class="va">d_union</span>, <span class="va">alpha</span> <span class="op">*</span> <span class="va">net_surplus</span>, <span class="va">u_union</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Union payoff: $1.0M (disagree) + $4.2M = $5.2M</code></pre>
+<div class="sourceCode" id="cb1005"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Firm payoff:  $%.1fM (disagree) + $%.1fM = $%.1fM\n"</span>,</span>
+<span>            <span class="va">d_firm</span>, <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">alpha</span><span class="op">)</span> <span class="op">*</span> <span class="va">net_surplus</span>, <span class="va">u_firm</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Firm payoff:  $2.0M (disagree) + $2.8M = $4.8M</code></pre>
+<div class="sourceCode" id="cb1007"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Union wage share: %.0f%%\n"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">u_union</span> <span class="op">/</span> <span class="va">surplus</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Union wage share: 52%</code></pre>
+<p><strong>Step 3: Verify with numerical solver.</strong></p>
+<div class="sourceCode" id="cb1009"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">frontier_linear</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">u_union</span><span class="op">)</span> <span class="va">surplus</span> <span class="op">-</span> <span class="va">u_union</span></span>
+<span><span class="va">sol_labor</span> <span class="op">&lt;-</span> <span class="fu">nash_bargaining</span><span class="op">(</span><span class="va">frontier_linear</span>, d <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">d_union</span>, <span class="va">d_firm</span><span class="op">)</span>,</span>
+<span>                             alpha <span class="op">=</span> <span class="va">alpha</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Numerical NBS: union = $%.2fM, firm = $%.2fM\n"</span>,</span>
+<span>            <span class="va">sol_labor</span><span class="op">$</span><span class="va">u1</span>, <span class="va">sol_labor</span><span class="op">$</span><span class="va">u2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Numerical NBS: union = $5.20M, firm = $4.80M</code></pre>
+<p><strong>Step 4: Rubinstein interpretation.</strong> If bargaining rounds occur weekly with annual discount rates <span class="math inline">\(r_f = 0.05\)</span> and <span class="math inline">\(r_u = 0.10\)</span>, the weekly discount factors are:</p>
+<div class="sourceCode" id="cb1011"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">delta_firm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.05</span> <span class="op">/</span> <span class="fl">52</span><span class="op">)</span></span>
+<span><span class="va">delta_union</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.10</span> <span class="op">/</span> <span class="fl">52</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">eq_labor</span> <span class="op">&lt;-</span> <span class="fu">rubinstein_equilibrium</span><span class="op">(</span><span class="va">delta_union</span>, <span class="va">delta_firm</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Weekly discount factors: union = %.6f, firm = %.6f\n"</span>,</span>
+<span>            <span class="va">delta_union</span>, <span class="va">delta_firm</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Weekly discount factors: union = 0.998079, firm = 0.999039</code></pre>
+<div class="sourceCode" id="cb1013"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Rubinstein share: union = %.4f, firm = %.4f\n"</span>,</span>
+<span>            <span class="va">eq_labor</span><span class="op">$</span><span class="va">share1</span>, <span class="va">eq_labor</span><span class="op">$</span><span class="va">share2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Rubinstein share: union = 0.3337, firm = 0.6663</code></pre>
+<div class="sourceCode" id="cb1015"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Union gets $%.2fM of the $%dM surplus\n"</span>,</span>
+<span>            <span class="va">eq_labor</span><span class="op">$</span><span class="va">share1</span> <span class="op">*</span> <span class="va">surplus</span>, <span class="va">surplus</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Union gets $3.34M of the $10M surplus</code></pre>
+<p>The more patient firm (lower discount rate) captures a larger share, consistent with the Rubinstein insight that patience is power in bargaining.</p>
+</div>
+</div>
+<div id="extensions-33" class="section level2" number="35.5">
+<h2>
+<span class="header-section-number">35.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-33"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Outside options</strong> can shift the disagreement point and change the Nash bargaining solution. See <span class="citation">Osborne (<a href="references.html#ref-osborne2004">2004</a>)</span> (Chapter 15) for models where players can exit bargaining.</li>
+<li>
+<strong>Incomplete information</strong> about the opponent’s discount factor or reservation value leads to delay and inefficiency; see <span class="citation">Kennan &amp; Wilson (<a href="references.html#ref-kennan1993">1993</a>)</span> for a survey.</li>
+<li>
+<strong>Multi-party bargaining</strong> extends these ideas to legislatures and coalitions, connecting to the <strong>Shapley value</strong> (<a href="#sec-cooperative-games"><strong>??</strong></a>).</li>
+<li>
+<strong>Behavioral bargaining</strong> — ultimatum game experiments consistently show that proposers offer 40–50% rather than the minimal amount predicted by backward induction, suggesting fairness norms matter.</li>
+</ul>
+</div>
+<div id="exercises-33" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-33"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Asymmetric Nash bargaining.</strong> Two countries negotiate over fishing rights with a frontier given by <span class="math inline">\(u_2 = 12 - 1.5 u_1\)</span> and disagreement point <span class="math inline">\((1, 1)\)</span>. Country 1 has bargaining power <span class="math inline">\(\alpha = 0.4\)</span>. Compute the Nash bargaining solution analytically and verify it with the <code>nash_bargaining()</code> function. How does the solution change if <span class="math inline">\(\alpha = 0.7\)</span>?</p></li>
+<li><p><strong>Patience and power.</strong> In the Rubinstein model, suppose Player 1 has <span class="math inline">\(\delta_1 = 0.9\)</span>. Find the value of <span class="math inline">\(\delta_2\)</span> at which the surplus is split equally. Plot Player 1’s share as <span class="math inline">\(\delta_2\)</span> varies from 0.5 to 0.99 and verify your answer graphically.</p></li>
+<li><p><strong>Ultimatum game.</strong> The ultimatum game is a Rubinstein model with one round: Player 1 proposes a split and Player 2 accepts or rejects. Show analytically that the SPE has Player 1 offering the minimal acceptable amount. Then simulate 1,000 ultimatum games where Player 2 rejects offers below a threshold drawn uniformly from <span class="math inline">\([0, 0.5]\)</span>. Plot the proposer’s expected payoff as a function of the offer.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></div>
+<div class="next"><a href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-bargaining"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="nav-link" href="#learning-objectives-33">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-33"><span class="header-section-number">35.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-33"><span class="header-section-number">35.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-bargaining-problem"><span class="header-section-number">35.2.1</span> The bargaining problem</a></li>
+<li><a class="nav-link" href="#nash-bargaining-solution"><span class="header-section-number">35.2.2</span> Nash bargaining solution</a></li>
+<li><a class="nav-link" href="#asymmetric-nash-bargaining"><span class="header-section-number">35.2.3</span> Asymmetric Nash bargaining</a></li>
+<li><a class="nav-link" href="#rubinstein-alternating-offers-model"><span class="header-section-number">35.2.4</span> Rubinstein alternating-offers model</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-bargaining-implementation"><span class="header-section-number">35.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#nash-bargaining-solution-computation"><span class="header-section-number">35.3.1</span> Nash bargaining solution computation</a></li>
+<li><a class="nav-link" href="#nash-bargaining-visualization"><span class="header-section-number">35.3.2</span> Nash bargaining visualization</a></li>
+<li><a class="nav-link" href="#rubinstein-alternating-offers-model-1"><span class="header-section-number">35.3.3</span> Rubinstein alternating-offers model</a></li>
+<li><a class="nav-link" href="#rubinstein-equilibrium-shares-by-discount-factor"><span class="header-section-number">35.3.4</span> Rubinstein equilibrium shares by discount factor</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-31"><span class="header-section-number">35.4</span> Worked example</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#labor-management-negotiation"><span class="header-section-number">35.4.1</span> Labor-management negotiation</a></li></ul>
+</li>
+<li><a class="nav-link" href="#extensions-33"><span class="header-section-number">35.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-33">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/34-bargaining.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/34-bargaining.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

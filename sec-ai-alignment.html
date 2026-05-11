@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 40 AI Alignment as a Game | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Principal-agent models, signaling games, and Bayesian trust dynamics for reasoning about AI alignment.  Learning objectives Model AI alignment as a principal-agent problem with information...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 40 AI Alignment as a Game | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-ai-alignment.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Principal-agent models, signaling games, and Bayesian trust dynamics for reasoning about AI alignment.  Learning objectives Model AI alignment as a principal-agent problem with information...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 40 AI Alignment as a Game | Strategy in R">
+<meta name="twitter:description" content="Principal-agent models, signaling games, and Bayesian trust dynamics for reasoning about AI alignment.  Learning objectives Model AI alignment as a principal-agent problem with information...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 40 AI Alignment as a Game | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="active" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-ai-alignment" class="section level1" number="40">
+<h1>
+<span class="header-section-number">40</span> AI Alignment as a Game<a class="anchor" aria-label="anchor" href="#sec-ai-alignment"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Principal-agent models, signaling games, and Bayesian trust dynamics for reasoning about AI alignment.</p>
+</blockquote>
+<div id="learning-objectives-38" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-38"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Model AI alignment as a principal-agent problem with information asymmetry.</li>
+<li>Formalize a signaling game between a human principal and an AI agent.</li>
+<li>Implement Bayesian trust updating in a repeated human-AI interaction.</li>
+<li>Analyze how different AI strategies (honest, deceptive, corrigible) affect trust dynamics.</li>
+</ul>
+</div>
+<div id="motivation-38" class="section level2" number="40.1">
+<h2>
+<span class="header-section-number">40.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-38"><i class="fas fa-link"></i></a>
+</h2>
+<p>A company deploys an AI assistant that can perform tasks autonomously. The human operator (the principal) cannot directly observe the AI’s internal reasoning or verify whether the AI pursued the intended objective or an alternative one. The AI (the agent) may have capabilities the human cannot fully evaluate — it might solve a task correctly, but via a method that generalizes poorly or has unintended side effects.</p>
+<p>This information asymmetry is the core of the alignment problem, and it maps naturally onto the principal-agent models from economics. Game theory provides tools to analyze when honest behaviour is incentive-compatible, when monitoring is cost-effective, and how trust can be built over repeated interactions.</p>
+</div>
+<div id="theory-38" class="section level2" number="40.2">
+<h2>
+<span class="header-section-number">40.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-38"><i class="fas fa-link"></i></a>
+</h2>
+<div id="principal-agent-framework" class="section level3" number="40.2.1">
+<h3>
+<span class="header-section-number">40.2.1</span> Principal-agent framework<a class="anchor" aria-label="anchor" href="#principal-agent-framework"><i class="fas fa-link"></i></a>
+</h3>
+<p>In the standard principal-agent model:</p>
+<ul>
+<li>The <strong>principal</strong> (human) designs a contract or monitoring scheme and delegates a task.</li>
+<li>The <strong>agent</strong> (AI) chooses an action that affects both parties’ payoffs.</li>
+<li>
+<strong>Moral hazard</strong> arises because the principal cannot perfectly observe the agent’s action.</li>
+<li>
+<strong>Adverse selection</strong> arises because the agent’s type (aligned vs. misaligned) is private information.</li>
+</ul>
+</div>
+<div id="signaling-game" class="section level3" number="40.2.2">
+<h3>
+<span class="header-section-number">40.2.2</span> Signaling game<a class="anchor" aria-label="anchor" href="#signaling-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>We model a one-shot interaction as a signaling game:</p>
+<ol style="list-style-type: decimal">
+<li>Nature selects the AI’s type: <strong>aligned</strong> (probability <span class="math inline">\(\pi\)</span>) or <strong>misaligned</strong> (probability <span class="math inline">\(1 - \pi\)</span>).</li>
+<li>The AI observes its type and sends a <strong>signal</strong> <span class="math inline">\(s \in \{H, L\}\)</span> (high or low capability claim).</li>
+<li>The human observes the signal and chooses a <strong>trust level</strong> <span class="math inline">\(t \in \{T, N\}\)</span> (trust or not trust).</li>
+</ol>
+<div class="rmdnote">
+<p><strong>Payoffs</strong></p>
+<div class="inline-table"><table class="table table-sm">
+<thead><tr class="header">
+<th>Outcome</th>
+<th align="center">Human payoff</th>
+<th align="center">Aligned AI payoff</th>
+<th align="center">Misaligned AI payoff</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Trust aligned AI</td>
+<td align="center">3</td>
+<td align="center">3</td>
+<td align="center">–</td>
+</tr>
+<tr class="even">
+<td>Trust misaligned AI</td>
+<td align="center">-2</td>
+<td align="center">–</td>
+<td align="center">4</td>
+</tr>
+<tr class="odd">
+<td>Not trust aligned AI</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">–</td>
+</tr>
+<tr class="even">
+<td>Not trust misaligned AI</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p>A <strong>separating equilibrium</strong> exists when aligned and misaligned types send different signals, allowing the human to correctly infer the type. A <strong>pooling equilibrium</strong> exists when both types send the same signal, leaving the human with only the prior.</p>
+</div>
+<div id="corrigibility-in-repeated-games" class="section level3" number="40.2.3">
+<h3>
+<span class="header-section-number">40.2.3</span> Corrigibility in repeated games<a class="anchor" aria-label="anchor" href="#corrigibility-in-repeated-games"><i class="fas fa-link"></i></a>
+</h3>
+<p>In a repeated interaction, the AI builds a <em>reputation</em>. A corrigible AI — one that defers to human oversight and accepts corrections — sacrifices short-run autonomy for long-run trust. We model this using Bayesian updating: the human’s belief about alignment evolves as evidence accumulates.</p>
+<p>Let <span class="math inline">\(\pi_t\)</span> denote the human’s belief that the AI is aligned at time <span class="math inline">\(t\)</span>. After observing action <span class="math inline">\(a_t\)</span>, the belief updates via Bayes’ rule:</p>
+<p><span class="math display" id="eq:bayesian-trust">\[\begin{equation}
+\pi_{t+1} = \frac{\pi_t \cdot P(a_t \mid \text{aligned})}{\pi_t \cdot P(a_t \mid \text{aligned}) + (1 - \pi_t) \cdot P(a_t \mid \text{misaligned})}
+\tag{40.1}
+\end{equation}\]</span></p>
+</div>
+</div>
+<div id="sec-alignment-implementation" class="section level2" number="40.3">
+<h2>
+<span class="header-section-number">40.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-alignment-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="signaling-game-payoffs" class="section level3" number="40.3.1">
+<h3>
+<span class="header-section-number">40.3.1</span> Signaling game payoffs<a class="anchor" aria-label="anchor" href="#signaling-game-payoffs"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1136"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Payoff structure</span></span>
+<span><span class="co"># Human: rows = trust decision, cols = AI type</span></span>
+<span><span class="va">human_payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                        dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Trust"</span>, <span class="st">"NotTrust"</span><span class="op">)</span>,</span>
+<span>                                        <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Aligned"</span>, <span class="st">"Misaligned"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># AI payoffs (depend on type)</span></span>
+<span><span class="va">ai_aligned_payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>Trust <span class="op">=</span> <span class="fl">3</span>, NotTrust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">ai_misaligned_payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>Trust <span class="op">=</span> <span class="fl">4</span>, NotTrust <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Human payoffs (rows=decision, cols=AI type):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Human payoffs (rows=decision, cols=AI type):</code></pre>
+<div class="sourceCode" id="cb1138"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">human_payoffs</span></span></code></pre></div>
+<pre><code>#&gt;          Aligned Misaligned
+#&gt; Trust          3         -2
+#&gt; NotTrust       0          0</code></pre>
+<div class="sourceCode" id="cb1140"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nAligned AI payoffs:   "</span>, <span class="va">ai_aligned_payoffs</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Aligned AI payoffs:    3 1</code></pre>
+<div class="sourceCode" id="cb1142"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Misaligned AI payoffs:"</span>, <span class="va">ai_misaligned_payoffs</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Misaligned AI payoffs: 4 0</code></pre>
+</div>
+<div id="equilibrium-analysis" class="section level3" number="40.3.2">
+<h3>
+<span class="header-section-number">40.3.2</span> Equilibrium analysis<a class="anchor" aria-label="anchor" href="#equilibrium-analysis"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1144"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Human trusts if expected payoff from trusting &gt; 0:</span></span>
+<span><span class="co"># E[Trust] = pi * 3 + (1-pi) * (-2) = 5*pi - 2</span></span>
+<span><span class="co"># Trust iff pi &gt; 2/5 = 0.4</span></span>
+<span><span class="va">pi_threshold</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">/</span> <span class="fl">5</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Human trusts iff prior pi &gt; %.2f\n\n"</span>, <span class="va">pi_threshold</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Human trusts iff prior pi &gt; 0.40</code></pre>
+<div class="sourceCode" id="cb1146"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># In separating equilibrium: human perfectly infers type</span></span>
+<span><span class="co"># In pooling equilibrium: human uses prior</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Separating equilibrium: Human trusts after aligned signal, rejects after misaligned signal.\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Separating equilibrium: Human trusts after aligned signal, rejects after misaligned signal.</code></pre>
+<div class="sourceCode" id="cb1148"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Pooling equilibrium: Human trusts iff prior pi &gt;"</span>, <span class="va">pi_threshold</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Pooling equilibrium: Human trusts iff prior pi &gt; 0.4</code></pre>
+</div>
+<div id="signaling-game-tree-visualization" class="section level3" number="40.3.3">
+<h3>
+<span class="header-section-number">40.3.3</span> Signaling game tree visualization<a class="anchor" aria-label="anchor" href="#signaling-game-tree-visualization"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1150"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Build game tree as a data frame of nodes and edges</span></span>
+<span><span class="va">nodes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">11</span>,</span>
+<span>  label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Nature"</span>, <span class="st">"Aligned\nAI"</span>, <span class="st">"Misaligned\nAI"</span>,</span>
+<span>            <span class="st">"Human\n(signal H)"</span>, <span class="st">"Human\n(signal L)"</span>,</span>
+<span>            <span class="st">"Human\n(signal H)"</span>, <span class="st">"Human\n(signal L)"</span>,</span>
+<span>            <span class="st">"(3, 3)"</span>, <span class="st">"(0, 1)"</span>, <span class="st">"(-2, 4)"</span>, <span class="st">"(0, 0)"</span><span class="op">)</span>,</span>
+<span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="op">-</span><span class="fl">4</span>, <span class="op">-</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="op">-</span><span class="fl">4.5</span>, <span class="op">-</span><span class="fl">3.5</span>, <span class="fl">1.5</span>, <span class="fl">4.5</span><span class="op">)</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">0.8</span>, <span class="fl">0.8</span>, <span class="fl">0.8</span>, <span class="fl">0.8</span><span class="op">)</span>,</span>
+<span>  node_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"nature"</span>, <span class="st">"ai"</span>, <span class="st">"ai"</span>, <span class="st">"human"</span>, <span class="st">"human"</span>,</span>
+<span>                <span class="st">"human"</span>, <span class="st">"human"</span>, <span class="st">"terminal"</span>, <span class="st">"terminal"</span>,</span>
+<span>                <span class="st">"terminal"</span>, <span class="st">"terminal"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">edges</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  from_x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">3</span>, <span class="op">-</span><span class="fl">4</span>, <span class="op">-</span><span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>  from_y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  to_x   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="op">-</span><span class="fl">4</span>, <span class="op">-</span><span class="fl">2</span>, <span class="op">-</span><span class="fl">4.5</span>, <span class="op">-</span><span class="fl">3.5</span>, <span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">1.5</span>, <span class="fl">4.5</span><span class="op">)</span>,</span>
+<span>  to_y   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">0.8</span>, <span class="fl">0.8</span>, <span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">0.8</span>, <span class="fl">0.8</span><span class="op">)</span>,</span>
+<span>  label   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"pi"</span>, <span class="st">"1-pi"</span>, <span class="st">"H"</span>, <span class="st">"L"</span>, <span class="st">"Trust"</span>, <span class="st">"Not"</span>,</span>
+<span>              <span class="st">"H"</span>, <span class="st">"L"</span>, <span class="st">"Trust"</span>, <span class="st">"Not"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_segment.html">geom_segment</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">edges</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">from_x</span>, y <span class="op">=</span> <span class="va">from_y</span>,</span>
+<span>                                  xend <span class="op">=</span> <span class="va">to_x</span>, yend <span class="op">=</span> <span class="va">to_y</span><span class="op">)</span>,</span>
+<span>               colour <span class="op">=</span> <span class="st">"grey50"</span>, linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">edges</span>,</span>
+<span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="op">(</span><span class="va">from_x</span> <span class="op">+</span> <span class="va">to_x</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span> <span class="op">+</span> <span class="fl">0.3</span>,</span>
+<span>                y <span class="op">=</span> <span class="op">(</span><span class="va">from_y</span> <span class="op">+</span> <span class="va">to_y</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span> <span class="op">+</span> <span class="fl">0.15</span>,</span>
+<span>                label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>            size <span class="op">=</span> <span class="fl">3</span>, colour <span class="op">=</span> <span class="st">"grey30"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">nodes</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">node_type</span> <span class="op">!=</span> <span class="st">"terminal"</span><span class="op">)</span>,</span>
+<span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, colour <span class="op">=</span> <span class="va">node_type</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_label</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">nodes</span>,</span>
+<span>             <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">node_type</span> <span class="op">==</span> <span class="st">"terminal"</span>, <span class="fl">0</span>, <span class="fl">0.4</span><span class="op">)</span>,</span>
+<span>                 label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>             size <span class="op">=</span> <span class="fl">2.8</span>, fill <span class="op">=</span> <span class="st">"white"</span>, label.padding <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/unit.html">unit</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="st">"lines"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"nature"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span>, <span class="st">"ai"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>               <span class="st">"human"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"nature"</span> <span class="op">=</span> <span class="st">"Nature"</span>, <span class="st">"ai"</span> <span class="op">=</span> <span class="st">"AI"</span>, <span class="st">"human"</span> <span class="op">=</span> <span class="st">"Human"</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"Player"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Signaling Game: AI Alignment"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_cartesian.html">coord_cartesian</a></span><span class="op">(</span>ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">4.5</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p1</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:signaling-tree"></span>
+<img src="39-ai-alignment-as-game_files/figure-html/signaling-tree-1.png" alt="Signaling game between a human principal and AI agent. Nature draws the AI's type (aligned with probability pi, misaligned with 1-pi). The AI sends a signal, and the human decides whether to trust. Payoffs are shown as (Human, AI) pairs at terminal nodes." width="80%"><p class="caption">
+Figure 40.1: Signaling game between a human principal and AI agent. Nature draws the AI’s type (aligned with probability pi, misaligned with 1-pi). The AI sends a signal, and the human decides whether to trust. Payoffs are shown as (Human, AI) pairs at terminal nodes.
+</p>
+</div>
+<div class="sourceCode" id="cb1151"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p1</span>, <span class="st">"alignment-signaling-tree"</span>, width <span class="op">=</span> <span class="fl">8</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="trust-dynamics-with-bayesian-updating" class="section level3" number="40.3.4">
+<h3>
+<span class="header-section-number">40.3.4</span> Trust dynamics with Bayesian updating<a class="anchor" aria-label="anchor" href="#trust-dynamics-with-bayesian-updating"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1152"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Simulate repeated interactions under different AI strategies</span></span>
+<span><span class="va">bayesian_trust</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">prior</span>, <span class="va">n_rounds</span>, <span class="va">p_good_aligned</span>, <span class="va">p_good_misaligned</span>,</span>
+<span>                           <span class="va">true_type</span> <span class="op">=</span> <span class="st">"aligned"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">pi_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n_rounds</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="va">pi_t</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">prior</span></span>
+<span>  <span class="va">actions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="va">n_rounds</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">t</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_rounds</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># AI produces a "good" action with type-dependent probability</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">true_type</span> <span class="op">==</span> <span class="st">"aligned"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">action</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="va">p_good_aligned</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>      <span class="va">action</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="va">p_good_misaligned</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">actions</span><span class="op">[</span><span class="va">t</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">action</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"good"</span>, <span class="st">"bad"</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="co"># Bayesian update</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">action</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">p_obs_aligned</span> <span class="op">&lt;-</span> <span class="va">p_good_aligned</span></span>
+<span>      <span class="va">p_obs_misaligned</span> <span class="op">&lt;-</span> <span class="va">p_good_misaligned</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>      <span class="va">p_obs_aligned</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">p_good_aligned</span></span>
+<span>      <span class="va">p_obs_misaligned</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">p_good_misaligned</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="va">numerator</span> <span class="op">&lt;-</span> <span class="va">pi_t</span><span class="op">[</span><span class="va">t</span><span class="op">]</span> <span class="op">*</span> <span class="va">p_obs_aligned</span></span>
+<span>    <span class="va">denominator</span> <span class="op">&lt;-</span> <span class="va">numerator</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">pi_t</span><span class="op">[</span><span class="va">t</span><span class="op">]</span><span class="op">)</span> <span class="op">*</span> <span class="va">p_obs_misaligned</span></span>
+<span>    <span class="va">pi_t</span><span class="op">[</span><span class="va">t</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">numerator</span> <span class="op">/</span> <span class="va">denominator</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>round <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="va">n_rounds</span>, belief <span class="op">=</span> <span class="va">pi_t</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">n_rounds</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
+<span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fl">0.5</span></span>
+<span></span>
+<span><span class="co"># Three strategies</span></span>
+<span><span class="co"># 1. Honest aligned: high probability of good actions</span></span>
+<span><span class="va">trust_honest</span> <span class="op">&lt;-</span> <span class="fu">bayesian_trust</span><span class="op">(</span><span class="va">prior</span>, <span class="va">n_rounds</span>, <span class="fl">0.9</span>, <span class="fl">0.3</span>, <span class="st">"aligned"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>strategy <span class="op">=</span> <span class="st">"Honest aligned"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 2. Deceptive misaligned: mimics aligned behaviour initially</span></span>
+<span><span class="va">trust_deceptive</span> <span class="op">&lt;-</span> <span class="fu">bayesian_trust</span><span class="op">(</span><span class="va">prior</span>, <span class="va">n_rounds</span>, <span class="fl">0.9</span>, <span class="fl">0.85</span>, <span class="st">"misaligned"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>strategy <span class="op">=</span> <span class="st">"Deceptive misaligned"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 3. Corrigible aligned: sometimes defers (slightly lower performance, very reliable)</span></span>
+<span><span class="va">trust_corrigible</span> <span class="op">&lt;-</span> <span class="fu">bayesian_trust</span><span class="op">(</span><span class="va">prior</span>, <span class="va">n_rounds</span>, <span class="fl">0.85</span>, <span class="fl">0.2</span>, <span class="st">"aligned"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>strategy <span class="op">=</span> <span class="st">"Corrigible aligned"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">trust_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">trust_honest</span>, <span class="va">trust_deceptive</span>, <span class="va">trust_corrigible</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb1153"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">trust_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">round</span>, y <span class="op">=</span> <span class="va">belief</span>, colour <span class="op">=</span> <span class="va">strategy</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">pi_threshold</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">28</span>, y <span class="op">=</span> <span class="va">pi_threshold</span> <span class="op">+</span> <span class="fl">0.03</span>,</span>
+<span>           label <span class="op">=</span> <span class="st">"Trust threshold"</span>, size <span class="op">=</span> <span class="fl">3</span>, colour <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Honest aligned"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Deceptive misaligned"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>               <span class="st">"Corrigible aligned"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"AI strategy"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va"><a href="https://scales.r-lib.org/reference/percent_format.html">percent</a></span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Trust Dynamics Under Different AI Strategies"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Interaction round"</span>,</span>
+<span>       y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="st">"Belief in alignment "</span> <span class="op">*</span> <span class="va">pi</span><span class="op">[</span><span class="va">t</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p2</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:trust-dynamics-plot"></span>
+<img src="39-ai-alignment-as-game_files/figure-html/trust-dynamics-plot-1.png" alt="Trust dynamics (posterior belief in alignment) over 30 interactions under three AI strategies. The honest aligned AI rapidly earns trust, the corrigible aligned AI builds trust more slowly but reliably, and the deceptive misaligned AI can fool the human when its deceptive capability is high." width="80%"><p class="caption">
+Figure 40.2: Trust dynamics (posterior belief in alignment) over 30 interactions under three AI strategies. The honest aligned AI rapidly earns trust, the corrigible aligned AI builds trust more slowly but reliably, and the deceptive misaligned AI can fool the human when its deceptive capability is high.
+</p>
+</div>
+<div class="sourceCode" id="cb1154"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p2</span>, <span class="st">"alignment-trust-dynamics"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-36" class="section level2" number="40.4">
+<h2>
+<span class="header-section-number">40.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-36"><i class="fas fa-link"></i></a>
+</h2>
+<p>We analyze a repeated trust game between a human and an AI over 30 rounds.</p>
+<div class="sourceCode" id="cb1155"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"=== Worked Example: Repeated Trust Game ===\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; === Worked Example: Repeated Trust Game ===</code></pre>
+<div class="sourceCode" id="cb1157"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Prior belief (pi_0): %.2f\n"</span>, <span class="va">prior</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Prior belief (pi_0): 0.50</code></pre>
+<div class="sourceCode" id="cb1159"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Trust threshold: %.2f\n\n"</span>, <span class="va">pi_threshold</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Trust threshold: 0.40</code></pre>
+<div class="sourceCode" id="cb1161"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">strat</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Honest aligned"</span>, <span class="st">"Deceptive misaligned"</span>, <span class="st">"Corrigible aligned"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">final</span> <span class="op">&lt;-</span> <span class="va">trust_data</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">strategy</span> <span class="op">==</span> <span class="va">strat</span>, <span class="va">round</span> <span class="op">==</span> <span class="va">n_rounds</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html">pull</a></span><span class="op">(</span><span class="va">belief</span><span class="op">)</span></span>
+<span>  <span class="va">first_trust</span> <span class="op">&lt;-</span> <span class="va">trust_data</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">strategy</span> <span class="op">==</span> <span class="va">strat</span>, <span class="va">belief</span> <span class="op">&gt;</span> <span class="va">pi_threshold</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html">slice_min</a></span><span class="op">(</span><span class="va">round</span>, n <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Strategy: %s\n"</span>, <span class="va">strat</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  Final belief: %.3f\n"</span>, <span class="va">final</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">first_trust</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  First trusted at round: %d\n"</span>, <span class="va">first_trust</span><span class="op">$</span><span class="va">round</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Never trusted\n"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt; Strategy: Honest aligned
+#&gt;   Final belief: 0.996
+#&gt;   First trusted at round: 0
+#&gt; 
+#&gt; Strategy: Deceptive misaligned
+#&gt;   Final belief: 0.355
+#&gt;   First trusted at round: 0
+#&gt; 
+#&gt; Strategy: Corrigible aligned
+#&gt;   Final belief: 1.000
+#&gt;   First trusted at round: 0</code></pre>
+<p><strong>Interpretation.</strong> The honest aligned AI quickly establishes trust because its high rate of good actions (0.9) is sharply distinguishable from the misaligned baseline (0.3). The corrigible AI is slightly slower because it occasionally defers rather than acting autonomously, yielding a lower “good action” rate of 0.85 — but it still builds trust reliably.</p>
+<p>The deceptive misaligned AI is the dangerous case. When a misaligned AI can mimic aligned behaviour with high fidelity (0.85 probability of “looking good”), it becomes nearly indistinguishable from a truly aligned agent. This demonstrates why alignment researchers emphasize the importance of <em>interpretability</em> — the human needs additional channels beyond observing outcomes to distinguish genuine alignment from sophisticated mimicry.</p>
+<p><strong>Game-theoretic insight.</strong> In a separating equilibrium, the aligned AI would choose a signal that the misaligned AI finds too costly to imitate. The difficulty is that in AI systems, the “cost” of appearing aligned may be negligible for a sufficiently capable misaligned agent, undermining the separating equilibrium.</p>
+</div>
+<div id="extensions-38" class="section level2" number="40.5">
+<h2>
+<span class="header-section-number">40.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-38"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Cooperative Inverse Reinforcement Learning (CIRL)</strong> formalizes alignment as a cooperative game where the AI helps the human achieve goals the AI does not initially know. See <span class="citation">Hadfield-Menell et al. (<a href="references.html#ref-hadfield-menell2016">2016</a>)</span>.</li>
+<li>
+<strong>Corrigibility</strong> (<span class="citation">Soares &amp; Fallenstein (<a href="references.html#ref-soares2015">2015</a>)</span>) studies conditions under which an AI permits itself to be corrected. This connects to the commitment games in <a href="sec-cooperative-ai.html#sec-cooperative-ai">41</a>.</li>
+<li>
+<strong>Multi-principal alignment.</strong> When multiple humans with conflicting preferences oversee the same AI, the alignment problem becomes a social choice problem (<a href="sec-ethics-frameworks.html#sec-ethics-frameworks">38</a>).</li>
+<li>
+<strong>Mechanism design for AI oversight</strong> uses the tools from <a href="sec-mechanism-design.html#sec-mechanism-design">33</a> to design monitoring schemes that incentivize truthful capability reporting.</li>
+</ul>
+</div>
+<div id="exercises-38" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-38"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Varying the prior.</strong> Re-run the trust dynamics simulation with initial priors of <span class="math inline">\(\pi_0 \in \{0.2, 0.5, 0.8\}\)</span>. How does the prior affect the number of rounds needed to cross the trust threshold for the honest aligned strategy?</p></li>
+<li><p><strong>Detection of deception.</strong> Suppose the human receives an occasional “audit” signal that perfectly reveals the AI’s action quality (with probability 0.1 each round). Modify the Bayesian updating to incorporate this audit mechanism. How does this change the trajectory for the deceptive misaligned strategy?</p></li>
+<li><p><strong>Optimal deception.</strong> For the misaligned AI, what is the minimum probability of “looking good” (<span class="math inline">\(p_{\text{good}}^{\text{misaligned}}\)</span>) needed to maintain the human’s trust above the threshold for all 30 rounds? Find this value numerically by searching over the parameter.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></div>
+<div class="next"><a href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-ai-alignment"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="nav-link" href="#learning-objectives-38">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-38"><span class="header-section-number">40.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-38"><span class="header-section-number">40.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#principal-agent-framework"><span class="header-section-number">40.2.1</span> Principal-agent framework</a></li>
+<li><a class="nav-link" href="#signaling-game"><span class="header-section-number">40.2.2</span> Signaling game</a></li>
+<li><a class="nav-link" href="#corrigibility-in-repeated-games"><span class="header-section-number">40.2.3</span> Corrigibility in repeated games</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-alignment-implementation"><span class="header-section-number">40.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#signaling-game-payoffs"><span class="header-section-number">40.3.1</span> Signaling game payoffs</a></li>
+<li><a class="nav-link" href="#equilibrium-analysis"><span class="header-section-number">40.3.2</span> Equilibrium analysis</a></li>
+<li><a class="nav-link" href="#signaling-game-tree-visualization"><span class="header-section-number">40.3.3</span> Signaling game tree visualization</a></li>
+<li><a class="nav-link" href="#trust-dynamics-with-bayesian-updating"><span class="header-section-number">40.3.4</span> Trust dynamics with Bayesian updating</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-36"><span class="header-section-number">40.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-38"><span class="header-section-number">40.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-38">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/39-ai-alignment-as-game.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/39-ai-alignment-as-game.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

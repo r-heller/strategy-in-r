@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 8 Repeated Games | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="How repetition transforms strategic interaction. Covers finite and infinite horizon repeated games, discount factors, the folk theorem, and trigger strategies including Grim Trigger and...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 8 Repeated Games | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-repeated-games.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="How repetition transforms strategic interaction. Covers finite and infinite horizon repeated games, discount factors, the folk theorem, and trigger strategies including Grim Trigger and...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 8 Repeated Games | Strategy in R">
+<meta name="twitter:description" content="How repetition transforms strategic interaction. Covers finite and infinite horizon repeated games, discount factors, the folk theorem, and trigger strategies including Grim Trigger and...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 8 Repeated Games | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="active" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-repeated-games" class="section level1" number="8">
+<h1>
+<span class="header-section-number">8</span> Repeated Games<a class="anchor" aria-label="anchor" href="#sec-repeated-games"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>How repetition transforms strategic interaction. Covers finite and infinite horizon repeated games, discount factors, the folk theorem, and trigger strategies including Grim Trigger and Tit-for-Tat, with a worked example showing how cooperation can be sustained in the infinitely repeated Prisoner’s Dilemma.</p>
+</blockquote>
+<div id="learning-objectives-6" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-6"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Distinguish between finitely and infinitely repeated games and explain the role of the discount factor.</li>
+<li>State the folk theorem and characterize the set of feasible and individually rational payoffs.</li>
+<li>Describe Grim Trigger and Tit-for-Tat strategies and derive the conditions under which they sustain cooperation.</li>
+<li>Plot the folk-theorem payoff region for a given stage game in R and verify trigger-strategy equilibria computationally.</li>
+</ul>
+</div>
+<div id="motivation-6" class="section level2" number="8.1">
+<h2>
+<span class="header-section-number">8.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-6"><i class="fas fa-link"></i></a>
+</h2>
+<p>The Prisoner’s Dilemma has a famously bleak prediction: rational players defect, even though mutual cooperation would make both better off. Yet in the real world, firms competing in the same market quarter after quarter often sustain tacit collusion. Nations locked in arms races sometimes reach stable agreements. Individuals in small communities cooperate routinely without binding contracts.</p>
+<p>What changes when a game is played not once, but repeatedly? Repetition introduces the possibility of <strong>punishment</strong>: a player who defects today can be punished tomorrow. If the future matters enough — that is, if the <strong>discount factor</strong> is sufficiently high — the threat of future punishment can sustain cooperation as an equilibrium outcome. This is the central message of the <strong>folk theorem</strong>, one of the most powerful results in game theory.</p>
+<p>Robert Axelrod’s celebrated computer tournaments <span class="citation">(<a href="references.html#ref-axelrod1981">Axelrod, 1981</a>)</span> demonstrated this insight empirically: Tit-for-Tat, a simple strategy that cooperates initially and then mirrors the opponent’s previous action, emerged as the tournament winner, outperforming far more sophisticated strategies. We revisit Axelrod’s tournament in <a href="sec-axelrod-tournament.html#sec-axelrod-tournament">18</a>; here we lay the theoretical foundations.</p>
+</div>
+<div id="theory-6" class="section level2" number="8.2">
+<h2>
+<span class="header-section-number">8.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-6"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-stage-game" class="section level3" number="8.2.1">
+<h3>
+<span class="header-section-number">8.2.1</span> The stage game<a class="anchor" aria-label="anchor" href="#the-stage-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>A <strong>repeated game</strong> is built on a <strong>stage game</strong> <span class="math inline">\(G = (N, (A_i), (u_i))\)</span> played in each period <span class="math inline">\(t = 0, 1, 2, \ldots\)</span> The stage game we use throughout this chapter is the Prisoner’s Dilemma with the following payoff matrix:</p>
+<div class="inline-table"><table class="table table-sm">
+<thead><tr class="header">
+<th></th>
+<th>C</th>
+<th>D</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>C</strong></td>
+<td>(3, 3)</td>
+<td>(0, 5)</td>
+</tr>
+<tr class="even">
+<td><strong>D</strong></td>
+<td>(5, 0)</td>
+<td>(1, 1)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Here <span class="math inline">\(T = 5\)</span> is the temptation payoff, <span class="math inline">\(R = 3\)</span> the reward for mutual cooperation, <span class="math inline">\(P = 1\)</span> the punishment for mutual defection, and <span class="math inline">\(S = 0\)</span> the sucker’s payoff, satisfying the standard ordering <span class="math inline">\(T &gt; R &gt; P &gt; S\)</span>.</p>
+</div>
+<div id="finite-vs.-infinite-horizon" class="section level3" number="8.2.2">
+<h3>
+<span class="header-section-number">8.2.2</span> Finite vs. infinite horizon<a class="anchor" aria-label="anchor" href="#finite-vs.-infinite-horizon"><i class="fas fa-link"></i></a>
+</h3>
+<p>In a <strong>finitely repeated</strong> game with <span class="math inline">\(T\)</span> periods, backward induction unravels cooperation: in the last period, defection is dominant (just as in the one-shot game). Knowing this, both players defect in period <span class="math inline">\(T - 1\)</span>, and so on, all the way back to period 1. The unique subgame-perfect equilibrium of the finitely repeated Prisoner’s Dilemma is defection in every period.</p>
+<p>In an <strong>infinitely repeated</strong> game, there is no last period, so backward induction cannot get started. Players evaluate infinite payoff streams using the <strong>discount factor</strong> <span class="math inline">\(\delta \in [0, 1)\)</span>. The discounted average payoff from a stream <span class="math inline">\((u_0, u_1, u_2, \ldots)\)</span> is:</p>
+<p><span class="math display" id="eq:discounted-payoff">\[\begin{equation}
+V = (1 - \delta) \sum_{t=0}^{\infty} \delta^t u_t
+\tag{8.1}
+\end{equation}\]</span></p>
+<p>The factor <span class="math inline">\((1 - \delta)\)</span> normalizes the sum so that a constant stream <span class="math inline">\(u_t = c\)</span> yields <span class="math inline">\(V = c\)</span>, making payoffs comparable to the stage game.</p>
+</div>
+<div id="trigger-strategies" class="section level3" number="8.2.3">
+<h3>
+<span class="header-section-number">8.2.3</span> Trigger strategies<a class="anchor" aria-label="anchor" href="#trigger-strategies"><i class="fas fa-link"></i></a>
+</h3>
+<p>A <strong>trigger strategy</strong> prescribes cooperation as long as no player has deviated, and switches permanently (or temporarily) to a punishment phase after a deviation.</p>
+<ul>
+<li>
+<strong>Grim Trigger:</strong> Cooperate in the first period. In each subsequent period, cooperate if and only if both players have cooperated in every previous period. Any single defection triggers permanent mutual defection.</li>
+<li>
+<strong>Tit-for-Tat (TFT):</strong> Cooperate in the first period. In each subsequent period, play whatever the opponent played in the previous period. TFT punishes defection but forgives it after one period — a feature that proved remarkably effective in <span class="citation">Axelrod (<a href="references.html#ref-axelrod1981">1981</a>)</span>’s tournament.</li>
+</ul>
+</div>
+<div id="the-grim-trigger-condition" class="section level3" number="8.2.4">
+<h3>
+<span class="header-section-number">8.2.4</span> The Grim Trigger condition<a class="anchor" aria-label="anchor" href="#the-grim-trigger-condition"><i class="fas fa-link"></i></a>
+</h3>
+<p>Under Grim Trigger, the cooperative payoff stream is <span class="math inline">\(R, R, R, \ldots\)</span> with discounted value <span class="math inline">\(V_C = R = 3\)</span>. If a player deviates in period <span class="math inline">\(t\)</span>, she earns <span class="math inline">\(T = 5\)</span> in that period but triggers permanent defection, earning <span class="math inline">\(P = 1\)</span> forever after. The deviation payoff is:</p>
+<p><span class="math display" id="eq:grim-deviation">\[\begin{equation}
+V_D = (1 - \delta) \left[ T + \sum_{s=1}^{\infty} \delta^s P \right] = (1 - \delta) T + \delta P
+\tag{8.2}
+\end{equation}\]</span></p>
+<p>Cooperation is sustainable when <span class="math inline">\(V_C \geq V_D\)</span>:</p>
+<p><span class="math display" id="eq:grim-threshold">\[\begin{equation}
+R \geq (1 - \delta) T + \delta P \quad \Longleftrightarrow \quad \delta \geq \frac{T - R}{T - P}
+\tag{8.3}
+\end{equation}\]</span></p>
+<p>For our payoffs: <span class="math inline">\(\delta \geq \frac{5 - 3}{5 - 1} = \frac{1}{2}\)</span>.</p>
+</div>
+<div id="the-folk-theorem" class="section level3" number="8.2.5">
+<h3>
+<span class="header-section-number">8.2.5</span> The folk theorem<a class="anchor" aria-label="anchor" href="#the-folk-theorem"><i class="fas fa-link"></i></a>
+</h3>
+<div class="rmdtip">
+<p><strong>Theorem: Folk Theorem (Friedman, 1971)</strong></p>
+<p>Let <span class="math inline">\(G\)</span> be a finite stage game and let <span class="math inline">\(v = (v_1, \ldots, v_n)\)</span> be any feasible payoff vector that strictly dominates each player’s <strong>minimax payoff</strong> <span class="math inline">\(\underline{v}_i\)</span>. Then for sufficiently large <span class="math inline">\(\delta &lt; 1\)</span>, there exists a subgame-perfect equilibrium of the infinitely repeated game with average payoff <span class="math inline">\(v\)</span>.</p>
+</div>
+<p>The folk theorem tells us that repetition with patient players can sustain <em>any</em> feasible, individually rational payoff profile — a dramatic expansion of the equilibrium set compared to the one-shot game. The set of achievable payoffs forms a convex polytope bounded by feasibility (the convex hull of stage-game payoff profiles) and individual rationality (each player earns at least their minimax value). See <span class="citation">Osborne (<a href="references.html#ref-osborne2004">2004, Chapter 14</a>)</span> for the formal proof.</p>
+</div>
+</div>
+<div id="implementation-in-r-5" class="section level2" number="8.3">
+<h2>
+<span class="header-section-number">8.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#implementation-in-r-5"><i class="fas fa-link"></i></a>
+</h2>
+<div id="stage-game-setup-and-grim-trigger-analysis" class="section level3" number="8.3.1">
+<h3>
+<span class="header-section-number">8.3.1</span> Stage game setup and Grim Trigger analysis<a class="anchor" aria-label="anchor" href="#stage-game-setup-and-grim-trigger-analysis"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb183"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Stage game payoffs (Prisoner's Dilemma)</span></span>
+<span><span class="va">T_payoff</span> <span class="op">&lt;-</span> <span class="fl">5</span>   <span class="co"># temptation</span></span>
+<span><span class="va">R_payoff</span> <span class="op">&lt;-</span> <span class="fl">3</span>   <span class="co"># reward</span></span>
+<span><span class="va">P_payoff</span> <span class="op">&lt;-</span> <span class="fl">1</span>   <span class="co"># punishment</span></span>
+<span><span class="va">S_payoff</span> <span class="op">&lt;-</span> <span class="fl">0</span>   <span class="co"># sucker</span></span>
+<span></span>
+<span><span class="co"># Critical discount factor for Grim Trigger</span></span>
+<span><span class="va">delta_star</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">T_payoff</span> <span class="op">-</span> <span class="va">R_payoff</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">T_payoff</span> <span class="op">-</span> <span class="va">P_payoff</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Critical discount factor (Grim Trigger): delta* = %.4f\n"</span>,</span>
+<span>            <span class="va">delta_star</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Critical discount factor (Grim Trigger): delta* = 0.5000</code></pre>
+</div>
+<div id="payoff-comparison-across-discount-factors" class="section level3" number="8.3.2">
+<h3>
+<span class="header-section-number">8.3.2</span> Payoff comparison across discount factors<a class="anchor" aria-label="anchor" href="#payoff-comparison-across-discount-factors"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb185"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Compare cooperation vs deviation payoffs for a range of delta</span></span>
+<span><span class="va">delta_seq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.99</span>, by <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">payoff_data</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  delta <span class="op">=</span> <span class="va">delta_seq</span>,</span>
+<span>  cooperate <span class="op">=</span> <span class="va">R_payoff</span>,</span>
+<span>  deviate <span class="op">=</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">delta_seq</span><span class="op">)</span> <span class="op">*</span> <span class="va">T_payoff</span> <span class="op">+</span> <span class="va">delta_seq</span> <span class="op">*</span> <span class="va">P_payoff</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">payoff_long</span> <span class="op">&lt;-</span> <span class="va">payoff_data</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">cooperate</span>, <span class="va">deviate</span><span class="op">)</span>,</span>
+<span>               names_to <span class="op">=</span> <span class="st">"strategy"</span>, values_to <span class="op">=</span> <span class="st">"payoff"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>strategy <span class="op">=</span> <span class="fu">str_to_title</span><span class="op">(</span><span class="va">strategy</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Cooperation payoff (constant):"</span>, <span class="va">R_payoff</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Cooperation payoff (constant): 3</code></pre>
+<div class="sourceCode" id="cb187"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Deviation payoff at delta = 0.3:"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.3</span><span class="op">)</span> <span class="op">*</span> <span class="va">T_payoff</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="va">P_payoff</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Deviation payoff at delta = 0.3: 3.8</code></pre>
+<div class="sourceCode" id="cb189"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Deviation payoff at delta = 0.7:"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">*</span> <span class="va">T_payoff</span> <span class="op">+</span> <span class="fl">0.7</span> <span class="op">*</span> <span class="va">P_payoff</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Deviation payoff at delta = 0.7: 2.2</code></pre>
+</div>
+<div id="folk-theorem-payoff-region" class="section level3" number="8.3.3">
+<h3>
+<span class="header-section-number">8.3.3</span> Folk theorem payoff region<a class="anchor" aria-label="anchor" href="#folk-theorem-payoff-region"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb191"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># All pure-strategy payoff profiles in the stage game</span></span>
+<span><span class="va">profiles</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  p1_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"D"</span><span class="op">)</span>,</span>
+<span>  p2_action <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span>,</span>
+<span>  u1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">R_payoff</span>, <span class="va">S_payoff</span>, <span class="va">T_payoff</span>, <span class="va">P_payoff</span><span class="op">)</span>,</span>
+<span>  u2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">R_payoff</span>, <span class="va">T_payoff</span>, <span class="va">S_payoff</span>, <span class="va">P_payoff</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Stage-game payoff profiles:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Stage-game payoff profiles:</code></pre>
+<div class="sourceCode" id="cb193"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">profiles</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 4 × 4
+#&gt;   p1_action p2_action    u1    u2
+#&gt;   &lt;chr&gt;     &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1 C         C             3     3
+#&gt; 2 C         D             0     5
+#&gt; 3 D         C             5     0
+#&gt; 4 D         D             1     1</code></pre>
+<div class="sourceCode" id="cb195"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Minimax payoffs (in PD, minimax = punishment payoff)</span></span>
+<span><span class="va">minimax_1</span> <span class="op">&lt;-</span> <span class="va">P_payoff</span></span>
+<span><span class="va">minimax_2</span> <span class="op">&lt;-</span> <span class="va">P_payoff</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nMinimax payoffs: v1 = %d, v2 = %d\n"</span>, <span class="va">minimax_1</span>, <span class="va">minimax_2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Minimax payoffs: v1 = 1, v2 = 1</code></pre>
+</div>
+<div id="publication-figure-folk-theorem-payoff-region" class="section level3" number="8.3.4">
+<h3>
+<span class="header-section-number">8.3.4</span> Publication figure: folk theorem payoff region<a class="anchor" aria-label="anchor" href="#publication-figure-folk-theorem-payoff-region"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb197"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Convex hull of feasible payoffs</span></span>
+<span><span class="va">feasible_hull</span> <span class="op">&lt;-</span> <span class="va">profiles</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">u1</span>, <span class="va">u2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">hull_idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/chull.html">chull</a></span><span class="op">(</span><span class="va">feasible_hull</span><span class="op">)</span></span>
+<span><span class="va">hull_points</span> <span class="op">&lt;-</span> <span class="va">feasible_hull</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">hull_idx</span>, <span class="va">hull_idx</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>, <span class="op">]</span></span>
+<span><span class="va">hull_df</span> <span class="op">&lt;-</span> <span class="fu">as_tibble</span><span class="op">(</span><span class="va">hull_points</span>, .name_repair <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"u1"</span>, <span class="st">"u2"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Individually rational and feasible region</span></span>
+<span><span class="co"># Intersection of feasible set with u1 &gt;= 1 and u2 &gt;= 1</span></span>
+<span><span class="co"># The feasible polygon vertices are (3,3), (0,5), (5,0), (1,1)</span></span>
+<span><span class="co"># Clipping to u1 &gt;= 1 and u2 &gt;= 1 yields vertices:</span></span>
+<span><span class="va">ir_vertices</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  u1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">4</span><span class="op">)</span>,</span>
+<span>  u2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># More precisely, find the individually rational feasible set</span></span>
+<span><span class="co"># The feasible set edges: (0,5)-(3,3), (3,3)-(5,0), (5,0)-(1,1), (1,1)-(0,5)</span></span>
+<span><span class="co"># Clipping with u1 &gt;= 1: edge (0,5)-(1,1) at u1=1 gives u2 between 1 and 5</span></span>
+<span><span class="co"># edge (0,5)-(3,3) at u1=1 gives u2 = 5 - (2/3)*1 = 5 - 2/3 = 13/3</span></span>
+<span><span class="co"># Clipping with u2 &gt;= 1: edge (5,0)-(1,1) at u2=1 gives u1=1</span></span>
+<span><span class="co"># edge (5,0)-(3,3) at u2=1 gives u1 = 5 - (5/3)*1 = ... no.</span></span>
+<span><span class="co"># Let's compute properly.</span></span>
+<span></span>
+<span><span class="co"># Feasible set is convex hull of (3,3), (0,5), (5,0), (1,1)</span></span>
+<span><span class="co"># The IR region clips this with u1 &gt;= 1, u2 &gt;= 1</span></span>
+<span><span class="co"># Since (1,1) is already a vertex and all other vertices except (0,5) have u1&gt;=1</span></span>
+<span><span class="co"># and all except (5,0) have u2&gt;=1, the clipping is:</span></span>
+<span></span>
+<span><span class="co"># Edge from (0,5) to (3,3): parametrically (3t, 5-2t) for t in [0,1]</span></span>
+<span><span class="co"># u1 = 1 =&gt; t = 1/3, u2 = 5 - 2/3 = 13/3</span></span>
+<span><span class="co"># Edge from (0,5) to (1,1): parametrically (t, 5-4t) for t in [0,1]</span></span>
+<span><span class="co"># u1 = 1 =&gt; t = 1, giving (1,1) -- that's the endpoint</span></span>
+<span><span class="co"># Edge from (5,0) to (3,3): parametrically (5-2t, 3t) for t in [0,1]</span></span>
+<span><span class="co"># u2 = 1 =&gt; t = 1/3, u1 = 5 - 2/3 = 13/3</span></span>
+<span><span class="co"># Edge from (5,0) to (1,1): parametrically (5-4t, t) for t in [0,1]</span></span>
+<span><span class="co"># u2 = 1 =&gt; t = 1, giving (1,1)</span></span>
+<span></span>
+<span><span class="va">ir_region</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  u1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">13</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  u2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">13</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Key labeled points</span></span>
+<span><span class="va">key_points</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  u1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">R_payoff</span>, <span class="va">P_payoff</span>, <span class="va">T_payoff</span>, <span class="va">S_payoff</span><span class="op">)</span>,</span>
+<span>  u2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">R_payoff</span>, <span class="va">P_payoff</span>, <span class="va">S_payoff</span>, <span class="va">T_payoff</span><span class="op">)</span>,</span>
+<span>  label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"(C,C)"</span>, <span class="st">"(D,D)"</span>, <span class="st">"(D,C)"</span>, <span class="st">"(C,D)"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_folk</span> <span class="op">&lt;-</span> <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_polygon</span><span class="op">(</span>data <span class="op">=</span> <span class="va">hull_df</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span><span class="op">)</span>,</span>
+<span>               fill <span class="op">=</span> <span class="st">"grey90"</span>, colour <span class="op">=</span> <span class="st">"grey50"</span>,</span>
+<span>               linetype <span class="op">=</span> <span class="st">"dashed"</span>, alpha <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_polygon</span><span class="op">(</span>data <span class="op">=</span> <span class="va">ir_region</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span><span class="op">)</span>,</span>
+<span>               fill <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, alpha <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>               colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_hline</span><span class="op">(</span>yintercept <span class="op">=</span> <span class="va">minimax_2</span>, linetype <span class="op">=</span> <span class="st">"dotted"</span>,</span>
+<span>             colour <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">minimax_1</span>, linetype <span class="op">=</span> <span class="st">"dotted"</span>,</span>
+<span>             colour <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_point</span><span class="op">(</span>data <span class="op">=</span> <span class="va">key_points</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span><span class="op">)</span>,</span>
+<span>             size <span class="op">=</span> <span class="fl">3</span>, colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_text</span><span class="op">(</span>data <span class="op">=</span> <span class="va">key_points</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">u1</span>, y <span class="op">=</span> <span class="va">u2</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>            vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.8</span>, size <span class="op">=</span> <span class="fl">3.2</span>, fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">annotate</span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">2.2</span>, y <span class="op">=</span> <span class="fl">2.5</span>,</span>
+<span>           label <span class="op">=</span> <span class="st">"Folk theorem\nachievable set"</span>,</span>
+<span>           colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>, size <span class="op">=</span> <span class="fl">3.5</span>, fontface <span class="op">=</span> <span class="st">"italic"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">annotate</span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">0.3</span>, y <span class="op">=</span> <span class="va">minimax_2</span> <span class="op">+</span> <span class="fl">0.2</span>,</span>
+<span>           label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="fu">underline</span><span class="op">(</span><span class="va">v</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>           colour <span class="op">=</span> <span class="st">"grey40"</span>, size <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">annotate</span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="va">minimax_1</span> <span class="op">+</span> <span class="fl">0.3</span>, y <span class="op">=</span> <span class="op">-</span><span class="fl">0.2</span>,</span>
+<span>           label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="fu">underline</span><span class="op">(</span><span class="va">v</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>           colour <span class="op">=</span> <span class="st">"grey40"</span>, size <span class="op">=</span> <span class="fl">3.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_x_continuous</span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                     limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.5</span>, <span class="fl">5.8</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">scale_y_continuous</span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="va">u</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                     limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.5</span>, <span class="fl">5.8</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">coord_fixed</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">labs</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Folk Theorem: Feasible and Individually Rational Payoffs"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_folk</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:folk-theorem"></span>
+<img src="07-repeated-games_files/figure-html/folk-theorem-1.png" alt="The set of achievable payoffs under the folk theorem for the Prisoner's Dilemma. The outer polygon (light fill) shows the feasible set --- the convex hull of stage-game payoff profiles. The shaded interior region represents payoff pairs that are both feasible and individually rational (each player earns at least their minimax payoff of 1). Any point in the shaded region can be sustained as a subgame-perfect equilibrium for sufficiently high discount factor." width="80%"><p class="caption">
+Figure 8.1: The set of achievable payoffs under the folk theorem for the Prisoner’s Dilemma. The outer polygon (light fill) shows the feasible set — the convex hull of stage-game payoff profiles. The shaded interior region represents payoff pairs that are both feasible and individually rational (each player earns at least their minimax payoff of 1). Any point in the shaded region can be sustained as a subgame-perfect equilibrium for sufficiently high discount factor.
+</p>
+</div>
+<div class="sourceCode" id="cb198"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_folk</span>, <span class="st">"folk-theorem-region"</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-6" class="section level2" number="8.4">
+<h2>
+<span class="header-section-number">8.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-6"><i class="fas fa-link"></i></a>
+</h2>
+<p>We verify step by step that Grim Trigger sustains cooperation in the infinitely repeated Prisoner’s Dilemma when <span class="math inline">\(\delta = 0.6\)</span>.</p>
+<p><strong>Step 1: Define the stage game.</strong> The payoffs are <span class="math inline">\(T = 5\)</span>, <span class="math inline">\(R = 3\)</span>, <span class="math inline">\(P = 1\)</span>, <span class="math inline">\(S = 0\)</span> as defined above.</p>
+<p><strong>Step 2: Specify the strategy.</strong> Both players use Grim Trigger: cooperate initially, and continue cooperating as long as no defection has occurred. After any defection, defect forever.</p>
+<p><strong>Step 3: Compute the cooperation payoff.</strong> On the equilibrium path, both players cooperate forever. The discounted average payoff is <span class="math inline">\(V_C = R = 3\)</span>.</p>
+<p><strong>Step 4: Compute the deviation payoff.</strong> A player who defects in period <span class="math inline">\(t\)</span> earns <span class="math inline">\(T = 5\)</span> in that period. From period <span class="math inline">\(t + 1\)</span> onward, both players defect (Grim Trigger activated), earning <span class="math inline">\(P = 1\)</span> per period. The discounted average payoff from deviation is:</p>
+<p><span class="math display">\[V_D = (1 - 0.6) \cdot 5 + 0.6 \cdot 1 = 2.0 + 0.6 = 2.6\]</span></p>
+<p><strong>Step 5: Verify the equilibrium condition.</strong> Since <span class="math inline">\(V_C = 3.0 &gt; 2.6 = V_D\)</span>, deviation is unprofitable. Grim Trigger is a subgame-perfect equilibrium for <span class="math inline">\(\delta = 0.6\)</span>.</p>
+<div class="sourceCode" id="cb199"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fl">0.6</span></span>
+<span></span>
+<span><span class="va">V_C</span> <span class="op">&lt;-</span> <span class="va">R_payoff</span></span>
+<span><span class="va">V_D</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">delta</span><span class="op">)</span> <span class="op">*</span> <span class="va">T_payoff</span> <span class="op">+</span> <span class="va">delta</span> <span class="op">*</span> <span class="va">P_payoff</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Discount factor: delta = %.1f\n"</span>, <span class="va">delta</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Discount factor: delta = 0.6</code></pre>
+<div class="sourceCode" id="cb201"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Cooperation payoff (Grim Trigger): V_C = %.1f\n"</span>, <span class="va">V_C</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Cooperation payoff (Grim Trigger): V_C = 3.0</code></pre>
+<div class="sourceCode" id="cb203"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Deviation payoff:                  V_D = %.1f\n"</span>, <span class="va">V_D</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Deviation payoff:                  V_D = 2.6</code></pre>
+<div class="sourceCode" id="cb205"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Cooperation sustained? %s (V_C = %.1f %s V_D = %.1f)\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">V_C</span> <span class="op">&gt;=</span> <span class="va">V_D</span>, <span class="st">"YES"</span>, <span class="st">"NO"</span><span class="op">)</span>,</span>
+<span>            <span class="va">V_C</span>, <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">V_C</span> <span class="op">&gt;=</span> <span class="va">V_D</span>, <span class="st">"&gt;="</span>, <span class="st">"&lt;"</span><span class="op">)</span>, <span class="va">V_D</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Cooperation sustained? YES (V_C = 3.0 &gt;= V_D = 2.6)</code></pre>
+<div class="sourceCode" id="cb207"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nCritical threshold: delta* = %.4f\n"</span>, <span class="va">delta_star</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Critical threshold: delta* = 0.5000</code></pre>
+<div class="sourceCode" id="cb209"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"Current delta = %.1f %s delta* = %.4f\n"</span>,</span>
+<span>            <span class="va">delta</span>, <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">delta</span> <span class="op">&gt;=</span> <span class="va">delta_star</span>, <span class="st">"&gt;="</span>, <span class="st">"&lt;"</span><span class="op">)</span>, <span class="va">delta_star</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Current delta = 0.6 &gt;= delta* = 0.5000</code></pre>
+<div class="sourceCode" id="cb211"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Summary table</span></span>
+<span><span class="va">grim_summary</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span></span>
+<span>  Parameter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Discount factor (delta)"</span>, <span class="st">"Critical threshold (delta*)"</span>,</span>
+<span>                <span class="st">"Cooperation payoff (V_C)"</span>, <span class="st">"Deviation payoff (V_D)"</span>,</span>
+<span>                <span class="st">"Equilibrium?"</span><span class="op">)</span>,</span>
+<span>  Value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%.1f"</span>, <span class="va">delta</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%.4f"</span>, <span class="va">delta_star</span><span class="op">)</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%.1f"</span>, <span class="va">V_C</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%.1f"</span>, <span class="va">V_D</span><span class="op">)</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">V_C</span> <span class="op">&gt;=</span> <span class="va">V_D</span>, <span class="st">"Yes"</span>, <span class="st">"No"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">grim_summary</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">gt</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tab_header</span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Grim Trigger Equilibrium Verification"</span>,</span>
+<span>             subtitle <span class="op">=</span> <span class="st">"Infinitely Repeated Prisoner's Dilemma"</span><span class="op">)</span></span></code></pre></div>
+<div id="qeayjdrzqo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qeayjdrzqo table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#qeayjdrzqo thead, #qeayjdrzqo tbody, #qeayjdrzqo tfoot, #qeayjdrzqo tr, #qeayjdrzqo td, #qeayjdrzqo th {
+  border-style: none;
+}
+
+#qeayjdrzqo p {
+  margin: 0;
+  padding: 0;
+}
+
+#qeayjdrzqo .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#qeayjdrzqo .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qeayjdrzqo .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qeayjdrzqo .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qeayjdrzqo .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#qeayjdrzqo .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qeayjdrzqo .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qeayjdrzqo .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qeayjdrzqo .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#qeayjdrzqo .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qeayjdrzqo .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_left {
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_center {
+  text-align: center;
+}
+
+#qeayjdrzqo .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qeayjdrzqo .gt_font_normal {
+  font-weight: normal;
+}
+
+#qeayjdrzqo .gt_font_bold {
+  font-weight: bold;
+}
+
+#qeayjdrzqo .gt_font_italic {
+  font-style: italic;
+}
+
+#qeayjdrzqo .gt_super {
+  font-size: 65%;
+}
+
+#qeayjdrzqo .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#qeayjdrzqo .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#qeayjdrzqo .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#qeayjdrzqo .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#qeayjdrzqo .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#qeayjdrzqo .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#qeayjdrzqo .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#qeayjdrzqo .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#qeayjdrzqo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading">
+<td colspan="2" class="gt_heading gt_title gt_font_normal" style>Grim Trigger Equilibrium Verification</td>
+    </tr>
+<tr class="gt_heading">
+<td colspan="2" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style>Infinitely Repeated Prisoner's Dilemma</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Parameter">Parameter</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Value">Value</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Parameter" class="gt_row gt_left">Discount factor (delta)</td>
+<td headers="Value" class="gt_row gt_left">0.6</td>
+</tr>
+<tr>
+<td headers="Parameter" class="gt_row gt_left">Critical threshold (delta*)</td>
+<td headers="Value" class="gt_row gt_left">0.5000</td>
+</tr>
+<tr>
+<td headers="Parameter" class="gt_row gt_left">Cooperation payoff (V_C)</td>
+<td headers="Value" class="gt_row gt_left">3.0</td>
+</tr>
+<tr>
+<td headers="Parameter" class="gt_row gt_left">Deviation payoff (V_D)</td>
+<td headers="Value" class="gt_row gt_left">2.6</td>
+</tr>
+<tr>
+<td headers="Parameter" class="gt_row gt_left">Equilibrium?</td>
+<td headers="Value" class="gt_row gt_left">Yes</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<div id="comparing-grim-trigger-and-tit-for-tat" class="section level3" number="8.4.1">
+<h3>
+<span class="header-section-number">8.4.1</span> Comparing Grim Trigger and Tit-for-Tat<a class="anchor" aria-label="anchor" href="#comparing-grim-trigger-and-tit-for-tat"><i class="fas fa-link"></i></a>
+</h3>
+<p>Grim Trigger sustains cooperation through the harshest possible punishment: permanent defection. Tit-for-Tat, by contrast, punishes for only one period and then forgives. This makes TFT more robust in noisy environments (where actions are sometimes misperceived) but requires a higher discount factor to sustain cooperation against deliberate deviation. In <span class="citation">Axelrod (<a href="references.html#ref-axelrod1981">1981</a>)</span>’s tournament, TFT’s combination of niceness (never defect first), retaliation (punish defection), forgiveness (return to cooperation), and clarity (simple to understand) proved devastatingly effective. We simulate the tournament in detail in <a href="sec-axelrod-tournament.html#sec-axelrod-tournament">18</a>.</p>
+</div>
+</div>
+<div id="extensions-6" class="section level2" number="8.5">
+<h2>
+<span class="header-section-number">8.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-6"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Finite repetition with multiple equilibria.</strong> If the stage game has multiple Nash equilibria (<a href="sec-nash-equilibrium.html#sec-nash-equilibrium">4</a>), cooperation can sometimes be sustained even in finitely repeated games by using equilibrium selection as a reward-and-punishment device.</li>
+<li>
+<strong>Imperfect monitoring.</strong> When players observe only noisy signals of each other’s actions, the analysis becomes substantially more complex. The folk theorem still holds under certain conditions, but strategies must be adapted to tolerate observation errors.</li>
+<li>
+<strong>Stochastic games.</strong> When the stage game itself changes over time (e.g., market conditions fluctuate), the analysis extends to stochastic games, a generalization of repeated games.</li>
+<li>
+<strong>Evolutionary dynamics.</strong> Axelrod’s tournament approach connects repeated games to evolutionary game theory, where strategies compete and reproduce based on fitness. This perspective is developed further in <a href="sec-axelrod-tournament.html#sec-axelrod-tournament">18</a>.</li>
+</ul>
+<p>For the formal treatment of the folk theorem and its variants, see <span class="citation">Osborne (<a href="references.html#ref-osborne2004">2004, Chapter 14</a>)</span>. The discount-factor analysis of trigger strategies follows the framework in <span class="citation">Shoham &amp; Leyton-Brown (<a href="references.html#ref-shoham2009">2009</a>)</span>.</p>
+</div>
+<div id="exercises-6" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-6"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Critical discount factor.</strong> Consider a Prisoner’s Dilemma with payoffs <span class="math inline">\(T = 8\)</span>, <span class="math inline">\(R = 5\)</span>, <span class="math inline">\(P = 2\)</span>, <span class="math inline">\(S = 0\)</span>. Compute the critical discount factor <span class="math inline">\(\delta^*\)</span> for Grim Trigger to sustain cooperation. Verify your answer in R by computing <span class="math inline">\(V_C\)</span> and <span class="math inline">\(V_D\)</span> at <span class="math inline">\(\delta = \delta^*\)</span>.</p></li>
+<li><p><strong>Tit-for-Tat analysis.</strong> In the stage game from this chapter (<span class="math inline">\(T = 5\)</span>, <span class="math inline">\(R = 3\)</span>, <span class="math inline">\(P = 1\)</span>, <span class="math inline">\(S = 0\)</span>), derive the critical discount factor for Tit-for-Tat to sustain cooperation. <em>(Hint: after a one-period deviation, TFT retaliates for one period, then returns to cooperation. Compute the full deviation payoff stream.)</em></p></li>
+<li><p><strong>Folk theorem region.</strong> Consider a stage game with payoff profiles (4, 4), (0, 6), (6, 0), and (1, 1). Plot the feasible and individually rational region. How does it differ from the Prisoner’s Dilemma region in <a href="sec-repeated-games.html#fig:folk-theorem">8.1</a>?</p></li>
+<li><p><strong>Three-player repeated game.</strong> Extend the Grim Trigger analysis to a three-player setting where each player can Cooperate or Defect. Cooperation yields 3 to each cooperator; each defector earns <span class="math inline">\(5\)</span> regardless of others’ actions; but if all defect, each earns 1. What is the critical discount factor? <em>(Hint: consider the worst-case deviation.)</em></p></li>
+<li><p><strong>Simulation.</strong> Simulate 1000 rounds of the infinitely repeated PD (with a continuation probability of <span class="math inline">\(\delta = 0.95\)</span> each round) for two Grim Trigger players and two TFT players. Compare their average per-round payoffs and plot the cumulative payoff trajectories.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></div>
+<div class="next"><a href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-repeated-games"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="nav-link" href="#learning-objectives-6">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-6"><span class="header-section-number">8.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-6"><span class="header-section-number">8.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-stage-game"><span class="header-section-number">8.2.1</span> The stage game</a></li>
+<li><a class="nav-link" href="#finite-vs.-infinite-horizon"><span class="header-section-number">8.2.2</span> Finite vs. infinite horizon</a></li>
+<li><a class="nav-link" href="#trigger-strategies"><span class="header-section-number">8.2.3</span> Trigger strategies</a></li>
+<li><a class="nav-link" href="#the-grim-trigger-condition"><span class="header-section-number">8.2.4</span> The Grim Trigger condition</a></li>
+<li><a class="nav-link" href="#the-folk-theorem"><span class="header-section-number">8.2.5</span> The folk theorem</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#implementation-in-r-5"><span class="header-section-number">8.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#stage-game-setup-and-grim-trigger-analysis"><span class="header-section-number">8.3.1</span> Stage game setup and Grim Trigger analysis</a></li>
+<li><a class="nav-link" href="#payoff-comparison-across-discount-factors"><span class="header-section-number">8.3.2</span> Payoff comparison across discount factors</a></li>
+<li><a class="nav-link" href="#folk-theorem-payoff-region"><span class="header-section-number">8.3.3</span> Folk theorem payoff region</a></li>
+<li><a class="nav-link" href="#publication-figure-folk-theorem-payoff-region"><span class="header-section-number">8.3.4</span> Publication figure: folk theorem payoff region</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-6"><span class="header-section-number">8.4</span> Worked example</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#comparing-grim-trigger-and-tit-for-tat"><span class="header-section-number">8.4.1</span> Comparing Grim Trigger and Tit-for-Tat</a></li></ul>
+</li>
+<li><a class="nav-link" href="#extensions-6"><span class="header-section-number">8.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-6">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/07-repeated-games.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/07-repeated-games.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

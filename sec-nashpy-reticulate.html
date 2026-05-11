@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 14 nashpy via reticulate | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Accessing Python’s nashpy library from R via reticulate for Nash equilibrium computation — conceptual workflow, pure-R support enumeration as an equivalent alternative, and a comparative analysis...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 14 nashpy via reticulate | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-nashpy-reticulate.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Accessing Python’s nashpy library from R via reticulate for Nash equilibrium computation — conceptual workflow, pure-R support enumeration as an equivalent alternative, and a comparative analysis...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 14 nashpy via reticulate | Strategy in R">
+<meta name="twitter:description" content="Accessing Python’s nashpy library from R via reticulate for Nash equilibrium computation — conceptual workflow, pure-R support enumeration as an equivalent alternative, and a comparative analysis...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 14 nashpy via reticulate | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="active" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-nashpy-reticulate" class="section level1" number="14">
+<h1>
+<span class="header-section-number">14</span> nashpy via reticulate<a class="anchor" aria-label="anchor" href="#sec-nashpy-reticulate"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Accessing Python’s nashpy library from R via reticulate for Nash equilibrium computation — conceptual workflow, pure-R support enumeration as an equivalent alternative, and a comparative analysis across canonical games.</p>
+</blockquote>
+<div id="learning-objectives-12" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-12"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Describe the reticulate workflow for calling Python libraries from R and explain when cross-language interop is useful for game theory.</li>
+<li>Understand how nashpy’s support enumeration algorithm finds all Nash equilibria of a bimatrix game.</li>
+<li>Implement a pure-R support enumeration solver for general two-player games.</li>
+<li>Apply the solver to canonical games (Prisoner’s Dilemma, Battle of the Sexes, Matching Pennies) and compare equilibrium structures.</li>
+<li>Recognize the computational limits of support enumeration and when alternative algorithms are needed.</li>
+</ul>
+</div>
+<div id="motivation-12" class="section level2" number="14.1">
+<h2>
+<span class="header-section-number">14.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-12"><i class="fas fa-link"></i></a>
+</h2>
+<p>R’s ecosystem for non-cooperative game theory is modest. The solvers we built in <a href="sec-nash-equilibrium.html#sec-nash-equilibrium">4</a> handle 2x2 games, but many interesting strategic interactions are larger: a 3x3 Rock-Paper-Scissors variant, a 4x4 coordination game, or an asymmetric contest with different numbers of strategies per player. For these cases, we need general-purpose solvers.</p>
+<p>Python’s <strong>nashpy</strong> library, developed by Vince Knight, provides exactly this. It implements support enumeration, vertex enumeration, and the Lemke–Howson algorithm for two-player games of arbitrary size. The <strong>reticulate</strong> package lets R users call Python seamlessly, passing matrices back and forth and collecting results as R objects.</p>
+<p>However, depending on reticulate and a correctly configured Python environment introduces fragility. Python version conflicts, virtual environment management, and package installation issues can derail a workflow. For reproducible research and teaching, a pure-R fallback is valuable. This chapter describes both approaches: we show what the reticulate + nashpy workflow looks like so readers can adopt it when Python solvers are genuinely needed, and we implement a pure-R support enumeration solver that produces the same results. We then apply it to several canonical games and visualize how equilibrium structure varies across different strategic settings.</p>
+</div>
+<div id="theory-12" class="section level2" number="14.2">
+<h2>
+<span class="header-section-number">14.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-12"><i class="fas fa-link"></i></a>
+</h2>
+<div id="sec-reticulate-workflow" class="section level3" number="14.2.1">
+<h3>
+<span class="header-section-number">14.2.1</span> The reticulate bridge<a class="anchor" aria-label="anchor" href="#sec-reticulate-workflow"><i class="fas fa-link"></i></a>
+</h3>
+<p>The reticulate package converts R objects to Python objects and vice versa. The typical workflow for calling nashpy from R has four steps.</p>
+<p><strong>Step 1: Configure the Python environment.</strong></p>
+<pre><code><a href="https://rstudio.github.io/reticulate/">library(reticulate)
+install_miniconda()          # one-time setup
+py_install("nashpy")         # install nashpy into the conda environment</a></code></pre>
+<p>The <code>install_miniconda()</code> call downloads and installs a minimal Python distribution. The <code>py_install()</code> call installs nashpy (and its dependency NumPy) into that environment. This needs to happen only once per machine.</p>
+<p><strong>Step 2: Import nashpy and create a game.</strong></p>
+<pre><code>nashpy &lt;- import("nashpy")
+
+A &lt;- matrix(c(3, 0, 0, 2), nrow = 2, byrow = TRUE)
+B &lt;- matrix(c(2, 0, 0, 3), nrow = 2, byrow = TRUE)
+game &lt;- nashpy$Game(A, B)</code></pre>
+<p>The <code>import()</code> call loads the Python module into R’s session. R matrices are automatically converted to NumPy arrays when passed to Python functions.</p>
+<p><strong>Step 3: Compute equilibria.</strong></p>
+<pre><code>equilibria &lt;- iterate(game$support_enumeration())</code></pre>
+<p>The <code>support_enumeration()</code> method returns a Python generator. Reticulate’s <code>iterate()</code> converts it to an R list of equilibria, where each equilibrium is a pair of probability vectors.</p>
+<p><strong>Step 4: Collect results.</strong></p>
+<pre><code>for (eq in equilibria) {
+  cat("Player 1:", eq[[1]], "\n")
+  cat("Player 2:", eq[[2]], "\n\n")
+}</code></pre>
+<div class="rmdtip">
+<p><strong>When to use nashpy via reticulate</strong></p>
+<p>The Python bridge is most valuable when you need algorithms beyond simple support enumeration — vertex enumeration for degenerate games, the Lemke–Howson algorithm for games larger than 2x2, or integration with other Python scientific computing tools. For standard 2x2 analysis, the pure-R approach is simpler and has no external dependencies.</p>
+</div>
+</div>
+<div id="sec-support-enumeration-theory" class="section level3" number="14.2.2">
+<h3>
+<span class="header-section-number">14.2.2</span> Support enumeration<a class="anchor" aria-label="anchor" href="#sec-support-enumeration-theory"><i class="fas fa-link"></i></a>
+</h3>
+<p>The <strong>support</strong> of a mixed strategy <span class="math inline">\(\sigma_i\)</span> is the set of pure strategies played with positive probability:</p>
+<p><span class="math display" id="eq:support-def">\[\begin{equation}
+\text{supp}(\sigma_i) = \{a_i \in A_i : \sigma_i(a_i) &gt; 0\}
+\tag{14.1}
+\end{equation}\]</span></p>
+<p>The support enumeration algorithm exploits a key property of Nash equilibrium: at a mixed-strategy NE, every pure strategy in a player’s support must yield the same expected payoff. If one action in the support gave a strictly higher payoff, the player could shift probability toward it, contradicting the equilibrium condition.</p>
+<p>For a two-player game with payoff matrices <span class="math inline">\(A\)</span> (row player) and <span class="math inline">\(B\)</span> (column player), the algorithm proceeds:</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Enumerate support pairs.</strong> For each possible support <span class="math inline">\(S_1 \subseteq \{1, \ldots, m\}\)</span> for the row player and <span class="math inline">\(S_2 \subseteq \{1, \ldots, n\}\)</span> for the column player, with <span class="math inline">\(|S_1| = |S_2| = k\)</span>, consider the candidate.</p></li>
+<li><p><strong>Solve the indifference conditions.</strong> The column player’s mixture <span class="math inline">\(q\)</span> over <span class="math inline">\(S_2\)</span> must make the row player indifferent across <span class="math inline">\(S_1\)</span>:
+<span class="math display" id="eq:indifference-row">\[\begin{equation}
+(A q)_i = (A q)_j \quad \forall\, i, j \in S_1
+\tag{14.2}
+\end{equation}\]</span>
+Similarly, the row player’s mixture <span class="math inline">\(p\)</span> over <span class="math inline">\(S_1\)</span> must make the column player indifferent across <span class="math inline">\(S_2\)</span>.</p></li>
+<li><p><strong>Check feasibility.</strong> All probabilities must be non-negative and sum to 1. Actions outside the support must not be profitable deviations.</p></li>
+</ol>
+<div class="rmdnote">
+<p><strong>Definition: Non-degenerate game</strong></p>
+<p>A two-player game is <strong>non-degenerate</strong> if no mixed strategy has more best responses than the size of its support. For non-degenerate games, support enumeration finds all Nash equilibria.</p>
+</div>
+</div>
+<div id="complexity-considerations" class="section level3" number="14.2.3">
+<h3>
+<span class="header-section-number">14.2.3</span> Complexity considerations<a class="anchor" aria-label="anchor" href="#complexity-considerations"><i class="fas fa-link"></i></a>
+</h3>
+<p>Support enumeration must consider <span class="math inline">\(\sum_{k=1}^{\min(m,n)} \binom{m}{k}\binom{n}{k}\)</span> support pairs. For a <span class="math inline">\(3 \times 3\)</span> game this is 13 pairs — manageable. For a <span class="math inline">\(10 \times 10\)</span> game, the count exceeds 184,000. The algorithm is exponential in the number of strategies, reflecting the PPAD-completeness of Nash equilibrium computation <span class="citation">(<a href="references.html#ref-shoham2009">Shoham &amp; Leyton-Brown, 2009</a>)</span>. For games up to roughly <span class="math inline">\(8 \times 8\)</span>, support enumeration is practical; beyond that, the Lemke–Howson algorithm or heuristics like fictitious play are preferable (see <a href="sec-custom-solvers.html#sec-custom-solvers">15</a>).</p>
+</div>
+</div>
+<div id="sec-nashpy-implementation" class="section level2" number="14.3">
+<h2>
+<span class="header-section-number">14.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-nashpy-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<p>We implement support enumeration in pure R, handling games of arbitrary size. This mirrors nashpy’s core algorithm but runs natively without Python.</p>
+<div id="general-support-enumeration-solver" class="section level3" number="14.3.1">
+<h3>
+<span class="header-section-number">14.3.1</span> General support enumeration solver<a class="anchor" aria-label="anchor" href="#general-support-enumeration-solver"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb338"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">support_enumeration_general</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span>, <span class="va">tol</span> <span class="op">=</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>  <span class="co"># row player strategies</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>  <span class="co"># column player strategies</span></span>
+<span>  <span class="va">equilibria</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Enumerate support sizes k from 1 to min(m, n)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">m</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">row_supports</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/combn.html">combn</a></span><span class="op">(</span><span class="va">m</span>, <span class="va">k</span>, simplify <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>    <span class="va">col_supports</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/combn.html">combn</a></span><span class="op">(</span><span class="va">n</span>, <span class="va">k</span>, simplify <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">S1</span> <span class="kw">in</span> <span class="va">row_supports</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">for</span> <span class="op">(</span><span class="va">S2</span> <span class="kw">in</span> <span class="va">col_supports</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">eq</span> <span class="op">&lt;-</span> <span class="fu">try_support_pair</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span>, <span class="va">S1</span>, <span class="va">S2</span>, <span class="va">tol</span><span class="op">)</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">eq</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>          <span class="va">equilibria</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">equilibria</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">eq</span><span class="op">)</span><span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">equilibria</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">try_support_pair</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span>, <span class="va">B</span>, <span class="va">S1</span>, <span class="va">S2</span>, <span class="va">tol</span> <span class="op">=</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">k</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">S1</span><span class="op">)</span></span>
+<span>  <span class="va">A_sub</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="va">S1</span>, <span class="va">S2</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span>  <span class="va">B_sub</span> <span class="op">&lt;-</span> <span class="va">B</span><span class="op">[</span><span class="va">S1</span>, <span class="va">S2</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span></span>
+<span>  <span class="co"># Solve for q: column player mixture making row player indifferent</span></span>
+<span>  <span class="va">q</span> <span class="op">&lt;-</span> <span class="fu">solve_indifference</span><span class="op">(</span><span class="va">A_sub</span>, <span class="va">tol</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Solve for p: row player mixture making column player indifferent</span></span>
+<span>  <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">solve_indifference</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">B_sub</span><span class="op">)</span>, <span class="va">tol</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># Build full probability vectors</span></span>
+<span>  <span class="va">p_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">q_full</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">p_full</span><span class="op">[</span><span class="va">S1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">p</span></span>
+<span>  <span class="va">q_full</span><span class="op">[</span><span class="va">S2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">q</span></span>
+<span></span>
+<span>  <span class="co"># Check: no outside action should be a profitable deviation</span></span>
+<span>  <span class="va">row_payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">A</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">q_full</span><span class="op">)</span></span>
+<span>  <span class="va">eq_payoff_row</span> <span class="op">&lt;-</span> <span class="va">row_payoffs</span><span class="op">[</span><span class="va">S1</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">row_payoffs</span> <span class="op">&gt;</span> <span class="va">eq_payoff_row</span> <span class="op">+</span> <span class="va">tol</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">col_payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">B</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html">%*%</a></span> <span class="va">p_full</span><span class="op">)</span></span>
+<span>  <span class="va">eq_payoff_col</span> <span class="op">&lt;-</span> <span class="va">col_payoffs</span><span class="op">[</span><span class="va">S2</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">col_payoffs</span> <span class="op">&gt;</span> <span class="va">eq_payoff_col</span> <span class="op">+</span> <span class="va">tol</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>p <span class="op">=</span> <span class="va">p_full</span>, q <span class="op">=</span> <span class="va">q_full</span>,</span>
+<span>       payoff_1 <span class="op">=</span> <span class="va">eq_payoff_row</span>, payoff_2 <span class="op">=</span> <span class="va">eq_payoff_col</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">solve_indifference</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">M</span>, <span class="va">tol</span> <span class="op">=</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">k</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">M</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">k</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>  <span class="co"># singleton support</span></span>
+<span></span>
+<span>  <span class="co"># System: (M[1,] - M[i,]) * q = 0 for i=2..k, plus sum(q) = 1</span></span>
+<span>  <span class="va">Amat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">k</span>, ncol <span class="op">=</span> <span class="va">k</span><span class="op">)</span></span>
+<span>  <span class="va">bvec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">k</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="va">k</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">Amat</span><span class="op">[</span><span class="va">i</span> <span class="op">-</span> <span class="fl">1</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="va">M</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span> <span class="op">-</span> <span class="va">M</span><span class="op">[</span><span class="va">i</span>, <span class="op">]</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">Amat</span><span class="op">[</span><span class="va">k</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">k</span><span class="op">)</span></span>
+<span>  <span class="va">bvec</span><span class="op">[</span><span class="va">k</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html">tryCatch</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/solve.html">solve</a></span><span class="op">(</span><span class="va">Amat</span>, <span class="va">bvec</span><span class="op">)</span>, error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">result</span> <span class="op">&lt;</span> <span class="op">-</span><span class="va">tol</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span><span class="op">(</span><span class="va">result</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="va">result</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">result</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="testing-on-the-three-canonical-2x2-games" class="section level3" number="14.3.2">
+<h3>
+<span class="header-section-number">14.3.2</span> Testing on the three canonical 2x2 games<a class="anchor" aria-label="anchor" href="#testing-on-the-three-canonical-2x2-games"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb339"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># --- Prisoner's Dilemma ---</span></span>
+<span><span class="va">A_pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"--- Prisoner's Dilemma ---\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; --- Prisoner's Dilemma ---</code></pre>
+<div class="sourceCode" id="cb341"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Player 1 payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Player 1 payoffs:</code></pre>
+<div class="sourceCode" id="cb343"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A_pd</span></span></code></pre></div>
+<pre><code>#&gt;   C D
+#&gt; C 3 0
+#&gt; D 5 1</code></pre>
+<div class="sourceCode" id="cb345"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPlayer 2 payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Player 2 payoffs:</code></pre>
+<div class="sourceCode" id="cb347"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">B_pd</span></span></code></pre></div>
+<pre><code>#&gt;   C D
+#&gt; C 3 5
+#&gt; D 0 1</code></pre>
+<div class="sourceCode" id="cb349"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pd_eq</span> <span class="op">&lt;-</span> <span class="fu">support_enumeration_general</span><span class="op">(</span><span class="va">A_pd</span>, <span class="va">B_pd</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nEquilibria found:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">pd_eq</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Equilibria found: 1</code></pre>
+<div class="sourceCode" id="cb351"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">pd_eq</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">p</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"  q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">q</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>      <span class="st">"  payoffs = ("</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">","</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">payoff_2</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">")\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   p = 0 1   q = 0 1   payoffs = ( 1 , 1 )</code></pre>
+<p>The Prisoner’s Dilemma has a unique NE at (D, D) with payoffs (1, 1). Defection is a dominant strategy, so no mixed equilibrium exists.</p>
+<div class="sourceCode" id="cb353"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># --- Battle of the Sexes ---</span></span>
+<span><span class="va">A_bos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span>,</span>
+<span>                                <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_bos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">3</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span>,</span>
+<span>                                <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Opera"</span>, <span class="st">"Football"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"--- Battle of the Sexes ---\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; --- Battle of the Sexes ---</code></pre>
+<div class="sourceCode" id="cb355"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bos_eq</span> <span class="op">&lt;-</span> <span class="fu">support_enumeration_general</span><span class="op">(</span><span class="va">A_bos</span>, <span class="va">B_bos</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Equilibria found:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">bos_eq</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Equilibria found: 3</code></pre>
+<div class="sourceCode" id="cb357"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">bos_eq</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">is_pure</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">p</span> <span class="op">&gt;</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">q</span> <span class="op">&gt;</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span></span>
+<span>  <span class="va">label</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">is_pure</span><span class="op">)</span> <span class="st">"Pure"</span> <span class="kw">else</span> <span class="st">"Mixed"</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  [{label}] p = ({paste(round(eq$p, 3), collapse=', ')})"</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"q = ({paste(round(eq$q, 3), collapse=', ')})"</span><span class="op">)</span>,</span>
+<span>      <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"payoffs = ({round(eq$payoff_1, 2)}, {round(eq$payoff_2, 2)})"</span><span class="op">)</span>,</span>
+<span>      <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   [Pure] p = (1, 0) q = (1, 0) payoffs = (3, 2) 
+#&gt;   [Pure] p = (0, 1) q = (0, 1) payoffs = (2, 3) 
+#&gt;   [Mixed] p = (0.6, 0.4) q = (0.4, 0.6) payoffs = (1.2, 1.2)</code></pre>
+<p>Battle of the Sexes has three NE: two pure equilibria where players coordinate (at (Opera, Opera) and (Football, Football)) and one mixed equilibrium. The mixed NE yields lower payoffs than either pure NE because randomization creates miscoordination risk.</p>
+<div class="sourceCode" id="cb359"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># --- Matching Pennies ---</span></span>
+<span><span class="va">A_mp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Heads"</span>, <span class="st">"Tails"</span><span class="op">)</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Heads"</span>, <span class="st">"Tails"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_mp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Heads"</span>, <span class="st">"Tails"</span><span class="op">)</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Heads"</span>, <span class="st">"Tails"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"--- Matching Pennies ---\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; --- Matching Pennies ---</code></pre>
+<div class="sourceCode" id="cb361"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mp_eq</span> <span class="op">&lt;-</span> <span class="fu">support_enumeration_general</span><span class="op">(</span><span class="va">A_mp</span>, <span class="va">B_mp</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Equilibria found:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">mp_eq</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Equilibria found: 1</code></pre>
+<div class="sourceCode" id="cb363"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">mp_eq</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">p</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"  q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">q</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>      <span class="st">"  payoffs = ("</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">","</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">payoff_2</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">")\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   p = 0.5 0.5   q = 0.5 0.5   payoffs = ( 0 , 0 )</code></pre>
+<p>Matching Pennies is a zero-sum game with no pure NE. The unique equilibrium requires both players to randomize 50-50, yielding expected payoffs of (0, 0). Any deviation from uniform mixing would be exploited by the opponent.</p>
+</div>
+<div id="cross-validation-with-the-2x2-solver" class="section level3" number="14.3.3">
+<h3>
+<span class="header-section-number">14.3.3</span> Cross-validation with the 2x2 solver<a class="anchor" aria-label="anchor" href="#cross-validation-with-the-2x2-solver"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb365"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Verify that the general solver matches the 2x2 solver from solvers.R</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Cross-validation against R/solvers.R:\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Cross-validation against R/solvers.R:</code></pre>
+<div class="sourceCode" id="cb367"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">games_2x2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Prisoner's Dilemma"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_pd</span>, B <span class="op">=</span> <span class="va">B_pd</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Battle of the Sexes"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_bos</span>, B <span class="op">=</span> <span class="va">B_bos</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Matching Pennies"</span>    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_mp</span>, B <span class="op">=</span> <span class="va">B_mp</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">name</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">games_2x2</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">g</span> <span class="op">&lt;-</span> <span class="va">games_2x2</span><span class="op">[[</span><span class="va">name</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">eq_basic</span> <span class="op">&lt;-</span> <span class="fu">support_enumeration</span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">A</span>, <span class="va">g</span><span class="op">$</span><span class="va">B</span><span class="op">)</span></span>
+<span>  <span class="va">eq_gen</span>   <span class="op">&lt;-</span> <span class="fu">support_enumeration_general</span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">A</span>, <span class="va">g</span><span class="op">$</span><span class="va">B</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">n_basic</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">eq_basic</span><span class="op">$</span><span class="va">pure</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">eq_basic</span><span class="op">$</span><span class="va">mixed</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">n_gen</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">eq_gen</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"{name}: basic solver = {n_basic} NE, general solver = {n_gen} NE"</span><span class="op">)</span>,</span>
+<span>      <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt; Prisoner's Dilemma: basic solver = 1 NE, general solver = 1 NE 
+#&gt; Battle of the Sexes: basic solver = 3 NE, general solver = 3 NE 
+#&gt; Matching Pennies: basic solver = 1 NE, general solver = 1 NE</code></pre>
+</div>
+</div>
+<div id="sec-nashpy-worked-example" class="section level2" number="14.4">
+<h2>
+<span class="header-section-number">14.4</span> Worked example<a class="anchor" aria-label="anchor" href="#sec-nashpy-worked-example"><i class="fas fa-link"></i></a>
+</h2>
+<p>We apply the general solver to the <strong>Hawk-Dove</strong> game (also known as Chicken), then extend it to a 3x3 variant that the 2x2 solver from <code>R/solvers.R</code> cannot handle.</p>
+<div id="the-2x2-hawk-dove-game" class="section level3" number="14.4.1">
+<h3>
+<span class="header-section-number">14.4.1</span> The 2x2 Hawk-Dove game<a class="anchor" aria-label="anchor" href="#the-2x2-hawk-dove-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>Two animals contest a resource worth <span class="math inline">\(V = 4\)</span>. Each plays Hawk (aggressive) or Dove (passive). If both play Hawk, they fight and each receives <span class="math inline">\((V - C)/2\)</span> where the cost of fighting is <span class="math inline">\(C = 6\)</span>. If one plays Hawk and the other Dove, the Hawk takes the full resource. If both play Dove, they share equally.</p>
+<div class="sourceCode" id="cb369"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fl">4</span>; <span class="va">C</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
+<span></span>
+<span><span class="va">A_hd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="va">V</span><span class="op">-</span><span class="va">C</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>, <span class="va">V</span>, <span class="fl">0</span>, <span class="va">V</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_hd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html">t</a></span><span class="op">(</span><span class="va">A_hd</span><span class="op">)</span>  <span class="co"># symmetric game</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dimnames.html">dimnames</a></span><span class="op">(</span><span class="va">B_hd</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dimnames.html">dimnames</a></span><span class="op">(</span><span class="va">A_hd</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Hawk-Dove Game (V=4, C=6):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Hawk-Dove Game (V=4, C=6):</code></pre>
+<div class="sourceCode" id="cb371"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Player 1 payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Player 1 payoffs:</code></pre>
+<div class="sourceCode" id="cb373"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A_hd</span></span></code></pre></div>
+<pre><code>#&gt;      Hawk Dove
+#&gt; Hawk   -1    4
+#&gt; Dove    0    2</code></pre>
+<div class="sourceCode" id="cb375"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nPlayer 2 payoffs:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Player 2 payoffs:</code></pre>
+<div class="sourceCode" id="cb377"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">B_hd</span></span></code></pre></div>
+<pre><code>#&gt;      Hawk Dove
+#&gt; Hawk   -1    0
+#&gt; Dove    4    2</code></pre>
+<div class="sourceCode" id="cb379"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hd_eq</span> <span class="op">&lt;-</span> <span class="fu">support_enumeration_general</span><span class="op">(</span><span class="va">A_hd</span>, <span class="va">B_hd</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nEquilibria found:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">hd_eq</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Equilibria found: 3</code></pre>
+<div class="sourceCode" id="cb381"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">hd_eq</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">is_pure</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">p</span> <span class="op">&gt;</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">q</span> <span class="op">&gt;</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span></span>
+<span>  <span class="va">label</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">is_pure</span><span class="op">)</span> <span class="st">"Pure"</span> <span class="kw">else</span> <span class="st">"Mixed"</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html">glue</a></span><span class="op">(</span><span class="st">"  [{label}] p(Hawk) = {round(eq$p[1], 4)}, "</span>,</span>
+<span>           <span class="st">"q(Hawk) = {round(eq$q[1], 4)}, "</span>,</span>
+<span>           <span class="st">"payoffs = ({round(eq$payoff_1, 3)}, {round(eq$payoff_2, 3)})"</span><span class="op">)</span>,</span>
+<span>      <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   [Pure] p(Hawk) = 1, q(Hawk) = 0, payoffs = (4, 0) 
+#&gt;   [Pure] p(Hawk) = 0, q(Hawk) = 1, payoffs = (0, 4) 
+#&gt;   [Mixed] p(Hawk) = 0.6667, q(Hawk) = 0.6667, payoffs = (0.667, 0.667)</code></pre>
+<p>The Hawk-Dove game has two pure NE (one plays Hawk, the other Dove) and one mixed NE where each player plays Hawk with probability <span class="math inline">\(V/C = 2/3\)</span>. The mixed equilibrium probability matches the evolutionary stable strategy from <a href="#sec-evolutionary-stable-strategies"><strong>??</strong></a>.</p>
+</div>
+<div id="a-3x3-extension-rock-paper-scissors" class="section level3" number="14.4.2">
+<h3>
+<span class="header-section-number">14.4.2</span> A 3x3 extension: Rock-Paper-Scissors<a class="anchor" aria-label="anchor" href="#a-3x3-extension-rock-paper-scissors"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb383"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Standard Rock-Paper-Scissors (zero-sum)</span></span>
+<span><span class="va">A_rps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>                nrow <span class="op">=</span> <span class="fl">3</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span><span class="op">)</span>,</span>
+<span>                                <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">B_rps</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="va">A_rps</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dimnames.html">dimnames</a></span><span class="op">(</span><span class="va">B_rps</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dimnames.html">dimnames</a></span><span class="op">(</span><span class="va">A_rps</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Rock-Paper-Scissors:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Rock-Paper-Scissors:</code></pre>
+<div class="sourceCode" id="cb385"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A_rps</span></span></code></pre></div>
+<pre><code>#&gt;          Rock Paper Scissors
+#&gt; Rock        0    -1        1
+#&gt; Paper       1     0       -1
+#&gt; Scissors   -1     1        0</code></pre>
+<div class="sourceCode" id="cb387"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rps_eq</span> <span class="op">&lt;-</span> <span class="fu">support_enumeration_general</span><span class="op">(</span><span class="va">A_rps</span>, <span class="va">B_rps</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nEquilibria found:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">rps_eq</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Equilibria found: 1</code></pre>
+<div class="sourceCode" id="cb389"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">rps_eq</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  p ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">p</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  q ="</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">q</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  payoffs = ("</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">payoff_1</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">","</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">payoff_2</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">")\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   p = 0.333 0.333 0.333 
+#&gt;   q = 0.333 0.333 0.333 
+#&gt;   payoffs = ( 0 , 0 )</code></pre>
+<p>The unique NE of standard RPS is the uniform mixture <span class="math inline">\((1/3, 1/3, 1/3)\)</span> for both players, with expected payoffs of zero. This is a case where the 2x2 solver from <code>R/solvers.R</code> would fail entirely — the general solver handles it correctly.</p>
+</div>
+<div id="sec-equilibria-comparison" class="section level3" number="14.4.3">
+<h3>
+<span class="header-section-number">14.4.3</span> Comparative visualization<a class="anchor" aria-label="anchor" href="#sec-equilibria-comparison"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb391"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Collect all equilibria across games</span></span>
+<span><span class="va">all_games</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Prisoner's Dilemma"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_pd</span>, B <span class="op">=</span> <span class="va">B_pd</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Battle of Sexes"</span>    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_bos</span>, B <span class="op">=</span> <span class="va">B_bos</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Matching Pennies"</span>   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_mp</span>, B <span class="op">=</span> <span class="va">B_mp</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Hawk-Dove"</span>          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_hd</span>, B <span class="op">=</span> <span class="va">B_hd</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Rock-Paper-Scissors"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A_rps</span>, B <span class="op">=</span> <span class="va">B_rps</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">eq_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">game_name</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">all_games</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">g</span> <span class="op">&lt;-</span> <span class="va">all_games</span><span class="op">[[</span><span class="va">game_name</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">eqs</span> <span class="op">&lt;-</span> <span class="fu">support_enumeration_general</span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">A</span>, <span class="va">g</span><span class="op">$</span><span class="va">B</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">eq</span> <span class="kw">in</span> <span class="va">eqs</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">is_pure</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">p</span> <span class="op">&gt;</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eq</span><span class="op">$</span><span class="va">q</span> <span class="op">&gt;</span> <span class="fl">1e-10</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span></span>
+<span>    <span class="va">eq_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">eq_rows</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>      game <span class="op">=</span> <span class="va">game_name</span>,</span>
+<span>      type <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">is_pure</span><span class="op">)</span> <span class="st">"Pure NE"</span> <span class="kw">else</span> <span class="st">"Mixed NE"</span>,</span>
+<span>      payoff_1 <span class="op">=</span> <span class="va">eq</span><span class="op">$</span><span class="va">payoff_1</span>,</span>
+<span>      payoff_2 <span class="op">=</span> <span class="va">eq</span><span class="op">$</span><span class="va">payoff_2</span></span>
+<span>    <span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">eq_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">eq_rows</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_compare</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">eq_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">payoff_1</span>, y <span class="op">=</span> <span class="va">payoff_2</span>,</span>
+<span>                               colour <span class="op">=</span> <span class="va">game</span>, shape <span class="op">=</span> <span class="va">type</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3.5</span>, stroke <span class="op">=</span> <span class="fl">1.2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span></span>
+<span>      <span class="st">"Prisoner's Dilemma"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>      <span class="st">"Battle of Sexes"</span>    <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>      <span class="st">"Matching Pennies"</span>   <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>,</span>
+<span>      <span class="st">"Hawk-Dove"</span>          <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>,</span>
+<span>      <span class="st">"Rock-Paper-Scissors"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"Game"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_shape_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Pure NE"</span> <span class="op">=</span> <span class="fl">16</span>, <span class="st">"Mixed NE"</span> <span class="op">=</span> <span class="fl">17</span><span class="op">)</span>,</span>
+<span>                     name <span class="op">=</span> <span class="st">"Type"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey60"</span>,</span>
+<span>             linewidth <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey60"</span>,</span>
+<span>             linewidth <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_abline</a></span><span class="op">(</span>intercept <span class="op">=</span> <span class="fl">0</span>, slope <span class="op">=</span> <span class="fl">1</span>, linetype <span class="op">=</span> <span class="st">"dotted"</span>,</span>
+<span>              colour <span class="op">=</span> <span class="st">"grey70"</span>, linewidth <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Player 1 equilibrium payoff"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Player 2 equilibrium payoff"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Nash Equilibrium Payoffs Across Canonical Games"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_compare</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:equilibria-comparison"></span>
+<img src="13-nashpy-via-reticulate_files/figure-html/equilibria-comparison-1.png" alt="Nash equilibrium payoffs across five canonical games. Each point represents one equilibrium, with colour distinguishing games and shape distinguishing pure from mixed equilibria. Mixed equilibria consistently yield lower payoffs than pure equilibria within the same game, illustrating the cost of miscoordination under randomization." width="80%"><p class="caption">
+Figure 14.1: Nash equilibrium payoffs across five canonical games. Each point represents one equilibrium, with colour distinguishing games and shape distinguishing pure from mixed equilibria. Mixed equilibria consistently yield lower payoffs than pure equilibria within the same game, illustrating the cost of miscoordination under randomization.
+</p>
+</div>
+<div class="sourceCode" id="cb392"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_compare</span>, <span class="st">"equilibria-comparison"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p>Several patterns emerge from <a href="sec-nashpy-reticulate.html#fig:equilibria-comparison">14.1</a>:</p>
+<ul>
+<li>
+<strong>Dominance yields efficiency loss.</strong> The Prisoner’s Dilemma equilibrium at (1, 1) is Pareto-dominated by mutual cooperation at (3, 3), but dominant-strategy logic drives both players to defect.</li>
+<li>
+<strong>Coordination creates multiplicity.</strong> Battle of the Sexes has two efficient pure NE on opposite sides of the 45-degree line and one inefficient mixed NE near the origin.</li>
+<li>
+<strong>Zero-sum games force mixing.</strong> Both Matching Pennies and Rock-Paper-Scissors have unique mixed equilibria at (0, 0), reflecting the impossibility of exploiting a fully randomizing opponent.</li>
+<li>
+<strong>Hawk-Dove straddles both patterns.</strong> Its two pure NE are asymmetric (one player dominates), while the mixed NE at approximately (0.67, 0.67) is symmetric but inferior.</li>
+</ul>
+</div>
+</div>
+<div id="extensions-12" class="section level2" number="14.5">
+<h2>
+<span class="header-section-number">14.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-12"><i class="fas fa-link"></i></a>
+</h2>
+<p>The support enumeration solver and the reticulate pattern described here connect to several directions explored elsewhere in the book:</p>
+<ul>
+<li>
+<strong>Nash equilibrium</strong> (<a href="sec-nash-equilibrium.html#sec-nash-equilibrium">4</a>) provides the theoretical foundation. Nash’s existence theorem guarantees that support enumeration will always find at least one equilibrium for any finite game.</li>
+<li>
+<strong>Mixed strategies</strong> (<a href="sec-mixed-strategies.html#sec-mixed-strategies">5</a>) develops the indifference principle that the algorithm operationalizes.</li>
+<li>
+<strong>Custom solvers</strong> (<a href="sec-custom-solvers.html#sec-custom-solvers">15</a>) extends the toolkit with the Lemke–Howson algorithm and fictitious play, which are more efficient for larger games.</li>
+<li>
+<strong>The gtree package</strong> (<a href="sec-gtree-package.html#sec-gtree-package">13</a>) handles extensive-form games; converting an extensive form to normal form and then applying support enumeration is a standard workflow.</li>
+<li>
+<strong>Evolutionary stable strategies</strong> (<a href="#sec-evolutionary-stable-strategies"><strong>??</strong></a>) gives a population-dynamics interpretation of the Hawk-Dove mixed equilibrium.</li>
+</ul>
+<p>The reticulate pattern generalizes beyond nashpy. Any Python game theory library — Gambit’s Python bindings, the Axelrod library for tournament simulations, or custom solvers built with NumPy — can be called from R using the same <code>import()</code> and method-call pattern.</p>
+</div>
+<div id="exercises-12" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-12"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Stag Hunt equilibria.</strong> Apply <code>support_enumeration_general()</code> to the Stag Hunt game with payoffs: both hunt Stag yields (4, 4), both hunt Hare yields (3, 3), one hunts Stag while the other hunts Hare yields (0, 3) for the Stag hunter. Find all Nash equilibria. Compute the expected payoff at the mixed NE and explain why it is Pareto-dominated by (Stag, Stag).</p></li>
+<li><p><strong>Asymmetric Matching Pennies.</strong> Modify Matching Pennies so that Player 1 receives 2 (instead of 1) when both choose Heads, with all other payoffs unchanged. Use the general solver to find the new mixed NE. How do the equilibrium mixing probabilities change? Provide an intuitive explanation for the direction of the shift.</p></li>
+<li><p><strong>Three-strategy asymmetric game.</strong> Consider a game where Player 1 has strategies <span class="math inline">\(\{T, M, B\}\)</span> and Player 2 has strategies <span class="math inline">\(\{L, R\}\)</span>, with <span class="math inline">\(A = \begin{pmatrix} 3 &amp; 0 \\ 0 &amp; 3 \\ 1 &amp; 1 \end{pmatrix}\)</span> and <span class="math inline">\(B = \begin{pmatrix} 3 &amp; 0 \\ 0 &amp; 3 \\ 2 &amp; 2 \end{pmatrix}\)</span>. Find all NE. Explain why the pure-R <code>support_enumeration()</code> from <code>R/solvers.R</code> cannot handle this game but <code>support_enumeration_general()</code> can. Why does no equilibrium assign positive probability to Player 1’s strategy <span class="math inline">\(B\)</span>?</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></div>
+<div class="next"><a href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-nashpy-reticulate"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="nav-link" href="#learning-objectives-12">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-12"><span class="header-section-number">14.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-12"><span class="header-section-number">14.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-reticulate-workflow"><span class="header-section-number">14.2.1</span> The reticulate bridge</a></li>
+<li><a class="nav-link" href="#sec-support-enumeration-theory"><span class="header-section-number">14.2.2</span> Support enumeration</a></li>
+<li><a class="nav-link" href="#complexity-considerations"><span class="header-section-number">14.2.3</span> Complexity considerations</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-nashpy-implementation"><span class="header-section-number">14.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#general-support-enumeration-solver"><span class="header-section-number">14.3.1</span> General support enumeration solver</a></li>
+<li><a class="nav-link" href="#testing-on-the-three-canonical-2x2-games"><span class="header-section-number">14.3.2</span> Testing on the three canonical 2x2 games</a></li>
+<li><a class="nav-link" href="#cross-validation-with-the-2x2-solver"><span class="header-section-number">14.3.3</span> Cross-validation with the 2x2 solver</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-nashpy-worked-example"><span class="header-section-number">14.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-2x2-hawk-dove-game"><span class="header-section-number">14.4.1</span> The 2x2 Hawk-Dove game</a></li>
+<li><a class="nav-link" href="#a-3x3-extension-rock-paper-scissors"><span class="header-section-number">14.4.2</span> A 3x3 extension: Rock-Paper-Scissors</a></li>
+<li><a class="nav-link" href="#sec-equilibria-comparison"><span class="header-section-number">14.4.3</span> Comparative visualization</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#extensions-12"><span class="header-section-number">14.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-12">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/13-nashpy-via-reticulate.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/13-nashpy-via-reticulate.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

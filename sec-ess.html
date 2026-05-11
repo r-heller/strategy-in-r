@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 21 Evolutionarily Stable Strategies | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Formalizing evolutionary stability: ESS conditions, computational verification for symmetric games, invasion dynamics, and the Hawk-Dove-Retaliator game.  Learning objectives State the formal ESS...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 21 Evolutionarily Stable Strategies | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-ess.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Formalizing evolutionary stability: ESS conditions, computational verification for symmetric games, invasion dynamics, and the Hawk-Dove-Retaliator game.  Learning objectives State the formal ESS...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 21 Evolutionarily Stable Strategies | Strategy in R">
+<meta name="twitter:description" content="Formalizing evolutionary stability: ESS conditions, computational verification for symmetric games, invasion dynamics, and the Hawk-Dove-Retaliator game.  Learning objectives State the formal ESS...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 21 Evolutionarily Stable Strategies | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="active" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-ess" class="section level1" number="21">
+<h1>
+<span class="header-section-number">21</span> Evolutionarily Stable Strategies<a class="anchor" aria-label="anchor" href="#sec-ess"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Formalizing evolutionary stability: ESS conditions, computational verification for symmetric games, invasion dynamics, and the Hawk-Dove-Retaliator game.</p>
+</blockquote>
+<div id="learning-objectives-19" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-19"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>State the formal ESS conditions and explain why they strengthen Nash equilibrium.</li>
+<li>Implement a computational check for ESS in arbitrary symmetric games.</li>
+<li>Construct invasion fitness diagrams that show whether a mutant can invade.</li>
+<li>Analyze the Hawk-Dove-Retaliator game to identify all evolutionarily stable strategies.</li>
+</ul>
+</div>
+<div id="motivation-19" class="section level2" number="21.1">
+<h2>
+<span class="header-section-number">21.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-19"><i class="fas fa-link"></i></a>
+</h2>
+<p>Natural selection does not optimize — it filters. A population playing strategy <span class="math inline">\(\sigma^*\)</span> is stable not because <span class="math inline">\(\sigma^*\)</span> is “best” in some absolute sense, but because no rare mutant strategy can gain a foothold. This idea, formalized by <span class="citation">Maynard Smith (<a href="references.html#ref-maynardsmith1982">1982</a>)</span> as the <strong>evolutionarily stable strategy</strong> (ESS), gives us a refinement of Nash equilibrium with real predictive power: if a population reaches an ESS, small perturbations cannot dislodge it.</p>
+<p>The concept matters beyond biology. Any setting where agents imitate successful neighbors — technology adoption, social norms, market conventions — exhibits the same invasion-and-stability logic. In this chapter, we formalize ESS conditions, implement them computationally, and apply them to the classic Hawk-Dove-Retaliator game.</p>
+</div>
+<div id="theory-19" class="section level2" number="21.2">
+<h2>
+<span class="header-section-number">21.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-19"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-ess-definition" class="section level3" number="21.2.1">
+<h3>
+<span class="header-section-number">21.2.1</span> The ESS definition<a class="anchor" aria-label="anchor" href="#the-ess-definition"><i class="fas fa-link"></i></a>
+</h3>
+<p>Consider a symmetric two-player game with payoff function <span class="math inline">\(u(\sigma_i, \sigma_j)\)</span> giving the payoff to a player using strategy <span class="math inline">\(\sigma_i\)</span> against an opponent using <span class="math inline">\(\sigma_j\)</span>. A strategy <span class="math inline">\(\sigma^*\)</span> is an <strong>evolutionarily stable strategy</strong> if for every mutant strategy <span class="math inline">\(\sigma \neq \sigma^*\)</span>, at least one of the following holds:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Strict Nash condition</strong>: <span class="math inline">\(u(\sigma^*, \sigma^*) &gt; u(\sigma, \sigma^*)\)</span>
+</li>
+<li>
+<strong>Stability condition</strong>: <span class="math inline">\(u(\sigma^*, \sigma^*) = u(\sigma, \sigma^*)\)</span> <strong>and</strong> <span class="math inline">\(u(\sigma^*, \sigma) &gt; u(\sigma, \sigma)\)</span>
+</li>
+</ol>
+<p>The first condition says the incumbent does strictly better against itself than any mutant does against the incumbent. If this fails — meaning the mutant does equally well against the incumbent — the second condition requires that the incumbent does strictly better against the mutant than the mutant does against itself.</p>
+</div>
+<div id="relationship-to-nash-equilibrium" class="section level3" number="21.2.2">
+<h3>
+<span class="header-section-number">21.2.2</span> Relationship to Nash equilibrium<a class="anchor" aria-label="anchor" href="#relationship-to-nash-equilibrium"><i class="fas fa-link"></i></a>
+</h3>
+<p>Every ESS is a symmetric Nash equilibrium, but not every Nash equilibrium is an ESS. A symmetric Nash equilibrium <span class="math inline">\((\sigma^*, \sigma^*)\)</span> satisfies <span class="math inline">\(u(\sigma^*, \sigma^*) \geq u(\sigma, \sigma^*)\)</span> for all <span class="math inline">\(\sigma\)</span>. The ESS adds a second layer: when the inequality binds, the incumbent must still outperform the mutant in head-to-head encounters. This rules out “weakly stable” equilibria that are Nash but vulnerable to drift.</p>
+</div>
+<div id="invasion-dynamics" class="section level3" number="21.2.3">
+<h3>
+<span class="header-section-number">21.2.3</span> Invasion dynamics<a class="anchor" aria-label="anchor" href="#invasion-dynamics"><i class="fas fa-link"></i></a>
+</h3>
+<p>When a small fraction <span class="math inline">\(\epsilon\)</span> of mutants enters a population of incumbents, the expected payoff to a mutant is:</p>
+<p><span class="math display">\[W_{\text{mutant}}(\epsilon) = (1 - \epsilon)\, u(\sigma, \sigma^*) + \epsilon\, u(\sigma, \sigma)\]</span></p>
+<p>and the expected payoff to an incumbent is:</p>
+<p><span class="math display">\[W_{\text{incumbent}}(\epsilon) = (1 - \epsilon)\, u(\sigma^*, \sigma^*) + \epsilon\, u(\sigma^*, \sigma)\]</span></p>
+<p>The strategy <span class="math inline">\(\sigma^*\)</span> resists invasion if <span class="math inline">\(W_{\text{incumbent}}(\epsilon) &gt; W_{\text{mutant}}(\epsilon)\)</span> for all sufficiently small <span class="math inline">\(\epsilon &gt; 0\)</span>. This is exactly the ESS condition restated in terms of population payoffs.</p>
+</div>
+</div>
+<div id="sec-ess-implementation" class="section level2" number="21.3">
+<h2>
+<span class="header-section-number">21.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-ess-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="checking-ess-conditions-for-a-symmetric-game" class="section level3" number="21.3.1">
+<h3>
+<span class="header-section-number">21.3.1</span> Checking ESS conditions for a symmetric game<a class="anchor" aria-label="anchor" href="#checking-ess-conditions-for-a-symmetric-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>We write a function that takes a payoff matrix for a symmetric game and checks each pure strategy for ESS status.</p>
+<div class="sourceCode" id="cb553"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">check_ess</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">A</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
+<span>  <span class="va">strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">strategies</span><span class="op">)</span><span class="op">)</span> <span class="va">strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"S"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    strategy <span class="op">=</span> <span class="va">strategies</span>,</span>
+<span>    is_nash <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    strict_nash <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    is_ess <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>    failing_mutant <span class="op">=</span> <span class="cn">NA_character_</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Check Nash: u(i, i) &gt;= u(j, i) for all j</span></span>
+<span>    <span class="va">payoff_ii</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="va">i</span>, <span class="va">i</span><span class="op">]</span></span>
+<span>    <span class="va">payoffs_ji</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span>, <span class="va">i</span><span class="op">]</span>  <span class="co"># column i: payoffs of all strategies against i</span></span>
+<span>    <span class="va">is_nash</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="va">payoff_ii</span> <span class="op">&gt;=</span> <span class="va">payoffs_ji</span><span class="op">)</span></span>
+<span>    <span class="va">is_strict</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="va">payoff_ii</span> <span class="op">&gt;</span> <span class="va">payoffs_ji</span><span class="op">[</span><span class="op">-</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">results</span><span class="op">$</span><span class="va">is_nash</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">is_nash</span></span>
+<span>    <span class="va">results</span><span class="op">$</span><span class="va">strict_nash</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">is_strict</span></span>
+<span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="va">is_nash</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">worst</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html">which.max</a></span><span class="op">(</span><span class="va">payoffs_ji</span> <span class="op">-</span> <span class="va">payoff_ii</span><span class="op">)</span></span>
+<span>      <span class="va">results</span><span class="op">$</span><span class="va">failing_mutant</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">strategies</span><span class="op">[</span><span class="va">worst</span><span class="op">]</span></span>
+<span>      <span class="kw">next</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">is_strict</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">results</span><span class="op">$</span><span class="va">is_ess</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>      <span class="kw">next</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="co"># Check stability condition for ties</span></span>
+<span>    <span class="va">ess</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">j</span> <span class="op">==</span> <span class="va">i</span><span class="op">)</span> <span class="kw">next</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">A</span><span class="op">[</span><span class="va">j</span>, <span class="va">i</span><span class="op">]</span> <span class="op">==</span> <span class="va">payoff_ii</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="co"># Tied — must have u(i, j) &gt; u(j, j)</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="va">A</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;=</span> <span class="va">A</span><span class="op">[</span><span class="va">j</span>, <span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">{</span></span>
+<span>          <span class="va">ess</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
+<span>          <span class="va">results</span><span class="op">$</span><span class="va">failing_mutant</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">strategies</span><span class="op">[</span><span class="va">j</span><span class="op">]</span></span>
+<span>          <span class="kw">break</span></span>
+<span>        <span class="op">}</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">results</span><span class="op">$</span><span class="va">is_ess</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">ess</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">results</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="testing-on-the-hawk-dove-game" class="section level3" number="21.3.2">
+<h3>
+<span class="header-section-number">21.3.2</span> Testing on the Hawk-Dove game<a class="anchor" aria-label="anchor" href="#testing-on-the-hawk-dove-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>The classic Hawk-Dove game (also called Chicken) with value <span class="math inline">\(V = 2\)</span> and cost <span class="math inline">\(C = 4\)</span>:</p>
+<div class="sourceCode" id="cb554"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">C_cost</span> <span class="op">&lt;-</span> <span class="fl">4</span></span>
+<span></span>
+<span><span class="va">hd_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="va">V</span> <span class="op">-</span> <span class="va">C_cost</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span>,  <span class="va">V</span>,</span>
+<span>    <span class="fl">0</span>,                  <span class="va">V</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Hawk-Dove payoff matrix:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Hawk-Dove payoff matrix:</code></pre>
+<div class="sourceCode" id="cb556"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">hd_matrix</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;      Hawk Dove
+#&gt; Hawk   -1    2
+#&gt; Dove    0    1</code></pre>
+<div class="sourceCode" id="cb558"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nESS check:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; ESS check:</code></pre>
+<div class="sourceCode" id="cb560"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hd_ess</span> <span class="op">&lt;-</span> <span class="fu">check_ess</span><span class="op">(</span><span class="va">hd_matrix</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">hd_ess</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 2 × 5
+#&gt;   strategy is_nash strict_nash is_ess failing_mutant
+#&gt;   &lt;chr&gt;    &lt;lgl&gt;   &lt;lgl&gt;       &lt;lgl&gt;  &lt;chr&gt;         
+#&gt; 1 Hawk     FALSE   FALSE       FALSE  Dove          
+#&gt; 2 Dove     FALSE   FALSE       FALSE  Hawk</code></pre>
+<p>Neither pure strategy is an ESS — Hawks can be invaded by Doves and vice versa. The ESS in this game is the mixed strategy playing Hawk with probability <span class="math inline">\(V/C = 0.5\)</span>.</p>
+</div>
+<div id="invasion-fitness-landscape" class="section level3" number="21.3.3">
+<h3>
+<span class="header-section-number">21.3.3</span> Invasion fitness landscape<a class="anchor" aria-label="anchor" href="#invasion-fitness-landscape"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb562"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">eps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.5</span>, length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span><span class="va">p_star</span> <span class="op">&lt;-</span> <span class="va">V</span> <span class="op">/</span> <span class="va">C_cost</span>  <span class="co"># ESS mixture: Hawk with probability 0.5</span></span>
+<span></span>
+<span><span class="co"># Effective payoffs for mixed ESS incumbent vs pure mutants</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">hd_matrix</span></span>
+<span><span class="va">u_mix_mix</span> <span class="op">&lt;-</span> <span class="va">p_star</span><span class="op">^</span><span class="fl">2</span><span class="op">*</span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">p_star</span><span class="op">*</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p_star</span><span class="op">)</span><span class="op">*</span><span class="op">(</span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">]</span><span class="op">+</span><span class="va">A</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p_star</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">*</span><span class="va">A</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">]</span></span>
+<span><span class="va">u_H_mix</span> <span class="op">&lt;-</span> <span class="va">p_star</span><span class="op">*</span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p_star</span><span class="op">)</span><span class="op">*</span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">]</span></span>
+<span><span class="va">u_mix_H</span> <span class="op">&lt;-</span> <span class="va">p_star</span><span class="op">*</span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p_star</span><span class="op">)</span><span class="op">*</span><span class="va">A</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">1</span><span class="op">]</span></span>
+<span><span class="va">u_H_H</span>   <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">W_inc_H</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">eps</span><span class="op">)</span> <span class="op">*</span> <span class="va">u_mix_mix</span> <span class="op">+</span> <span class="va">eps</span> <span class="op">*</span> <span class="va">u_mix_H</span></span>
+<span><span class="va">W_mut_H</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">eps</span><span class="op">)</span> <span class="op">*</span> <span class="va">u_H_mix</span>   <span class="op">+</span> <span class="va">eps</span> <span class="op">*</span> <span class="va">u_H_H</span></span>
+<span><span class="va">adv_hawk</span> <span class="op">&lt;-</span> <span class="va">W_inc_H</span> <span class="op">-</span> <span class="va">W_mut_H</span></span>
+<span></span>
+<span><span class="co"># Pure Dove mutant invading mixed ESS</span></span>
+<span><span class="va">u_D_mix</span> <span class="op">&lt;-</span> <span class="va">p_star</span> <span class="op">*</span> <span class="va">hd_matrix</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p_star</span><span class="op">)</span> <span class="op">*</span> <span class="va">hd_matrix</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">]</span></span>
+<span><span class="va">u_mix_D</span> <span class="op">&lt;-</span> <span class="va">p_star</span> <span class="op">*</span> <span class="va">hd_matrix</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">]</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">p_star</span><span class="op">)</span> <span class="op">*</span> <span class="va">hd_matrix</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">]</span></span>
+<span><span class="va">u_D_D</span>   <span class="op">&lt;-</span> <span class="va">hd_matrix</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">2</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">W_inc_D</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">eps</span><span class="op">)</span> <span class="op">*</span> <span class="va">u_mix_mix</span> <span class="op">+</span> <span class="va">eps</span> <span class="op">*</span> <span class="va">u_mix_D</span></span>
+<span><span class="va">W_mut_D</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">eps</span><span class="op">)</span> <span class="op">*</span> <span class="va">u_D_mix</span>   <span class="op">+</span> <span class="va">eps</span> <span class="op">*</span> <span class="va">u_D_D</span></span>
+<span><span class="va">adv_dove</span> <span class="op">&lt;-</span> <span class="va">W_inc_D</span> <span class="op">-</span> <span class="va">W_mut_D</span></span>
+<span></span>
+<span><span class="va">invasion_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  epsilon <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">eps</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  advantage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">adv_hawk</span>, <span class="va">adv_dove</span><span class="op">)</span>,</span>
+<span>  mutant <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk mutant"</span>, <span class="st">"Dove mutant"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">eps</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_invasion</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">invasion_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">epsilon</span>, y <span class="op">=</span> <span class="va">advantage</span>, colour <span class="op">=</span> <span class="va">mutant</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk mutant"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>                                  <span class="st">"Dove mutant"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                      name <span class="op">=</span> <span class="st">"Mutant type"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Invasion Fitness: Mixed ESS in Hawk-Dove"</span>,</span>
+<span>       x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html">expression</a></span><span class="op">(</span><span class="st">"Mutant fraction "</span> <span class="op">*</span> <span class="va">epsilon</span><span class="op">)</span>,</span>
+<span>       y <span class="op">=</span> <span class="st">"Incumbent advantage (payoff difference)"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_invasion</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:ess-invasion"></span>
+<img src="20-evolutionary-stable-strategies_files/figure-html/ess-invasion-1.png" alt="Invasion fitness landscape for the Hawk-Dove game. The plot shows the payoff advantage of the incumbent over a mutant as a function of mutant fraction. A positive value means the incumbent resists invasion. At the ESS mixture (Hawk with probability 0.5), both pure-strategy mutants have zero advantage at low frequency but negative advantage as they grow, confirming evolutionary stability of the mixed ESS." width="80%"><p class="caption">
+Figure 21.1: Invasion fitness landscape for the Hawk-Dove game. The plot shows the payoff advantage of the incumbent over a mutant as a function of mutant fraction. A positive value means the incumbent resists invasion. At the ESS mixture (Hawk with probability 0.5), both pure-strategy mutants have zero advantage at low frequency but negative advantage as they grow, confirming evolutionary stability of the mixed ESS.
+</p>
+</div>
+<div class="sourceCode" id="cb563"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_invasion</span>, <span class="st">"ess-invasion"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="basins-of-attraction-in-a-3-strategy-game" class="section level3" number="21.3.4">
+<h3>
+<span class="header-section-number">21.3.4</span> Basins of attraction in a 3-strategy game<a class="anchor" aria-label="anchor" href="#basins-of-attraction-in-a-3-strategy-game"><i class="fas fa-link"></i></a>
+</h3>
+<p>We visualize the dynamics on the 2-simplex using the replicator equation from <code>R/replicator.R</code>. Points inside the simplex represent population states <span class="math inline">\((x_1, x_2, x_3)\)</span> with <span class="math inline">\(x_1 + x_2 + x_3 = 1\)</span>. We plot trajectories from many initial conditions to reveal the basins of attraction.</p>
+<div class="sourceCode" id="cb564"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Hawk-Dove-Retaliator payoff matrix (V=2, C=4)</span></span>
+<span><span class="co"># Retaliator: plays Dove against Dove, plays Hawk against Hawk</span></span>
+<span><span class="va">hdr_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">(</span><span class="va">V</span> <span class="op">-</span> <span class="va">C_cost</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>,   <span class="va">V</span>,           <span class="op">(</span><span class="va">V</span> <span class="op">-</span> <span class="va">C_cost</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>,</span>
+<span>    <span class="fl">0</span>,                 <span class="va">V</span><span class="op">/</span><span class="fl">2</span>,         <span class="va">V</span><span class="op">/</span><span class="fl">2</span>,</span>
+<span>    <span class="op">(</span><span class="va">V</span> <span class="op">-</span> <span class="va">C_cost</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>,   <span class="va">V</span><span class="op">/</span><span class="fl">2</span>,         <span class="va">V</span><span class="op">/</span><span class="fl">2</span><span class="op">)</span>,</span>
+<span>  nrow <span class="op">=</span> <span class="fl">3</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span><span class="op">)</span>,</span>
+<span>                  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Hawk-Dove-Retaliator payoff matrix:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Hawk-Dove-Retaliator payoff matrix:</code></pre>
+<div class="sourceCode" id="cb566"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">hdr_matrix</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;            Hawk Dove Retaliator
+#&gt; Hawk         -1    2         -1
+#&gt; Dove          0    1          1
+#&gt; Retaliator   -1    1          1</code></pre>
+<div class="sourceCode" id="cb568"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Simplex coordinates: map (x1, x2, x3) to 2D</span></span>
+<span><span class="co"># Vertices: Hawk = (0, 0), Dove = (1, 0), Retaliator = (0.5, sqrt(3)/2)</span></span>
+<span><span class="va">to_simplex_xy</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x1</span>, <span class="va">x2</span>, <span class="va">x3</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">px</span> <span class="op">&lt;-</span> <span class="va">x2</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">x3</span></span>
+<span>  <span class="va">py</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">x3</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>sx <span class="op">=</span> <span class="va">px</span>, sy <span class="op">=</span> <span class="va">py</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Generate initial conditions on a grid inside the simplex</span></span>
+<span><span class="va">generate_simplex_grid</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_per_side</span> <span class="op">=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_per_side</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_per_side</span> <span class="op">-</span> <span class="va">i</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">k</span> <span class="op">&lt;-</span> <span class="va">n_per_side</span> <span class="op">-</span> <span class="va">i</span> <span class="op">-</span> <span class="va">j</span></span>
+<span>      <span class="va">x1</span> <span class="op">&lt;-</span> <span class="va">i</span> <span class="op">/</span> <span class="va">n_per_side</span></span>
+<span>      <span class="va">x2</span> <span class="op">&lt;-</span> <span class="va">j</span> <span class="op">/</span> <span class="va">n_per_side</span></span>
+<span>      <span class="va">x3</span> <span class="op">&lt;-</span> <span class="va">k</span> <span class="op">/</span> <span class="va">n_per_side</span></span>
+<span>      <span class="co"># Avoid vertices and edges</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">x1</span> <span class="op">&gt;</span> <span class="fl">0.02</span> <span class="op">&amp;&amp;</span> <span class="va">x2</span> <span class="op">&gt;</span> <span class="fl">0.02</span> <span class="op">&amp;&amp;</span> <span class="va">x3</span> <span class="op">&gt;</span> <span class="fl">0.02</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">pts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">pts</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">x1</span>, <span class="va">x2</span>, <span class="va">x3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">pts</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">initial_conditions</span> <span class="op">&lt;-</span> <span class="fu">generate_simplex_grid</span><span class="op">(</span><span class="fl">12</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Run replicator dynamics from each initial condition</span></span>
+<span><span class="va">all_trajectories</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">idx</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">initial_conditions</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">x0</span> <span class="op">&lt;-</span> <span class="va">initial_conditions</span><span class="op">[[</span><span class="va">idx</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">x0</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span><span class="op">)</span></span>
+<span>  <span class="va">sol</span> <span class="op">&lt;-</span> <span class="fu">run_replicator</span><span class="op">(</span><span class="va">hdr_matrix</span>, <span class="va">x0</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">80</span>, by <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu">to_simplex_xy</span><span class="op">(</span><span class="va">sol</span><span class="op">$</span><span class="va">Hawk</span>, <span class="va">sol</span><span class="op">$</span><span class="va">Dove</span>, <span class="va">sol</span><span class="op">$</span><span class="va">Retaliator</span><span class="op">)</span></span>
+<span>  <span class="va">traj_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    sx <span class="op">=</span> <span class="va">coords</span><span class="op">$</span><span class="va">sx</span>,</span>
+<span>    sy <span class="op">=</span> <span class="va">coords</span><span class="op">$</span><span class="va">sy</span>,</span>
+<span>    time <span class="op">=</span> <span class="va">sol</span><span class="op">$</span><span class="va">time</span>,</span>
+<span>    traj_id <span class="op">=</span> <span class="va">idx</span>,</span>
+<span>    start_hawk <span class="op">=</span> <span class="va">x0</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span>  <span class="op">)</span></span>
+<span>  <span class="va">all_trajectories</span><span class="op">[[</span><span class="va">idx</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">traj_df</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">traj_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">all_trajectories</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Simplex triangle vertices</span></span>
+<span><span class="va">tri</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.5</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vertex_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.06</span>, <span class="fl">1.06</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.04</span>, <span class="op">-</span><span class="fl">0.04</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span> <span class="op">+</span> <span class="fl">0.04</span><span class="op">)</span>,</span>
+<span>  label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span>, <span class="st">"Retaliator"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_simplex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_path</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">tri</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span>, colour <span class="op">=</span> <span class="st">"grey30"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_path</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">traj_data</span>,</span>
+<span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sx</span>, y <span class="op">=</span> <span class="va">sy</span>, group <span class="op">=</span> <span class="va">traj_id</span>, colour <span class="op">=</span> <span class="va">start_hawk</span><span class="op">)</span>,</span>
+<span>            linewidth <span class="op">=</span> <span class="fl">0.3</span>, alpha <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_colour_gradient</a></span><span class="op">(</span>low <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, high <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>                        name <span class="op">=</span> <span class="st">"Initial Hawk\nfraction"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">vertex_labels</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>, label <span class="op">=</span> <span class="va">label</span><span class="op">)</span>,</span>
+<span>            fontface <span class="op">=</span> <span class="st">"bold"</span>, size <span class="op">=</span> <span class="fl">3.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_fixed</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        panel.grid <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Replicator Dynamics on the Hawk-Dove-Retaliator Simplex"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_simplex</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:ess-simplex"></span>
+<img src="20-evolutionary-stable-strategies_files/figure-html/ess-simplex-1.png" alt="Basins of attraction in the Hawk-Dove-Retaliator game under replicator dynamics. Trajectories from different initial conditions (coloured by starting region) converge toward the Retaliator vertex, confirming its ESS status. The interior mixed equilibrium is unstable." width="80%"><p class="caption">
+Figure 21.2: Basins of attraction in the Hawk-Dove-Retaliator game under replicator dynamics. Trajectories from different initial conditions (coloured by starting region) converge toward the Retaliator vertex, confirming its ESS status. The interior mixed equilibrium is unstable.
+</p>
+</div>
+<div class="sourceCode" id="cb569"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_simplex</span>, <span class="st">"ess-simplex"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-17" class="section level2" number="21.4">
+<h2>
+<span class="header-section-number">21.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-17"><i class="fas fa-link"></i></a>
+</h2>
+<p>We now systematically find all ESS candidates in the Hawk-Dove-Retaliator game and verify the conditions.</p>
+<div id="step-1-check-pure-strategies" class="section level3" number="21.4.1">
+<h3>
+<span class="header-section-number">21.4.1</span> Step 1: Check pure strategies<a class="anchor" aria-label="anchor" href="#step-1-check-pure-strategies"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb570"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hdr_ess</span> <span class="op">&lt;-</span> <span class="fu">check_ess</span><span class="op">(</span><span class="va">hdr_matrix</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"ESS analysis for Hawk-Dove-Retaliator:\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; ESS analysis for Hawk-Dove-Retaliator:</code></pre>
+<div class="sourceCode" id="cb572"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">hdr_ess</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  %-12s  Nash: %-5s  Strict Nash: %-5s  ESS: %-5s"</span>,</span>
+<span>              <span class="va">hdr_ess</span><span class="op">$</span><span class="va">strategy</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>              <span class="va">hdr_ess</span><span class="op">$</span><span class="va">is_nash</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>              <span class="va">hdr_ess</span><span class="op">$</span><span class="va">strict_nash</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>,</span>
+<span>              <span class="va">hdr_ess</span><span class="op">$</span><span class="va">is_ess</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">hdr_ess</span><span class="op">$</span><span class="va">failing_mutant</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  (fails against %s)"</span>, <span class="va">hdr_ess</span><span class="op">$</span><span class="va">failing_mutant</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   Hawk          Nash: FALSE  Strict Nash: FALSE  ESS: FALSE  (fails against Dove)
+#&gt;   Dove          Nash: FALSE  Strict Nash: FALSE  ESS: FALSE  (fails against Hawk)
+#&gt;   Retaliator    Nash: TRUE   Strict Nash: FALSE  ESS: FALSE  (fails against Dove)</code></pre>
+</div>
+<div id="step-2-interpret-the-results" class="section level3" number="21.4.2">
+<h3>
+<span class="header-section-number">21.4.2</span> Step 2: Interpret the results<a class="anchor" aria-label="anchor" href="#step-2-interpret-the-results"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb574"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Detailed verification:\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Detailed verification:</code></pre>
+<div class="sourceCode" id="cb576"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Hawk vs Hawk</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Hawk as candidate ESS:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Hawk as candidate ESS:</code></pre>
+<div class="sourceCode" id="cb578"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Hawk, Hawk) = %.1f\n"</span>, <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Hawk"</span>, <span class="st">"Hawk"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Hawk, Hawk) = -1.0</code></pre>
+<div class="sourceCode" id="cb580"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Dove, Hawk) = %.1f  -&gt; Dove does better against Hawk\n"</span>,</span>
+<span>            <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Dove"</span>, <span class="st">"Hawk"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Dove, Hawk) = 0.0  -&gt; Dove does better against Hawk</code></pre>
+<div class="sourceCode" id="cb582"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Hawk is NOT a Nash equilibrium — Dove can invade.\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Hawk is NOT a Nash equilibrium — Dove can invade.</code></pre>
+<div class="sourceCode" id="cb584"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Dove vs Dove</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Dove as candidate ESS:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Dove as candidate ESS:</code></pre>
+<div class="sourceCode" id="cb586"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Dove, Dove) = %.1f\n"</span>, <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Dove"</span>, <span class="st">"Dove"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Dove, Dove) = 1.0</code></pre>
+<div class="sourceCode" id="cb588"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Hawk, Dove) = %.1f  -&gt; Hawk does better against Dove\n"</span>,</span>
+<span>            <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Hawk, Dove) = 2.0  -&gt; Hawk does better against Dove</code></pre>
+<div class="sourceCode" id="cb590"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Dove is NOT a Nash equilibrium — Hawk can invade.\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Dove is NOT a Nash equilibrium — Hawk can invade.</code></pre>
+<div class="sourceCode" id="cb592"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Retaliator vs all</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Retaliator as candidate ESS:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Retaliator as candidate ESS:</code></pre>
+<div class="sourceCode" id="cb594"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Ret, Ret) = %.1f\n"</span>, <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Retaliator"</span>, <span class="st">"Retaliator"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Ret, Ret) = 1.0</code></pre>
+<div class="sourceCode" id="cb596"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Hawk, Ret) = %.1f  -&gt; Hawk does equally well\n"</span>,</span>
+<span>            <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Hawk"</span>, <span class="st">"Retaliator"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Hawk, Ret) = -1.0  -&gt; Hawk does equally well</code></pre>
+<div class="sourceCode" id="cb598"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Dove, Ret) = %.1f  -&gt; Dove does equally well\n"</span>,</span>
+<span>            <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Dove"</span>, <span class="st">"Retaliator"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Dove, Ret) = 1.0  -&gt; Dove does equally well</code></pre>
+<div class="sourceCode" id="cb600"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Ties exist — check stability condition:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Ties exist — check stability condition:</code></pre>
+<div class="sourceCode" id="cb602"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Ret, Hawk) = %.1f vs u(Hawk, Hawk) = %.1f  -&gt; Ret wins\n"</span>,</span>
+<span>            <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Retaliator"</span>, <span class="st">"Hawk"</span><span class="op">]</span>, <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Hawk"</span>, <span class="st">"Hawk"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Ret, Hawk) = -1.0 vs u(Hawk, Hawk) = -1.0  -&gt; Ret wins</code></pre>
+<div class="sourceCode" id="cb604"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  u(Ret, Dove) = %.1f vs u(Dove, Dove) = %.1f  -&gt; Tied\n"</span>,</span>
+<span>            <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Retaliator"</span>, <span class="st">"Dove"</span><span class="op">]</span>, <span class="va">hdr_matrix</span><span class="op">[</span><span class="st">"Dove"</span>, <span class="st">"Dove"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   u(Ret, Dove) = 1.0 vs u(Dove, Dove) = 1.0  -&gt; Tied</code></pre>
+</div>
+<div id="step-3-verify-with-replicator-dynamics" class="section level3" number="21.4.3">
+<h3>
+<span class="header-section-number">21.4.3</span> Step 3: Verify with replicator dynamics<a class="anchor" aria-label="anchor" href="#step-3-verify-with-replicator-dynamics"><i class="fas fa-link"></i></a>
+</h3>
+<p>The simplex diagram above (<a href="sec-ess.html#fig:ess-simplex">21.2</a>) confirms the analytic result. Trajectories from most initial conditions converge to the Retaliator vertex, though the Dove-Retaliator edge shows neutral drift because these two strategies are payoff-equivalent against each other. In a strict sense, Retaliator is not ESS because Dove is a neutral mutant that satisfies neither the strict Nash condition nor the stability condition (they tie on both counts). This is a well-known subtlety: Retaliator is <strong>neutrally stable</strong> but not strictly ESS in the 3-strategy game.</p>
+<div class="sourceCode" id="cb606"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Verify: start near Retaliator, introduce small Hawk mutation</span></span>
+<span><span class="va">x0_test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>Hawk <span class="op">=</span> <span class="fl">0.05</span>, Dove <span class="op">=</span> <span class="fl">0.0</span>, Retaliator <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span>
+<span><span class="va">sol_test</span> <span class="op">&lt;-</span> <span class="fu">run_replicator</span><span class="op">(</span><span class="va">hdr_matrix</span>, <span class="va">x0_test</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Hawk invasion attempt (starting at 5% Hawk, 95% Retaliator):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Hawk invasion attempt (starting at 5% Hawk, 95% Retaliator):</code></pre>
+<div class="sourceCode" id="cb608"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  t=0:   Hawk=%.3f  Dove=%.3f  Ret=%.3f\n"</span>,</span>
+<span>            <span class="va">sol_test</span><span class="op">$</span><span class="va">Hawk</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sol_test</span><span class="op">$</span><span class="va">Dove</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sol_test</span><span class="op">$</span><span class="va">Retaliator</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   t=0:   Hawk=0.050  Dove=0.000  Ret=0.950</code></pre>
+<div class="sourceCode" id="cb610"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">final</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">sol_test</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  t=100: Hawk=%.3f  Dove=%.3f  Ret=%.3f\n"</span>,</span>
+<span>            <span class="va">sol_test</span><span class="op">$</span><span class="va">Hawk</span><span class="op">[</span><span class="va">final</span><span class="op">]</span>, <span class="va">sol_test</span><span class="op">$</span><span class="va">Dove</span><span class="op">[</span><span class="va">final</span><span class="op">]</span>, <span class="va">sol_test</span><span class="op">$</span><span class="va">Retaliator</span><span class="op">[</span><span class="va">final</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   t=100: Hawk=-0.000  Dove=0.000  Ret=1.000</code></pre>
+<div class="sourceCode" id="cb612"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"  Hawk is driven out — Retaliator resists Hawk invasion.\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   Hawk is driven out — Retaliator resists Hawk invasion.</code></pre>
+</div>
+</div>
+<div id="extensions-19" class="section level2" number="21.5">
+<h2>
+<span class="header-section-number">21.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-19"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Mixed ESS</strong>: When no pure strategy is ESS, the stable outcome may be a mixed strategy. For 2-strategy games, the ESS mixture can be found analytically; for larger games, the Bishop-Cannings theorem provides necessary conditions <span class="citation">(<a href="references.html#ref-maynardsmith1982">Maynard Smith, 1982</a>)</span>.</li>
+<li>
+<strong>Finite populations</strong>: In finite populations, stochastic effects mean that even ESS populations can be invaded by neutral drift. Nowak et al. <span class="citation">(<a href="references.html#ref-nowak2004">2004</a>)</span> introduced stochastic stability concepts for evolutionary dynamics.</li>
+<li>
+<strong>Multi-population ESS</strong>: When different roles exist (e.g., buyer and seller), the relevant concept is the <strong>asymmetric ESS</strong> analyzed in bimatrix games.</li>
+<li>
+<strong>Connection to replicator dynamics</strong>: The replicator equation (<a href="sec-replicator-dynamics.html#sec-replicator-dynamics">20</a>) provides the dynamic justification for ESS — every ESS is an asymptotically stable rest point of the replicator dynamics, though the converse is not always true.</li>
+</ul>
+</div>
+<div id="exercises-19" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-19"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Stag Hunt ESS.</strong> Consider the Stag Hunt game with payoff matrix <span class="math inline">\(A = \begin{pmatrix} 4 &amp; 0 \\ 3 &amp; 2 \end{pmatrix}\)</span>. Use <code>check_ess()</code> to verify that both (Stag, Stag) and (Hare, Hare) are Nash equilibria, but only one is an ESS. Which one, and why?</p></li>
+<li><p><strong>Three-strategy Rock-Paper-Scissors.</strong> Construct the symmetric payoff matrix for RPS with win = 1, loss = -1, draw = 0. Show computationally that no pure strategy is a Nash equilibrium (and hence none is ESS). Then argue from the invasion fitness formula why the uniform mixture <span class="math inline">\((\tfrac{1}{3}, \tfrac{1}{3}, \tfrac{1}{3})\)</span> is not ESS either — it is neutrally stable.</p></li>
+<li><p><strong>Invasion barrier.</strong> For the Hawk-Dove game with <span class="math inline">\(V = 6\)</span> and <span class="math inline">\(C = 10\)</span>, compute the mixed ESS analytically (<span class="math inline">\(p^* = V/C\)</span>). Then write code to find the maximum mutant fraction <span class="math inline">\(\bar{\epsilon}\)</span> at which the incumbent still has a payoff advantage over a pure-Hawk mutant. Plot the advantage curve and mark <span class="math inline">\(\bar{\epsilon}\)</span> on the graph.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></div>
+<div class="next"><a href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-ess"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="nav-link" href="#learning-objectives-19">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-19"><span class="header-section-number">21.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-19"><span class="header-section-number">21.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-ess-definition"><span class="header-section-number">21.2.1</span> The ESS definition</a></li>
+<li><a class="nav-link" href="#relationship-to-nash-equilibrium"><span class="header-section-number">21.2.2</span> Relationship to Nash equilibrium</a></li>
+<li><a class="nav-link" href="#invasion-dynamics"><span class="header-section-number">21.2.3</span> Invasion dynamics</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-ess-implementation"><span class="header-section-number">21.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#checking-ess-conditions-for-a-symmetric-game"><span class="header-section-number">21.3.1</span> Checking ESS conditions for a symmetric game</a></li>
+<li><a class="nav-link" href="#testing-on-the-hawk-dove-game"><span class="header-section-number">21.3.2</span> Testing on the Hawk-Dove game</a></li>
+<li><a class="nav-link" href="#invasion-fitness-landscape"><span class="header-section-number">21.3.3</span> Invasion fitness landscape</a></li>
+<li><a class="nav-link" href="#basins-of-attraction-in-a-3-strategy-game"><span class="header-section-number">21.3.4</span> Basins of attraction in a 3-strategy game</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-17"><span class="header-section-number">21.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#step-1-check-pure-strategies"><span class="header-section-number">21.4.1</span> Step 1: Check pure strategies</a></li>
+<li><a class="nav-link" href="#step-2-interpret-the-results"><span class="header-section-number">21.4.2</span> Step 2: Interpret the results</a></li>
+<li><a class="nav-link" href="#step-3-verify-with-replicator-dynamics"><span class="header-section-number">21.4.3</span> Step 3: Verify with replicator dynamics</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#extensions-19"><span class="header-section-number">21.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-19">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/20-evolutionary-stable-strategies.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/20-evolutionary-stable-strategies.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

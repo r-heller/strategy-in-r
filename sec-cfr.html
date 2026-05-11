@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 29 CFR and Poker | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Counterfactual regret minimization for imperfect information games: information sets, regret matching, and a full Kuhn Poker implementation in R.  Learning objectives Distinguish perfect and...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 29 CFR and Poker | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-cfr.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Counterfactual regret minimization for imperfect information games: information sets, regret matching, and a full Kuhn Poker implementation in R.  Learning objectives Distinguish perfect and...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 29 CFR and Poker | Strategy in R">
+<meta name="twitter:description" content="Counterfactual regret minimization for imperfect information games: information sets, regret matching, and a full Kuhn Poker implementation in R.  Learning objectives Distinguish perfect and...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 29 CFR and Poker | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="active" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-cfr" class="section level1" number="29">
+<h1>
+<span class="header-section-number">29</span> CFR and Poker<a class="anchor" aria-label="anchor" href="#sec-cfr"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Counterfactual regret minimization for imperfect information games: information sets, regret matching, and a full Kuhn Poker implementation in R.</p>
+</blockquote>
+<div id="learning-objectives-27" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-27"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Distinguish perfect and imperfect information games and define information sets.</li>
+<li>Implement the regret matching algorithm from scratch in base R.</li>
+<li>Code the full CFR algorithm for Kuhn Poker and interpret the converged strategies.</li>
+<li>Evaluate convergence by tracking exploitability over iterations.</li>
+</ul>
+</div>
+<div id="motivation-27" class="section level2" number="29.1">
+<h2>
+<span class="header-section-number">29.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-27"><i class="fas fa-link"></i></a>
+</h2>
+<p>Poker is the canonical imperfect information game: players hold private cards invisible to opponents, and optimal play requires mixing (randomizing) over actions. Unlike chess or Go, where a single deterministic strategy can be optimal, poker demands <em>behavioral strategies</em> — probability distributions over actions at each decision point.</p>
+<p>In 2015, heads-up limit Texas Hold’em was essentially solved using CFR variants <span class="citation">(<a href="references.html#ref-bowling2015">Bowling et al., 2015</a>)</span>, and in 2019 Pluribus defeated elite human professionals in six-player no-limit Hold’em <span class="citation">(<a href="references.html#ref-brown2019">Brown &amp; Sandholm, 2019</a>)</span>. The engine behind these achievements is <strong>Counterfactual Regret Minimization</strong> (CFR), introduced by <span class="citation">Zinkevich et al. (<a href="references.html#ref-zinkevich2007">2007</a>)</span>. This chapter builds CFR from first principles and implements it for Kuhn Poker — a simplified poker game small enough to solve exactly.</p>
+</div>
+<div id="theory-27" class="section level2" number="29.2">
+<h2>
+<span class="header-section-number">29.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-27"><i class="fas fa-link"></i></a>
+</h2>
+<div id="imperfect-information-and-information-sets" class="section level3" number="29.2.1">
+<h3>
+<span class="header-section-number">29.2.1</span> Imperfect information and information sets<a class="anchor" aria-label="anchor" href="#imperfect-information-and-information-sets"><i class="fas fa-link"></i></a>
+</h3>
+<p>In perfect information games (chess, Go), every player observes the full game state. In imperfect information games, a player’s knowledge is captured by an <strong>information set</strong> — the set of game states that are indistinguishable to that player given what they have observed.</p>
+<p>In poker, a player’s information set includes their private cards and the public betting history, but not the opponent’s cards. A <strong>behavioral strategy</strong> assigns a probability distribution over available actions at each information set.</p>
+</div>
+<div id="regret-matching-1" class="section level3" number="29.2.2">
+<h3>
+<span class="header-section-number">29.2.2</span> Regret matching<a class="anchor" aria-label="anchor" href="#regret-matching-1"><i class="fas fa-link"></i></a>
+</h3>
+<p>Regret matching is a simple online learning algorithm. After <span class="math inline">\(T\)</span> rounds, define the <strong>cumulative regret</strong> for action <span class="math inline">\(a\)</span> as:</p>
+<p><span class="math display" id="eq:cumulative-regret">\[\begin{equation}
+R^T(a) = \sum_{t=1}^{T} \left[ u(a, s^t) - u(a^t, s^t) \right]
+\tag{29.1}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(u(a, s^t)\)</span> is the payoff of playing action <span class="math inline">\(a\)</span> when the opponent plays <span class="math inline">\(s^t\)</span>, and <span class="math inline">\(a^t\)</span> is the action actually chosen at round <span class="math inline">\(t\)</span>. The regret matching strategy at round <span class="math inline">\(T+1\)</span> is:</p>
+<p><span class="math display" id="eq:regret-matching">\[\begin{equation}
+\sigma^{T+1}(a) = \begin{cases}
+  \frac{\max(0, R^T(a))}{\sum_{a'} \max(0, R^T(a'))} &amp; \text{if } \sum_{a'} \max(0, R^T(a')) &gt; 0 \\
+  \frac{1}{|\mathcal{A}|} &amp; \text{otherwise}
+\end{cases}
+\tag{24.3}
+\end{equation}\]</span></p>
+<p>The key theorem is that the <strong>average strategy</strong> <span class="math inline">\(\bar{\sigma}^T = \frac{1}{T}\sum_{t=1}^{T}\sigma^t\)</span> converges to a Nash equilibrium in two-player zero-sum games.</p>
+</div>
+<div id="cfr-algorithm" class="section level3" number="29.2.3">
+<h3>
+<span class="header-section-number">29.2.3</span> CFR algorithm<a class="anchor" aria-label="anchor" href="#cfr-algorithm"><i class="fas fa-link"></i></a>
+</h3>
+<p>CFR applies regret matching to every information set in a game tree. On each iteration:</p>
+<ol style="list-style-type: decimal">
+<li>Traverse the game tree, computing <strong>counterfactual values</strong> — the expected utility of reaching each information set, weighted by the opponent’s probability of playing to reach it.</li>
+<li>Update cumulative regrets at each information set.</li>
+<li>Derive the next iteration’s strategy via regret matching.</li>
+<li>Accumulate strategies for averaging.</li>
+</ol>
+<p>The <strong>counterfactual value</strong> for player <span class="math inline">\(i\)</span> at information set <span class="math inline">\(I\)</span> is:</p>
+<p><span class="math display" id="eq:counterfactual-value">\[\begin{equation}
+v_i(I) = \sum_{z \in Z_I} \pi_{-i}(z) \cdot \pi_i(z[I] \to z) \cdot u_i(z)
+\tag{29.2}
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(Z_I\)</span> is the set of terminal states reachable from <span class="math inline">\(I\)</span>, <span class="math inline">\(\pi_{-i}(z)\)</span> is the opponent’s contribution to reaching <span class="math inline">\(z\)</span>, and <span class="math inline">\(u_i(z)\)</span> is the terminal payoff.</p>
+</div>
+<div id="kuhn-poker" class="section level3" number="29.2.4">
+<h3>
+<span class="header-section-number">29.2.4</span> Kuhn Poker<a class="anchor" aria-label="anchor" href="#kuhn-poker"><i class="fas fa-link"></i></a>
+</h3>
+<p>Kuhn Poker <span class="citation">(<a href="references.html#ref-kuhn1950">Kuhn, 1950</a>)</span> uses three cards (J, Q, K) dealt one to each of two players. Each player antes 1 chip. Player 1 acts first: <strong>check</strong> or <strong>bet</strong> (1 chip). Player 2 responds: after a check, they may check (showdown) or bet; after a bet, they may fold or call. If Player 1 checked and Player 2 bets, Player 1 may fold or call. The higher card wins at showdown.</p>
+<p>The game has 12 information sets (6 per player: 3 cards times 2 possible histories at each decision point). The Nash equilibrium is a mixed strategy with a known analytical form.</p>
+</div>
+</div>
+<div id="sec-cfr-impl" class="section level2" number="29.3">
+<h2>
+<span class="header-section-number">29.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-cfr-impl"><i class="fas fa-link"></i></a>
+</h2>
+<div id="regret-matching-2" class="section level3" number="29.3.1">
+<h3>
+<span class="header-section-number">29.3.1</span> Regret matching<a class="anchor" aria-label="anchor" href="#regret-matching-2"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb779"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">regret_match</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">cumulative_regret</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">positive</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">pmax</a></span><span class="op">(</span><span class="va">cumulative_regret</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="va">total</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">positive</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">total</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">positive</span> <span class="op">/</span> <span class="va">total</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">cumulative_regret</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">cumulative_regret</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="kuhn-poker-cfr" class="section level3" number="29.3.2">
+<h3>
+<span class="header-section-number">29.3.2</span> Kuhn Poker CFR<a class="anchor" aria-label="anchor" href="#kuhn-poker-cfr"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb780"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">kuhn_cfr</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_iterations</span> <span class="op">=</span> <span class="fl">10000</span>, <span class="va">snapshot_every</span> <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">cards</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"J"</span>, <span class="st">"Q"</span>, <span class="st">"K"</span><span class="op">)</span></span>
+<span>  <span class="va">n_actions</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span>  <span class="va">cumulative_regret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">cumulative_strategy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="va">snapshots</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">snapshot_every</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>iteration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">integer</a></span><span class="op">(</span><span class="op">)</span>, info_set <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="op">)</span>, bet_prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/double.html">double</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="cn">NULL</span></span>
+<span></span>
+<span>  <span class="va">get_or_init</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">store</span>, <span class="va">key</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html">is.null</a></span><span class="op">(</span><span class="va">store</span><span class="op">[[</span><span class="va">key</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_actions</span><span class="op">)</span> <span class="kw">else</span> <span class="va">store</span><span class="op">[[</span><span class="va">key</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">cfr_traverse</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">deal</span>, <span class="va">history</span>, <span class="va">p0</span>, <span class="va">p1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">plays</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="va">history</span><span class="op">)</span></span>
+<span>    <span class="va">player</span> <span class="op">&lt;-</span> <span class="va">plays</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="fl">2</span></span>
+<span>    <span class="va">card_player</span> <span class="op">&lt;-</span> <span class="va">deal</span><span class="op">[</span><span class="va">player</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span></span>
+<span>    <span class="va">card_opp</span> <span class="op">&lt;-</span> <span class="va">deal</span><span class="op">[</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">player</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span></span>
+<span>    <span class="va">higher</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">cards</span> <span class="op">==</span> <span class="va">card_player</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">cards</span> <span class="op">==</span> <span class="va">card_opp</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">plays</span> <span class="op">&gt;=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">last2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/substr.html">substr</a></span><span class="op">(</span><span class="va">history</span>, <span class="va">plays</span> <span class="op">-</span> <span class="fl">1</span>, <span class="va">plays</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">last2</span> <span class="op">==</span> <span class="st">"cc"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="kw">if</span> <span class="op">(</span><span class="va">higher</span><span class="op">)</span> <span class="fl">1</span> <span class="kw">else</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">last2</span> <span class="op">==</span> <span class="st">"bc"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">last2</span> <span class="op">==</span> <span class="st">"bb"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="kw">if</span> <span class="op">(</span><span class="va">higher</span><span class="op">)</span> <span class="fl">2</span> <span class="kw">else</span> <span class="op">-</span><span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">plays</span> <span class="op">&gt;=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">last3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/substr.html">substr</a></span><span class="op">(</span><span class="va">history</span>, <span class="va">plays</span> <span class="op">-</span> <span class="fl">2</span>, <span class="va">plays</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">last3</span> <span class="op">==</span> <span class="st">"cbc"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">last3</span> <span class="op">==</span> <span class="st">"cbb"</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="kw">if</span> <span class="op">(</span><span class="va">higher</span><span class="op">)</span> <span class="fl">2</span> <span class="kw">else</span> <span class="op">-</span><span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="va">info_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">card_player</span>, <span class="va">history</span><span class="op">)</span></span>
+<span>    <span class="va">regrets</span> <span class="op">&lt;-</span> <span class="fu">get_or_init</span><span class="op">(</span><span class="va">cumulative_regret</span>, <span class="va">info_set</span><span class="op">)</span></span>
+<span>    <span class="va">strategy</span> <span class="op">&lt;-</span> <span class="fu">regret_match</span><span class="op">(</span><span class="va">regrets</span><span class="op">)</span></span>
+<span>    <span class="va">cum_strat</span> <span class="op">&lt;-</span> <span class="fu">get_or_init</span><span class="op">(</span><span class="va">cumulative_strategy</span>, <span class="va">info_set</span><span class="op">)</span></span>
+<span>    <span class="va">action_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n_actions</span><span class="op">)</span></span>
+<span>    <span class="va">node_value</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">a</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_actions</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">nh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">history</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">[</span><span class="va">a</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">player</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">action_values</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fu">cfr_traverse</span><span class="op">(</span><span class="va">deal</span>, <span class="va">nh</span>, <span class="va">p0</span> <span class="op">*</span> <span class="va">strategy</span><span class="op">[</span><span class="va">a</span><span class="op">]</span>, <span class="va">p1</span><span class="op">)</span></span>
+<span>      <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="va">action_values</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fu">cfr_traverse</span><span class="op">(</span><span class="va">deal</span>, <span class="va">nh</span>, <span class="va">p0</span>, <span class="va">p1</span> <span class="op">*</span> <span class="va">strategy</span><span class="op">[</span><span class="va">a</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>      <span class="va">node_value</span> <span class="op">&lt;-</span> <span class="va">node_value</span> <span class="op">+</span> <span class="va">strategy</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">*</span> <span class="va">action_values</span><span class="op">[</span><span class="va">a</span><span class="op">]</span></span>
+<span>    <span class="op">}</span></span>
+<span></span>
+<span>    <span class="va">reach_prob</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">player</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="va">p1</span> <span class="kw">else</span> <span class="va">p0</span></span>
+<span>    <span class="va">own_reach</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">player</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="va">p0</span> <span class="kw">else</span> <span class="va">p1</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">a</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_actions</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">cumulative_regret</span><span class="op">[[</span><span class="va">info_set</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">&lt;&lt;-</span></span>
+<span>        <span class="va">regrets</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">+</span> <span class="va">reach_prob</span> <span class="op">*</span> <span class="op">(</span><span class="va">action_values</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">-</span> <span class="va">node_value</span><span class="op">)</span></span>
+<span>      <span class="va">cumulative_strategy</span><span class="op">[[</span><span class="va">info_set</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">&lt;&lt;-</span></span>
+<span>        <span class="va">cum_strat</span><span class="op">[</span><span class="va">a</span><span class="op">]</span> <span class="op">+</span> <span class="va">own_reach</span> <span class="op">*</span> <span class="va">strategy</span><span class="op">[</span><span class="va">a</span><span class="op">]</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">node_value</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">game_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n_iterations</span><span class="op">)</span></span>
+<span>  <span class="va">deals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"J"</span>,<span class="st">"Q"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"J"</span>,<span class="st">"K"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Q"</span>,<span class="st">"J"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Q"</span>,<span class="st">"K"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"K"</span>,<span class="st">"J"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"K"</span>,<span class="st">"Q"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">iter</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_iterations</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">val</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">deal</span> <span class="kw">in</span> <span class="va">deals</span><span class="op">)</span> <span class="va">val</span> <span class="op">&lt;-</span> <span class="va">val</span> <span class="op">+</span> <span class="fu">cfr_traverse</span><span class="op">(</span><span class="va">deal</span>, <span class="st">""</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span>    <span class="va">game_values</span><span class="op">[</span><span class="va">iter</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">val</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">deals</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">snapshot_every</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="va">iter</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%%</a></span> <span class="va">snapshot_every</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="kw">for</span> <span class="op">(</span><span class="va">key</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">cumulative_strategy</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">cumulative_strategy</span><span class="op">[[</span><span class="va">key</span><span class="op">]</span><span class="op">]</span></span>
+<span>        <span class="va">total</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span>        <span class="va">snapshots</span> <span class="op">&lt;&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html">bind_rows</a></span><span class="op">(</span><span class="va">snapshots</span>,</span>
+<span>          <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>iteration <span class="op">=</span> <span class="va">iter</span>, info_set <span class="op">=</span> <span class="va">key</span>,</span>
+<span>                 bet_prob <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">total</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="va">s</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">/</span> <span class="va">total</span> <span class="kw">else</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="va">avg_strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">key</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">cumulative_strategy</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">cumulative_strategy</span><span class="op">[[</span><span class="va">key</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">total</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span>    <span class="va">avg_strategies</span><span class="op">[[</span><span class="va">key</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">total</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="va">s</span> <span class="op">/</span> <span class="va">total</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="va">n_actions</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>avg_strategies <span class="op">=</span> <span class="va">avg_strategies</span>, game_values <span class="op">=</span> <span class="va">game_values</span>,</span>
+<span>       snapshots <span class="op">=</span> <span class="va">snapshots</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="run-cfr" class="section level3" number="29.3.3">
+<h3>
+<span class="header-section-number">29.3.3</span> Run CFR<a class="anchor" aria-label="anchor" href="#run-cfr"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb781"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">n_iter</span> <span class="op">&lt;-</span> <span class="fl">5000</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">kuhn_cfr</span><span class="op">(</span>n_iterations <span class="op">=</span> <span class="va">n_iter</span>, snapshot_every <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="figure-1-strategy-convergence" class="section level3" number="29.3.4">
+<h3>
+<span class="header-section-number">29.3.4</span> Figure 1: Strategy convergence<a class="anchor" aria-label="anchor" href="#figure-1-strategy-convergence"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb782"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">snapshots</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">snapshots</span></span>
+<span></span>
+<span><span class="co"># Select key information sets for display</span></span>
+<span><span class="va">key_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"J"</span> <span class="op">=</span> <span class="st">"P1: J (open)"</span>,</span>
+<span>              <span class="st">"Q"</span> <span class="op">=</span> <span class="st">"P1: Q (open)"</span>,</span>
+<span>              <span class="st">"K"</span> <span class="op">=</span> <span class="st">"P1: K (open)"</span>,</span>
+<span>              <span class="st">"Jcb"</span> <span class="op">=</span> <span class="st">"P1: J (facing bet)"</span>,</span>
+<span>              <span class="st">"Qb"</span> <span class="op">=</span> <span class="st">"P2: Q (facing bet)"</span>,</span>
+<span>              <span class="st">"Kb"</span> <span class="op">=</span> <span class="st">"P2: K (facing bet)"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plot_data</span> <span class="op">&lt;-</span> <span class="va">snapshots</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">info_set</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">key_sets</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">key_sets</span><span class="op">[</span><span class="va">info_set</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_conv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">plot_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">iteration</span>, y <span class="op">=</span> <span class="va">bet_prob</span>,</span>
+<span>                                 colour <span class="op">=</span> <span class="va">label</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.7</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"CFR Strategy Convergence in Kuhn Poker"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Iteration"</span>, y <span class="op">=</span> <span class="st">"Bet / Call probability"</span>,</span>
+<span>       colour <span class="op">=</span> <span class="st">"Information set"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html">ylim</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_conv</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:cfr-convergence"></span>
+<img src="28-cfr-poker_files/figure-html/cfr-convergence-1.png" alt="Strategy convergence in Kuhn Poker CFR. Action probabilities at key information sets stabilize to the Nash equilibrium strategy over iterations. Player 1 with a Jack learns to bluff approximately one-third of the time." width="80%"><p class="caption">
+Figure 29.1: Strategy convergence in Kuhn Poker CFR. Action probabilities at key information sets stabilize to the Nash equilibrium strategy over iterations. Player 1 with a Jack learns to bluff approximately one-third of the time.
+</p>
+</div>
+<div class="sourceCode" id="cb783"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_conv</span>, <span class="st">"cfr-strategy-convergence"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="figure-2-exploitability" class="section level3" number="29.3.5">
+<h3>
+<span class="header-section-number">29.3.5</span> Figure 2: Exploitability<a class="anchor" aria-label="anchor" href="#figure-2-exploitability"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb784"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Compute exploitability as absolute deviation from known NE game value</span></span>
+<span><span class="co"># Kuhn Poker NE value for Player 1 = -1/18</span></span>
+<span><span class="va">ne_value</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1</span><span class="op">/</span><span class="fl">18</span></span>
+<span></span>
+<span><span class="va">exploit_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  iteration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_iter</span><span class="op">)</span>,</span>
+<span>  game_value <span class="op">=</span> <span class="va">result</span><span class="op">$</span><span class="va">game_values</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span></span>
+<span>    cumulative_avg <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="va">game_value</span><span class="op">)</span> <span class="op">/</span> <span class="va">iteration</span>,</span>
+<span>    exploitability <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">cumulative_avg</span> <span class="op">-</span> <span class="va">ne_value</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">iteration</span> <span class="op">&gt;=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_exploit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">exploit_data</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">iteration</span>, y <span class="op">=</span> <span class="va">exploitability</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">5</span><span class="op">]</span>, linewidth <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_log10</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html">label_number</a></span><span class="op">(</span>accuracy <span class="op">=</span> <span class="fl">0.001</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Exploitability Over CFR Iterations"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Iteration"</span>, y <span class="op">=</span> <span class="st">"Exploitability (log scale)"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_exploit</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:cfr-exploitability"></span>
+<img src="28-cfr-poker_files/figure-html/cfr-exploitability-1.png" alt="Exploitability decreasing over CFR iterations. The average strategy converges toward a Nash equilibrium, with exploitability dropping toward zero at a rate of approximately O(1/sqrt(T))." width="80%"><p class="caption">
+Figure 29.2: Exploitability decreasing over CFR iterations. The average strategy converges toward a Nash equilibrium, with exploitability dropping toward zero at a rate of approximately O(1/sqrt(T)).
+</p>
+</div>
+<div class="sourceCode" id="cb785"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_exploit</span>, <span class="st">"cfr-exploitability"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">4.5</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-25" class="section level2" number="29.4">
+<h2>
+<span class="header-section-number">29.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-25"><i class="fas fa-link"></i></a>
+</h2>
+<p>Let us examine the converged average strategies from our CFR run.</p>
+<div class="sourceCode" id="cb786"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Converged Kuhn Poker strategies (bet/call probability):\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Converged Kuhn Poker strategies (bet/call probability):</code></pre>
+<div class="sourceCode" id="cb788"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%-12s  %-8s  %-8s\n"</span>, <span class="st">"Info Set"</span>, <span class="st">"Check/Fold"</span>, <span class="st">"Bet/Call"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Info Set      Check/Fold  Bet/Call</code></pre>
+<div class="sourceCode" id="cb790"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strrep.html">strrep</a></span><span class="op">(</span><span class="st">"-"</span>, <span class="fl">36</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; ------------------------------------</code></pre>
+<div class="sourceCode" id="cb792"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">key</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">avg_strategies</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="va">result</span><span class="op">$</span><span class="va">avg_strategies</span><span class="op">[[</span><span class="va">key</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"%-12s  %8.3f  %8.3f\n"</span>, <span class="va">key</span>, <span class="va">s</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">s</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt; J                0.785     0.215
+#&gt; Jb               1.000     0.000
+#&gt; Jc               0.657     0.343
+#&gt; Jcb              1.000     0.000
+#&gt; K                0.332     0.668
+#&gt; Kb               0.000     1.000
+#&gt; Kc               0.000     1.000
+#&gt; Kcb              0.000     1.000
+#&gt; Q                1.000     0.000
+#&gt; Qb               0.664     0.336
+#&gt; Qc               1.000     0.000
+#&gt; Qcb              0.443     0.557</code></pre>
+<p><strong>Interpreting the Nash equilibrium.</strong> The known Kuhn Poker NE has the following structure:</p>
+<ul>
+<li>
+<strong>Player 1 with King</strong>: Always bets (or bets with high probability). Having the best card, betting is dominant.</li>
+<li>
+<strong>Player 1 with Queen</strong>: Always checks. A Queen is a middling hand — betting risks getting called by a King and would only fold out a Jack that was going to lose anyway.</li>
+<li>
+<strong>Player 1 with Jack</strong>: Bluffs (bets) with probability <span class="math inline">\(\alpha \approx 1/3\)</span>. This makes Player 2 indifferent between calling and folding with a Queen.</li>
+<li>
+<strong>Player 2 with King facing a bet</strong>: Always calls. The King is the best possible hand.</li>
+<li>
+<strong>Player 2 with Jack facing a bet</strong>: Always folds. The Jack cannot beat any betting hand.</li>
+<li>
+<strong>Player 2 with Queen facing a bet</strong>: Calls with probability <span class="math inline">\(1/3\)</span>. This makes Player 1 indifferent between bluffing and checking with a Jack.</li>
+</ul>
+<div class="sourceCode" id="cb794"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nComparison with analytical Nash equilibrium:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Comparison with analytical Nash equilibrium:</code></pre>
+<div class="sourceCode" id="cb796"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"P1 Jack bluff rate:   CFR = %.3f  (NE = 0.333)\n"</span>,</span>
+<span>            <span class="va">result</span><span class="op">$</span><span class="va">avg_strategies</span><span class="op">[[</span><span class="st">"J"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; P1 Jack bluff rate:   CFR = 0.215  (NE = 0.333)</code></pre>
+<div class="sourceCode" id="cb798"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"P1 King bet rate:     CFR = %.3f  (NE = 1.000)\n"</span>,</span>
+<span>            <span class="va">result</span><span class="op">$</span><span class="va">avg_strategies</span><span class="op">[[</span><span class="st">"K"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; P1 King bet rate:     CFR = 0.668  (NE = 1.000)</code></pre>
+<div class="sourceCode" id="cb800"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"P2 Queen call rate:   CFR = %.3f  (NE = 0.333)\n"</span>,</span>
+<span>            <span class="va">result</span><span class="op">$</span><span class="va">avg_strategies</span><span class="op">[[</span><span class="st">"Qb"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; P2 Queen call rate:   CFR = 0.336  (NE = 0.333)</code></pre>
+<div class="sourceCode" id="cb802"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nNE game value for P1: %.4f  (analytical = %.4f)\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">game_values</span><span class="op">)</span>, <span class="va">ne_value</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; NE game value for P1: -0.0576  (analytical = -0.0556)</code></pre>
+<p>The CFR algorithm converges closely to the known analytical equilibrium. Player 1’s expected payoff is <span class="math inline">\(-1/18 \approx -0.056\)</span> per hand — a slight disadvantage from acting first.</p>
+</div>
+<div id="extensions-27" class="section level2" number="29.5">
+<h2>
+<span class="header-section-number">29.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-27"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Monte Carlo CFR</strong>: For large games, external or outcome sampling reduces per-iteration cost by sampling only a subset of chance outcomes, trading variance for speed.</li>
+<li>
+<strong>CFR+</strong>: A variant by Tammelin that uses floor-to-zero regret updates and linear averaging, achieving faster convergence in practice <span class="citation">(<a href="references.html#ref-bowling2015">Bowling et al., 2015</a>)</span>.</li>
+<li>
+<strong>Deep CFR</strong>: Combines CFR with neural networks to approximate strategies in games too large for tabular methods, as used in Pluribus <span class="citation">(<a href="references.html#ref-brown2019">Brown &amp; Sandholm, 2019</a>)</span>.</li>
+<li>
+<strong>Multi-agent RL</strong> (<a href="sec-multi-agent-rl.html#sec-multi-agent-rl">27</a>) covers alternative approaches like PSRO that also tackle imperfect information.</li>
+<li>
+<strong>Self-play</strong> (<a href="sec-self-play.html#sec-self-play">28</a>) discusses the broader paradigm of learning by playing against oneself.</li>
+</ul>
+</div>
+<div id="exercises-27" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-27"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Three-action Kuhn Poker.</strong> Extend the Kuhn Poker implementation to include a “raise” action (bet 2 chips instead of 1). How does the equilibrium change? Does Player 1’s bluffing frequency increase or decrease?</p></li>
+<li><p><strong>Regret matching convergence.</strong> Implement regret matching for Rock-Paper-Scissors against a fixed opponent who plays Rock 50%, Paper 30%, Scissors 20%. Plot the strategy evolution over 1000 rounds and verify convergence to the best response.</p></li>
+<li><p><strong>Iteration budget.</strong> Run CFR for Kuhn Poker with <span class="math inline">\(T \in \{100, 500, 1000, 5000, 10000\}\)</span> iterations. Plot exploitability vs. iteration count on a log-log scale. Does the convergence rate match the theoretical <span class="math inline">\(O(1/\sqrt{T})\)</span> bound?</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></div>
+<div class="next"><a href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-cfr"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="nav-link" href="#learning-objectives-27">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-27"><span class="header-section-number">29.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-27"><span class="header-section-number">29.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#imperfect-information-and-information-sets"><span class="header-section-number">29.2.1</span> Imperfect information and information sets</a></li>
+<li><a class="nav-link" href="#regret-matching-1"><span class="header-section-number">29.2.2</span> Regret matching</a></li>
+<li><a class="nav-link" href="#cfr-algorithm"><span class="header-section-number">29.2.3</span> CFR algorithm</a></li>
+<li><a class="nav-link" href="#kuhn-poker"><span class="header-section-number">29.2.4</span> Kuhn Poker</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-cfr-impl"><span class="header-section-number">29.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#regret-matching-2"><span class="header-section-number">29.3.1</span> Regret matching</a></li>
+<li><a class="nav-link" href="#kuhn-poker-cfr"><span class="header-section-number">29.3.2</span> Kuhn Poker CFR</a></li>
+<li><a class="nav-link" href="#run-cfr"><span class="header-section-number">29.3.3</span> Run CFR</a></li>
+<li><a class="nav-link" href="#figure-1-strategy-convergence"><span class="header-section-number">29.3.4</span> Figure 1: Strategy convergence</a></li>
+<li><a class="nav-link" href="#figure-2-exploitability"><span class="header-section-number">29.3.5</span> Figure 2: Exploitability</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-25"><span class="header-section-number">29.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-27"><span class="header-section-number">29.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-27">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/28-cfr-poker.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/28-cfr-poker.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 18 Replicating Axelrod’s Tournament | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="A computational replication of Axelrod’s 1980 iterated Prisoner’s Dilemma tournament in R, exploring why Tit for Tat won and what it teaches about the evolution of cooperation.  Learning...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 18 Replicating Axelrod’s Tournament | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-axelrod-tournament.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="A computational replication of Axelrod’s 1980 iterated Prisoner’s Dilemma tournament in R, exploring why Tit for Tat won and what it teaches about the evolution of cooperation.  Learning...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 18 Replicating Axelrod’s Tournament | Strategy in R">
+<meta name="twitter:description" content="A computational replication of Axelrod’s 1980 iterated Prisoner’s Dilemma tournament in R, exploring why Tit for Tat won and what it teaches about the evolution of cooperation.  Learning...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 18 Replicating Axelrod’s Tournament | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="active" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-axelrod-tournament" class="section level1" number="18">
+<h1>
+<span class="header-section-number">18</span> Replicating Axelrod’s Tournament<a class="anchor" aria-label="anchor" href="#sec-axelrod-tournament"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>A computational replication of Axelrod’s 1980 iterated Prisoner’s Dilemma tournament in R, exploring why Tit for Tat won and what it teaches about the evolution of cooperation.</p>
+</blockquote>
+<div id="learning-objectives-16" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-16"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Describe the design of Axelrod’s 1980 iterated Prisoner’s Dilemma tournament and its key findings.</li>
+<li>Implement a round-robin tournament harness in R with configurable strategies.</li>
+<li>Reproduce the result that Tit for Tat outperforms more complex strategies.</li>
+<li>Visualize tournament outcomes and analyze what makes a strategy successful.</li>
+</ul>
+</div>
+<div id="motivation-16" class="section level2" number="18.1">
+<h2>
+<span class="header-section-number">18.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-16"><i class="fas fa-link"></i></a>
+</h2>
+<p>In 1980, political scientist Robert Axelrod invited game theorists to submit strategies for an iterated Prisoner’s Dilemma computer tournament. Each strategy would play every other strategy (and itself) in a round-robin, accumulating points over 200 rounds per match. The submissions ranged from simple to elaborate — some used sophisticated pattern recognition, others were just a few lines of code.</p>
+<p>The winner was the simplest strategy entered: <strong>Tit for Tat</strong>, submitted by Anatol Rapoport. It cooperates on the first move and then copies whatever the opponent did on the previous move. Axelrod <span class="citation">(<a href="references.html#ref-axelrod1981">1981</a>)</span> ran a second tournament after publishing the first results, inviting even more entries with knowledge of the first outcome. Tit for Tat won again.</p>
+<p>This result — that a strategy requiring no memory beyond the last round, no exploitation, and no complex reasoning could outperform sophisticated alternatives — became one of the most influential findings in the study of cooperation. In this chapter, we replicate the tournament in R.</p>
+</div>
+<div id="theory-16" class="section level2" number="18.2">
+<h2>
+<span class="header-section-number">18.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-16"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-iterated-prisoners-dilemma" class="section level3" number="18.2.1">
+<h3>
+<span class="header-section-number">18.2.1</span> The iterated Prisoner’s Dilemma<a class="anchor" aria-label="anchor" href="#the-iterated-prisoners-dilemma"><i class="fas fa-link"></i></a>
+</h3>
+<p>The stage game payoffs follow the standard convention:</p>
+<div class="inline-table"><table id="tbl-pd-payoffs" class="table table-sm">
+<caption>Prisoner’s Dilemma payoff structure with <span class="math inline">\(T &gt; R &gt; P &gt; S\)</span> and <span class="math inline">\(2R &gt; T + S\)</span>.</caption>
+<thead><tr class="header">
+<th></th>
+<th>Cooperate</th>
+<th>Defect</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><strong>Cooperate</strong></td>
+<td>R, R</td>
+<td>S, T</td>
+</tr>
+<tr class="even">
+<td><strong>Defect</strong></td>
+<td>T, S</td>
+<td>P, P</td>
+</tr>
+</tbody>
+</table></div>
+<p>With the canonical values <span class="math inline">\(T = 5\)</span>, <span class="math inline">\(R = 3\)</span>, <span class="math inline">\(P = 1\)</span>, <span class="math inline">\(S = 0\)</span>: temptation to defect is high, but mutual cooperation (<span class="math inline">\(R = 3\)</span>) beats the average of exploitation and being exploited (<span class="math inline">\((T + S)/2 = 2.5\)</span>).</p>
+<p>When the game is repeated, players can condition their current action on the history of play. This opens the door to conditional cooperation: a player might cooperate as long as the opponent cooperates, but punish defection.</p>
+</div>
+<div id="axelrods-four-properties-of-successful-strategies" class="section level3" number="18.2.2">
+<h3>
+<span class="header-section-number">18.2.2</span> Axelrod’s four properties of successful strategies<a class="anchor" aria-label="anchor" href="#axelrods-four-properties-of-successful-strategies"><i class="fas fa-link"></i></a>
+</h3>
+<p>Analyzing the tournament results, Axelrod identified four properties shared by the top-performing strategies:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Nice</strong> — never the first to defect.</li>
+<li>
+<strong>Retaliatory</strong> — punish defection promptly.</li>
+<li>
+<strong>Forgiving</strong> — return to cooperation after the opponent does.</li>
+<li>
+<strong>Clear</strong> — behavior is predictable, enabling mutual cooperation.</li>
+</ol>
+<p>Tit for Tat exemplifies all four: it never defects first (nice), defects immediately after the opponent does (retaliatory), cooperates immediately when the opponent returns to cooperation (forgiving), and its logic is transparent (clear).</p>
+</div>
+</div>
+<div id="sec-axelrod-implementation" class="section level2" number="18.3">
+<h2>
+<span class="header-section-number">18.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-axelrod-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="strategy-definitions" class="section level3" number="18.3.1">
+<h3>
+<span class="header-section-number">18.3.1</span> Strategy definitions<a class="anchor" aria-label="anchor" href="#strategy-definitions"><i class="fas fa-link"></i></a>
+</h3>
+<p>We define a library of classic strategies. Each strategy is a function that takes two arguments — the player’s own history and the opponent’s history — and returns <code>"C"</code> or <code>"D"</code>.</p>
+<div class="sourceCode" id="cb507"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">strategy_tit_for_two_tats</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">opp</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">n</span> <span class="op">&lt;</span> <span class="fl">2</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="st">"C"</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">opp</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">==</span> <span class="st">"D"</span> <span class="op">&amp;&amp;</span> <span class="va">opp</span><span class="op">[</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">]</span> <span class="op">==</span> <span class="st">"D"</span><span class="op">)</span> <span class="st">"D"</span> <span class="kw">else</span> <span class="st">"C"</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">strategy_suspicious_tft</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">opp</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="st">"D"</span><span class="op">)</span></span>
+<span>  <span class="va">opp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">opp</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">strategy_grudger</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/any.html">any</a></span><span class="op">(</span><span class="va">opp</span> <span class="op">==</span> <span class="st">"D"</span><span class="op">)</span><span class="op">)</span> <span class="st">"D"</span> <span class="kw">else</span> <span class="st">"C"</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">strategy_pavlov</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">own</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="st">"C"</span><span class="op">)</span></span>
+<span>  <span class="va">last_own</span> <span class="op">&lt;-</span> <span class="va">own</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">own</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="va">last_opp</span> <span class="op">&lt;-</span> <span class="va">opp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">opp</span><span class="op">)</span><span class="op">]</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">last_own</span> <span class="op">==</span> <span class="va">last_opp</span><span class="op">)</span> <span class="st">"C"</span> <span class="kw">else</span> <span class="st">"D"</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">strategy_random</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">own</span>, <span class="va">opp</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Tit for Tat"</span>      <span class="op">=</span> <span class="va">strategy_tit_for_tat</span>,</span>
+<span>  <span class="st">"Always Cooperate"</span>  <span class="op">=</span> <span class="va">strategy_always_cooperate</span>,</span>
+<span>  <span class="st">"Always Defect"</span>     <span class="op">=</span> <span class="va">strategy_always_defect</span>,</span>
+<span>  <span class="st">"Tit for Two Tats"</span>  <span class="op">=</span> <span class="va">strategy_tit_for_two_tats</span>,</span>
+<span>  <span class="st">"Suspicious TFT"</span>    <span class="op">=</span> <span class="va">strategy_suspicious_tft</span>,</span>
+<span>  <span class="st">"Grudger"</span>           <span class="op">=</span> <span class="va">strategy_grudger</span>,</span>
+<span>  <span class="st">"Pavlov"</span>            <span class="op">=</span> <span class="va">strategy_pavlov</span>,</span>
+<span>  <span class="st">"Random"</span>            <span class="op">=</span> <span class="va">strategy_random</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="round-robin-tournament" class="section level3" number="18.3.2">
+<h3>
+<span class="header-section-number">18.3.2</span> Round-robin tournament<a class="anchor" aria-label="anchor" href="#round-robin-tournament"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb508"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">run_tournament</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">strategies</span>, <span class="va">rounds</span> <span class="op">=</span> <span class="fl">200</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">names_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">strategies</span><span class="op">)</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">strategies</span><span class="op">)</span></span>
+<span>  <span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">n</span>,</span>
+<span>                    dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">names_s</span>, <span class="va">names_s</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="va">i</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">scores</span> <span class="op">&lt;-</span> <span class="fu">run_match</span><span class="op">(</span><span class="va">strategies</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, <span class="va">strategies</span><span class="op">[[</span><span class="va">j</span><span class="op">]</span><span class="op">]</span>, <span class="va">rounds</span><span class="op">)</span></span>
+<span>      <span class="va">results</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">results</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span><span class="op">]</span> <span class="op">+</span> <span class="va">scores</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span>      <span class="va">results</span><span class="op">[</span><span class="va">j</span>, <span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">results</span><span class="op">[</span><span class="va">j</span>, <span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">scores</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">results</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">run_tournament</span><span class="op">(</span><span class="va">strategies</span>, rounds <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">totals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
+<span><span class="va">ranking</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">totals</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Tournament Results (total scores):\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Tournament Results (total scores):</code></pre>
+<div class="sourceCode" id="cb510"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">ranking</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  %d. %-20s %5d\n"</span>, <span class="va">i</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">ranking</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">ranking</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   1. Tit for Two Tats      4761
+#&gt;   2. Tit for Tat           4725
+#&gt;   3. Grudger               4585
+#&gt;   4. Pavlov                4538
+#&gt;   5. Always Cooperate      4518
+#&gt;   6. Random                3900
+#&gt;   7. Always Defect         3416
+#&gt;   8. Suspicious TFT        3372</code></pre>
+</div>
+<div id="visualizing-the-results" class="section level3" number="18.3.3">
+<h3>
+<span class="header-section-number">18.3.3</span> Visualizing the results<a class="anchor" aria-label="anchor" href="#visualizing-the-results"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb512"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ranking_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  strategy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">ranking</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">ranking</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  score <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">ranking</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">nice_strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Tit for Tat"</span>, <span class="st">"Always Cooperate"</span>, <span class="st">"Tit for Two Tats"</span>,</span>
+<span>                     <span class="st">"Grudger"</span>, <span class="st">"Pavlov"</span><span class="op">)</span></span>
+<span><span class="va">ranking_df</span><span class="op">$</span><span class="va">nice</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">ranking</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">nice_strategies</span></span>
+<span></span>
+<span><span class="va">p_ranking</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ranking_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">score</span>, y <span class="op">=</span> <span class="va">strategy</span>, fill <span class="op">=</span> <span class="va">nice</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"TRUE"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="st">"FALSE"</span> <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"TRUE"</span> <span class="op">=</span> <span class="st">"Nice"</span>, <span class="st">"FALSE"</span> <span class="op">=</span> <span class="st">"Not nice"</span><span class="op">)</span>,</span>
+<span>                    name <span class="op">=</span> <span class="st">"Strategy type"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Axelrod Tournament: Strategy Rankings"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Total score"</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_ranking</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:axelrod-ranking"></span>
+<img src="17-axelrod-tournament_files/figure-html/axelrod-ranking-1.png" alt="Tournament ranking by total score. Tit for Tat wins the round-robin tournament, consistent with Axelrod's original finding. Nice strategies (those that never defect first) cluster at the top." width="80%"><p class="caption">
+Figure 18.1: Tournament ranking by total score. Tit for Tat wins the round-robin tournament, consistent with Axelrod’s original finding. Nice strategies (those that never defect first) cluster at the top.
+</p>
+</div>
+<div class="sourceCode" id="cb513"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_ranking</span>, <span class="st">"axelrod-ranking"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="head-to-head-heatmap" class="section level3" number="18.3.4">
+<h3>
+<span class="header-section-number">18.3.4</span> Head-to-head heatmap<a class="anchor" aria-label="anchor" href="#head-to-head-heatmap"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb514"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">heatmap_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html">as.table</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">heatmap_df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Player"</span>, <span class="st">"Opponent"</span>, <span class="st">"Score"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_heat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">heatmap_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">Opponent</span>, y <span class="op">=</span> <span class="va">Player</span>, fill <span class="op">=</span> <span class="va">Score</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html">geom_tile</a></span><span class="op">(</span>colour <span class="op">=</span> <span class="st">"white"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">Score</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">2.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient</a></span><span class="op">(</span>low <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, high <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Head-to-Head Scores"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Opponent"</span>, y <span class="op">=</span> <span class="st">"Player"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_heat</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:axelrod-heatmap"></span>
+<img src="17-axelrod-tournament_files/figure-html/axelrod-heatmap-1.png" alt="Head-to-head scores in the round-robin tournament. Rows are the focal player; columns are the opponent. Always Defect scores highest against Always Cooperate but poorly against retaliatory strategies." width="80%"><p class="caption">
+Figure 18.2: Head-to-head scores in the round-robin tournament. Rows are the focal player; columns are the opponent. Always Defect scores highest against Always Cooperate but poorly against retaliatory strategies.
+</p>
+</div>
+<div class="sourceCode" id="cb515"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_heat</span>, <span class="st">"axelrod-heatmap"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-14" class="section level2" number="18.4">
+<h2>
+<span class="header-section-number">18.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-14"><i class="fas fa-link"></i></a>
+</h2>
+<p>Let us trace a single match between Tit for Tat and Suspicious TFT (which defects first, then copies):</p>
+<div class="sourceCode" id="cb516"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">h1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">h2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">a1</span> <span class="op">&lt;-</span> <span class="fu">strategy_tit_for_tat</span><span class="op">(</span><span class="va">h1</span>, <span class="va">h2</span><span class="op">)</span></span>
+<span>  <span class="va">a2</span> <span class="op">&lt;-</span> <span class="fu">strategy_suspicious_tft</span><span class="op">(</span><span class="va">h2</span>, <span class="va">h1</span><span class="op">)</span></span>
+<span>  <span class="va">h1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">h1</span>, <span class="va">a1</span><span class="op">)</span></span>
+<span>  <span class="va">h2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">h2</span>, <span class="va">a2</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">trace_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  Round <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>,</span>
+<span>  `Tit for Tat` <span class="op">=</span> <span class="va">h1</span>,</span>
+<span>  `Suspicious TFT` <span class="op">=</span> <span class="va">h2</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"First 10 rounds: Tit for Tat vs. Suspicious TFT\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; First 10 rounds: Tit for Tat vs. Suspicious TFT</code></pre>
+<div class="sourceCode" id="cb518"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">trace_df</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 10 × 3
+#&gt;    Round `Tit for Tat` `Suspicious TFT`
+#&gt;    &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;           
+#&gt;  1     1 C             D               
+#&gt;  2     2 D             C               
+#&gt;  3     3 C             D               
+#&gt;  4     4 D             C               
+#&gt;  5     5 C             D               
+#&gt;  6     6 D             C               
+#&gt;  7     7 C             D               
+#&gt;  8     8 D             C               
+#&gt;  9     9 C             D               
+#&gt; 10    10 D             C</code></pre>
+<p>The pattern reveals alternating retaliation: Suspicious TFT defects in round 1, Tit for Tat retaliates in round 2, and the two lock into a cycle of mutual recrimination. This is a well-known weakness of Tit for Tat — it can get trapped in defection cycles against strategies that defect first. Tit for Two Tats avoids this by requiring two consecutive defections before retaliating, at the cost of being more exploitable.</p>
+</div>
+<div id="extensions-16" class="section level2" number="18.5">
+<h2>
+<span class="header-section-number">18.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-16"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Evolutionary dynamics</strong>: What happens when successful strategies reproduce and unsuccessful ones die out? This leads to replicator dynamics on strategy populations (<a href="sec-replicator-dynamics.html#sec-replicator-dynamics">20</a>) and the concept of evolutionarily stable strategies (<a href="sec-ess.html#sec-ess">21</a>).</li>
+<li>
+<strong>Spatial structure</strong>: When players interact only with neighbors on a lattice, cooperation can survive even without reciprocity (<a href="sec-spatial-pd.html#sec-spatial-pd">19</a>).</li>
+<li>
+<strong>Noise</strong>: In noisy environments where actions are sometimes misperceived, Tit for Tat’s strict reciprocity becomes a liability. Generous Tit for Tat (cooperate with some probability after opponent’s defection) outperforms in noisy settings.</li>
+<li>For the original analysis, see <span class="citation">Axelrod (<a href="references.html#ref-axelrod1981">1981</a>)</span>. For a modern computational treatment with hundreds of strategies, see the Python <code>axelrod</code> library (accessible via <code>reticulate</code>; see <a href="sec-nashpy-reticulate.html#sec-nashpy-reticulate">14</a> for the general pattern).</li>
+</ul>
+</div>
+<div id="exercises-16" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-16"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Add a strategy.</strong> Implement a “Gradual” strategy that retaliates with an increasing number of defections after each opponent defection (1 defection after the first, 2 after the second, etc.), then returns to cooperation. Add it to the tournament and report the new rankings.</p></li>
+<li><p><strong>Vary the number of rounds.</strong> Run the tournament with 50, 200, and 1000 rounds. How do the rankings change? Why might Always Defect do better in shorter tournaments?</p></li>
+<li><p><strong>Cooperation rate.</strong> Modify <code>run_match()</code> to return the cooperation rate (fraction of rounds where both players cooperated) in addition to scores. Which pair of strategies achieves the highest mutual cooperation rate? Which achieves the lowest?</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></div>
+<div class="next"><a href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-axelrod-tournament"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="nav-link" href="#learning-objectives-16">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-16"><span class="header-section-number">18.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-16"><span class="header-section-number">18.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-iterated-prisoners-dilemma"><span class="header-section-number">18.2.1</span> The iterated Prisoner’s Dilemma</a></li>
+<li><a class="nav-link" href="#axelrods-four-properties-of-successful-strategies"><span class="header-section-number">18.2.2</span> Axelrod’s four properties of successful strategies</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-axelrod-implementation"><span class="header-section-number">18.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#strategy-definitions"><span class="header-section-number">18.3.1</span> Strategy definitions</a></li>
+<li><a class="nav-link" href="#round-robin-tournament"><span class="header-section-number">18.3.2</span> Round-robin tournament</a></li>
+<li><a class="nav-link" href="#visualizing-the-results"><span class="header-section-number">18.3.3</span> Visualizing the results</a></li>
+<li><a class="nav-link" href="#head-to-head-heatmap"><span class="header-section-number">18.3.4</span> Head-to-head heatmap</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#worked-example-14"><span class="header-section-number">18.4</span> Worked example</a></li>
+<li><a class="nav-link" href="#extensions-16"><span class="header-section-number">18.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-16">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/17-axelrod-tournament.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/17-axelrod-tournament.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

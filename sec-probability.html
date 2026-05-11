@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>C Probability Essentials | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="Probability distributions, expectations, Bayes’ rule, and stochastic processes. This appendix reviews the probability concepts that underpin mixed strategies, Bayesian games, and the simulation...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="C Probability Essentials | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-probability.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="Probability distributions, expectations, Bayes’ rule, and stochastic processes. This appendix reviews the probability concepts that underpin mixed strategies, Bayesian games, and the simulation...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C Probability Essentials | Strategy in R">
+<meta name="twitter:description" content="Probability distributions, expectations, Bayes’ rule, and stochastic processes. This appendix reviews the probability concepts that underpin mixed strategies, Bayesian games, and the simulation...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="C Probability Essentials | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="active" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-probability" class="section level1" number="45">
+<h1>
+<span class="header-section-number">C</span> Probability Essentials<a class="anchor" aria-label="anchor" href="#sec-probability"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>Probability distributions, expectations, Bayes’ rule, and stochastic processes.</p>
+</blockquote>
+<p>This appendix reviews the probability concepts that underpin mixed strategies, Bayesian games, and the simulation chapters. The emphasis is on intuition and R implementation rather than measure-theoretic rigour.</p>
+<div id="sample-spaces-and-events" class="section level2" number="45.1">
+<h2>
+<span class="header-section-number">C.1</span> Sample spaces and events<a class="anchor" aria-label="anchor" href="#sample-spaces-and-events"><i class="fas fa-link"></i></a>
+</h2>
+<p>A <strong>sample space</strong> <span class="math inline">\(\Omega\)</span> is the set of all possible outcomes of a random experiment. An <strong>event</strong> <span class="math inline">\(E \subseteq \Omega\)</span> is a subset of outcomes. A <strong>probability measure</strong> <span class="math inline">\(P\)</span> assigns a number <span class="math inline">\(P(E) \in [0, 1]\)</span> to every event, with <span class="math inline">\(P(\Omega) = 1\)</span>.</p>
+<p>In game theory, the sample space often corresponds to the set of action profiles or the set of player types.</p>
+</div>
+<div id="discrete-distributions" class="section level2" number="45.2">
+<h2>
+<span class="header-section-number">C.2</span> Discrete distributions<a class="anchor" aria-label="anchor" href="#discrete-distributions"><i class="fas fa-link"></i></a>
+</h2>
+<p>A <strong>discrete random variable</strong> <span class="math inline">\(X\)</span> takes values in a countable set <span class="math inline">\(\{x_1, x_2, \ldots\}\)</span> with probability mass function <span class="math inline">\(p(x_i) = P(X = x_i)\)</span>.</p>
+<div id="common-discrete-distributions" class="section level3" number="45.2.1">
+<h3>
+<span class="header-section-number">C.2.1</span> Common discrete distributions<a class="anchor" aria-label="anchor" href="#common-discrete-distributions"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1366"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Bernoulli: coin flip (used in mixed strategies)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="fl">10</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;  [1] 1 1 0 1 1 1 1 0 1 1</code></pre>
+<div class="sourceCode" id="cb1368"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Binomial: number of cooperators in n rounds</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">dbinom</a></span><span class="op">(</span><span class="fl">3</span>, size <span class="op">=</span> <span class="fl">10</span>, prob <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span>  <span class="co"># P(X = 3)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.0425</code></pre>
+<div class="sourceCode" id="cb1370"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Uniform: equally likely strategies</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] "Scissors"</code></pre>
+<div class="sourceCode" id="cb1372"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Poisson: arrival counts (used in some mechanism design models)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html">rpois</a></span><span class="op">(</span><span class="fl">10</span>, lambda <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;  [1] 4 6 2 3 6 7 1 3 3 5</code></pre>
+</div>
+<div id="probability-mass-function-and-cdf" class="section level3" number="45.2.2">
+<h3>
+<span class="header-section-number">C.2.2</span> Probability mass function and CDF<a class="anchor" aria-label="anchor" href="#probability-mass-function-and-cdf"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1374"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># PMF and CDF of Binomial(10, 0.4)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">0</span><span class="op">:</span><span class="fl">10</span></span>
+<span><span class="va">pmf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">dbinom</a></span><span class="op">(</span><span class="va">x</span>, size <span class="op">=</span> <span class="fl">10</span>, prob <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span>
+<span><span class="va">cdf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">pbinom</a></span><span class="op">(</span><span class="va">x</span>, size <span class="op">=</span> <span class="fl">10</span>, prob <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, pmf <span class="op">=</span> <span class="va">pmf</span>, cdf <span class="op">=</span> <span class="va">cdf</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 3
+#&gt;       x     pmf     cdf
+#&gt;   &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+#&gt; 1     0 0.00605 0.00605
+#&gt; 2     1 0.0403  0.0464 
+#&gt; 3     2 0.121   0.167  
+#&gt; 4     3 0.215   0.382  
+#&gt; 5     4 0.251   0.633  
+#&gt; 6     5 0.201   0.834</code></pre>
+</div>
+</div>
+<div id="continuous-distributions" class="section level2" number="45.3">
+<h2>
+<span class="header-section-number">C.3</span> Continuous distributions<a class="anchor" aria-label="anchor" href="#continuous-distributions"><i class="fas fa-link"></i></a>
+</h2>
+<p>A <strong>continuous random variable</strong> <span class="math inline">\(X\)</span> has a probability density function <span class="math inline">\(f(x)\)</span> such that <span class="math inline">\(P(a \leq X \leq b) = \int_a^b f(x)\, dx\)</span>.</p>
+<div id="common-continuous-distributions" class="section level3" number="45.3.1">
+<h3>
+<span class="header-section-number">C.3.1</span> Common continuous distributions<a class="anchor" aria-label="anchor" href="#common-continuous-distributions"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1376"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Uniform on [0, 1]: used for types in Bayesian games</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">5</span>, min <span class="op">=</span> <span class="fl">0</span>, max <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.1387 0.9889 0.9467 0.0824 0.5142</code></pre>
+<div class="sourceCode" id="cb1378"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Normal: payoff noise, error terms</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">5</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] -0.279 -0.133  0.636 -0.284 -2.656</code></pre>
+<div class="sourceCode" id="cb1380"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Exponential: waiting times, discount factors</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html">rexp</a></span><span class="op">(</span><span class="fl">5</span>, rate <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 4.996 0.224 1.211 0.719 1.308</code></pre>
+</div>
+<div id="density-cdf-and-quantiles" class="section level3" number="45.3.2">
+<h3>
+<span class="header-section-number">C.3.2</span> Density, CDF, and quantiles<a class="anchor" aria-label="anchor" href="#density-cdf-and-quantiles"><i class="fas fa-link"></i></a>
+</h3>
+<p>R uses a consistent naming convention: <code>d</code> for density, <code>p</code> for CDF, <code>q</code> for quantile, and <code>r</code> for random draws.</p>
+<div class="sourceCode" id="cb1382"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Normal distribution</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">dnorm</a></span><span class="op">(</span><span class="fl">0</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>   <span class="co"># density at 0</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.399</code></pre>
+<div class="sourceCode" id="cb1384"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">pnorm</a></span><span class="op">(</span><span class="fl">1.96</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># P(X &lt;= 1.96)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.975</code></pre>
+<div class="sourceCode" id="cb1386"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">qnorm</a></span><span class="op">(</span><span class="fl">0.975</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="co"># 97.5th percentile</span></span></code></pre></div>
+<pre><code>#&gt; [1] 1.96</code></pre>
+<div class="sourceCode" id="cb1388"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span><span class="op">(</span><span class="fl">3</span>, mean <span class="op">=</span> <span class="fl">0</span>, sd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>    <span class="co"># three random draws</span></span></code></pre></div>
+<pre><code>#&gt; [1]  0.358  0.302 -0.394</code></pre>
+</div>
+</div>
+<div id="expected-value-and-variance" class="section level2" number="45.4">
+<h2>
+<span class="header-section-number">C.4</span> Expected value and variance<a class="anchor" aria-label="anchor" href="#expected-value-and-variance"><i class="fas fa-link"></i></a>
+</h2>
+<p>The <strong>expected value</strong> of a discrete random variable is <span class="math inline">\(E[X] = \sum_i x_i \, p(x_i)\)</span>. For a continuous variable, <span class="math inline">\(E[X] = \int x \, f(x) \, dx\)</span>. In game theory, the expected payoff under a mixed strategy <span class="math inline">\(\mathbf{p}\)</span> is:</p>
+<p><span class="math display">\[
+E[u_i] = \sum_{a \in A} p(a) \, u_i(a)
+\]</span></p>
+<p>The <strong>variance</strong> <span class="math inline">\(\text{Var}(X) = E[(X - E[X])^2] = E[X^2] - (E[X])^2\)</span> measures the spread of outcomes.</p>
+<div class="sourceCode" id="cb1390"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Expected payoff under a mixed strategy</span></span>
+<span><span class="va">payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">probs</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.4</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Expected value</span></span>
+<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">payoffs</span> <span class="op">*</span> <span class="va">probs</span><span class="op">)</span></span>
+<span><span class="va">ev</span></span></code></pre></div>
+<pre><code>#&gt; [1] 1.8</code></pre>
+<div class="sourceCode" id="cb1392"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Variance</span></span>
+<span><span class="va">variance</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">probs</span> <span class="op">*</span> <span class="op">(</span><span class="va">payoffs</span> <span class="op">-</span> <span class="va">ev</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">variance</span></span></code></pre></div>
+<pre><code>#&gt; [1] 2.36</code></pre>
+<div class="sourceCode" id="cb1394"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Using simulation to verify</span></span>
+<span><span class="va">simulated</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="va">payoffs</span>, size <span class="op">=</span> <span class="fl">100000</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="va">probs</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">simulated</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 1.8</code></pre>
+<div class="sourceCode" id="cb1396"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html">var</a></span><span class="op">(</span><span class="va">simulated</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 2.37</code></pre>
+<div id="linearity-of-expectation" class="section level3" number="45.4.1">
+<h3>
+<span class="header-section-number">C.4.1</span> Linearity of expectation<a class="anchor" aria-label="anchor" href="#linearity-of-expectation"><i class="fas fa-link"></i></a>
+</h3>
+<p>A key property: <span class="math inline">\(E[aX + bY] = aE[X] + bE[Y]\)</span>, regardless of whether <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are independent. This is used constantly when computing expected payoffs in multi-player games.</p>
+</div>
+</div>
+<div id="conditional-probability" class="section level2" number="45.5">
+<h2>
+<span class="header-section-number">C.5</span> Conditional probability<a class="anchor" aria-label="anchor" href="#conditional-probability"><i class="fas fa-link"></i></a>
+</h2>
+<p>The <strong>conditional probability</strong> of <span class="math inline">\(A\)</span> given <span class="math inline">\(B\)</span> is:</p>
+<p><span class="math display">\[
+P(A \mid B) = \frac{P(A \cap B)}{P(B)}, \quad P(B) &gt; 0
+\]</span></p>
+<p>Two events are <strong>independent</strong> if <span class="math inline">\(P(A \cap B) = P(A) P(B)\)</span>, equivalently <span class="math inline">\(P(A \mid B) = P(A)\)</span>.</p>
+<div class="sourceCode" id="cb1398"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Simulation: P(both cooperate | Player 1 cooperates)</span></span>
+<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">100000</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.6</span>, <span class="fl">0.4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span><span class="op">)</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Joint and conditional (assuming independence here)</span></span>
+<span><span class="va">p_both_C</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">p1</span> <span class="op">==</span> <span class="st">"C"</span> <span class="op">&amp;</span> <span class="va">p2</span> <span class="op">==</span> <span class="st">"C"</span><span class="op">)</span></span>
+<span><span class="va">p_p1_C</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">p1</span> <span class="op">==</span> <span class="st">"C"</span><span class="op">)</span></span>
+<span><span class="va">p_both_C</span> <span class="op">/</span> <span class="va">p_p1_C</span>  <span class="co"># should be approx 0.5</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.501</code></pre>
+</div>
+<div id="bayes-theorem" class="section level2" number="45.6">
+<h2>
+<span class="header-section-number">C.6</span> Bayes’ theorem<a class="anchor" aria-label="anchor" href="#bayes-theorem"><i class="fas fa-link"></i></a>
+</h2>
+<p><strong>Bayes’ theorem</strong> is the foundation of Bayesian games (<a href="sec-bayesian-games.html#sec-bayesian-games">7</a>). It tells us how to update beliefs about a player’s type after observing their action:</p>
+<p><span class="math display">\[
+P(\theta \mid a) = \frac{P(a \mid \theta) \, P(\theta)}{P(a)}
+\]</span></p>
+<p>where <span class="math inline">\(\theta\)</span> is the player’s type, <span class="math inline">\(a\)</span> is the observed action, <span class="math inline">\(P(\theta)\)</span> is the prior, <span class="math inline">\(P(a \mid \theta)\)</span> is the likelihood, and <span class="math inline">\(P(a) = \sum_{\theta'} P(a \mid \theta') P(\theta')\)</span> is the marginal likelihood.</p>
+<div class="sourceCode" id="cb1400"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Signaling game: worker chooses Education or No Education</span></span>
+<span><span class="co"># Types: High (prob 0.6), Low (prob 0.4)</span></span>
+<span><span class="co"># P(Education | High) = 0.9, P(Education | Low) = 0.2</span></span>
+<span></span>
+<span><span class="va">prior_high</span> <span class="op">&lt;-</span> <span class="fl">0.6</span></span>
+<span><span class="va">prior_low</span>  <span class="op">&lt;-</span> <span class="fl">0.4</span></span>
+<span></span>
+<span><span class="va">p_edu_given_high</span> <span class="op">&lt;-</span> <span class="fl">0.9</span></span>
+<span><span class="va">p_edu_given_low</span>  <span class="op">&lt;-</span> <span class="fl">0.2</span></span>
+<span></span>
+<span><span class="co"># P(Education)</span></span>
+<span><span class="va">p_edu</span> <span class="op">&lt;-</span> <span class="va">p_edu_given_high</span> <span class="op">*</span> <span class="va">prior_high</span> <span class="op">+</span> <span class="va">p_edu_given_low</span> <span class="op">*</span> <span class="va">prior_low</span></span>
+<span><span class="va">p_edu</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.62</code></pre>
+<div class="sourceCode" id="cb1402"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># P(High | Education) by Bayes' theorem</span></span>
+<span><span class="va">p_high_given_edu</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">p_edu_given_high</span> <span class="op">*</span> <span class="va">prior_high</span><span class="op">)</span> <span class="op">/</span> <span class="va">p_edu</span></span>
+<span><span class="va">p_high_given_edu</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.871</code></pre>
+<div class="sourceCode" id="cb1404"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># P(High | No Education)</span></span>
+<span><span class="va">p_no_edu</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">p_edu</span></span>
+<span><span class="va">p_high_given_no_edu</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">p_edu_given_high</span><span class="op">)</span> <span class="op">*</span> <span class="va">prior_high</span><span class="op">)</span> <span class="op">/</span> <span class="va">p_no_edu</span></span>
+<span><span class="va">p_high_given_no_edu</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.158</code></pre>
+<div id="sequential-updating" class="section level3" number="45.6.1">
+<h3>
+<span class="header-section-number">C.6.1</span> Sequential updating<a class="anchor" aria-label="anchor" href="#sequential-updating"><i class="fas fa-link"></i></a>
+</h3>
+<p>When multiple signals are observed, Bayes’ theorem can be applied sequentially: the posterior from one update becomes the prior for the next. This is used in repeated Bayesian games where players learn about opponents over time.</p>
+<div class="sourceCode" id="cb1406"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Sequential Bayesian updating: observe actions round by round</span></span>
+<span><span class="co"># Prior: P(Cooperator type) = 0.5</span></span>
+<span><span class="co"># P(C action | Cooperator type) = 0.9</span></span>
+<span><span class="co"># P(C action | Defector type) = 0.1</span></span>
+<span></span>
+<span><span class="va">update_belief</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">prior</span>, <span class="va">likelihood_coop</span>, <span class="va">likelihood_defect</span>, <span class="va">action</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">action</span> <span class="op">==</span> <span class="st">"C"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">l_coop</span> <span class="op">&lt;-</span> <span class="va">likelihood_coop</span></span>
+<span>    <span class="va">l_defect</span> <span class="op">&lt;-</span> <span class="va">likelihood_defect</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">l_coop</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">likelihood_coop</span></span>
+<span>    <span class="va">l_defect</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="va">likelihood_defect</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">numerator</span>   <span class="op">&lt;-</span> <span class="va">l_coop</span> <span class="op">*</span> <span class="va">prior</span></span>
+<span>  <span class="va">denominator</span> <span class="op">&lt;-</span> <span class="va">l_coop</span> <span class="op">*</span> <span class="va">prior</span> <span class="op">+</span> <span class="va">l_defect</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">prior</span><span class="op">)</span></span>
+<span>  <span class="va">numerator</span> <span class="op">/</span> <span class="va">denominator</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fl">0.5</span></span>
+<span><span class="va">actions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"C"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">beliefs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">actions</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">actions</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu">update_belief</span><span class="op">(</span><span class="va">prior</span>, <span class="fl">0.9</span>, <span class="fl">0.1</span>, <span class="va">actions</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">beliefs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">prior</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>round <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">actions</span><span class="op">)</span>, action <span class="op">=</span> <span class="va">actions</span>, belief <span class="op">=</span> <span class="va">beliefs</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 5 × 3
+#&gt;   round action belief
+#&gt;   &lt;int&gt; &lt;chr&gt;   &lt;dbl&gt;
+#&gt; 1     1 C       0.9  
+#&gt; 2     2 C       0.988
+#&gt; 3     3 D       0.9  
+#&gt; 4     4 C       0.988
+#&gt; 5     5 C       0.999</code></pre>
+</div>
+</div>
+<div id="law-of-large-numbers-and-monte-carlo" class="section level2" number="45.7">
+<h2>
+<span class="header-section-number">C.7</span> Law of large numbers and Monte Carlo<a class="anchor" aria-label="anchor" href="#law-of-large-numbers-and-monte-carlo"><i class="fas fa-link"></i></a>
+</h2>
+<p>The <strong>law of large numbers</strong> guarantees that the sample mean converges to the true mean as the sample size grows. This justifies the Monte Carlo methods used extensively in <a href="sec-monte-carlo.html#sec-monte-carlo">16</a>.</p>
+<div class="sourceCode" id="cb1408"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Demonstrate convergence of sample mean</span></span>
+<span><span class="va">n_values</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, <span class="fl">1000</span>, <span class="fl">10000</span>, <span class="fl">100000</span><span class="op">)</span></span>
+<span><span class="va">true_mean</span> <span class="op">&lt;-</span> <span class="fl">3.5</span>  <span class="co"># E[Uniform die roll]</span></span>
+<span></span>
+<span><span class="va">estimates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="va">n_values</span>, <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">n_values</span>, estimate <span class="op">=</span> <span class="va">estimates</span>, true_mean <span class="op">=</span> <span class="va">true_mean</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 5 × 3
+#&gt;        n estimate true_mean
+#&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+#&gt; 1     10     3.2        3.5
+#&gt; 2    100     3.58       3.5
+#&gt; 3   1000     3.48       3.5
+#&gt; 4  10000     3.49       3.5
+#&gt; 5 100000     3.50       3.5</code></pre>
+<div id="monte-carlo-estimation-1" class="section level3" number="45.7.1">
+<h3>
+<span class="header-section-number">C.7.1</span> Monte Carlo estimation<a class="anchor" aria-label="anchor" href="#monte-carlo-estimation-1"><i class="fas fa-link"></i></a>
+</h3>
+<p>To estimate a quantity <span class="math inline">\(\theta = E[g(X)]\)</span>, draw <span class="math inline">\(N\)</span> independent samples <span class="math inline">\(X_1, \ldots, X_N\)</span> and compute:</p>
+<p><span class="math display">\[
+\hat{\theta}_N = \frac{1}{N} \sum_{i=1}^{N} g(X_i)
+\]</span></p>
+<p>The standard error of this estimate is <span class="math inline">\(\text{SE} = \sigma / \sqrt{N}\)</span>, where <span class="math inline">\(\sigma\)</span> is the standard deviation of <span class="math inline">\(g(X)\)</span>.</p>
+<div class="sourceCode" id="cb1410"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Estimate P(at least one cooperator in 5 players) via Monte Carlo</span></span>
+<span><span class="co"># Each player cooperates independently with probability 0.3</span></span>
+<span></span>
+<span><span class="va">estimate_prob</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n_sims</span>, <span class="va">n_players</span> <span class="op">=</span> <span class="fl">5</span>, <span class="va">p_coop</span> <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="va">n_sims</span>, <span class="op">{</span></span>
+<span>    <span class="va">actions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html">rbinom</a></span><span class="op">(</span><span class="va">n_players</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="va">p_coop</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">actions</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span>, se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">counts</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">n_sims</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Exact answer: 1 - (1 - 0.3)^5</span></span>
+<span><span class="va">exact</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">-</span> <span class="fl">0.7</span><span class="op">^</span><span class="fl">5</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">mc</span> <span class="op">&lt;-</span> <span class="fu">estimate_prob</span><span class="op">(</span><span class="fl">100000</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  method   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Monte Carlo"</span>, <span class="st">"Exact"</span><span class="op">)</span>,</span>
+<span>  estimate <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">mc</span><span class="op">[</span><span class="st">"estimate"</span><span class="op">]</span>, <span class="va">exact</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 2 × 2
+#&gt;   method      estimate
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;
+#&gt; 1 Monte Carlo    0.834
+#&gt; 2 Exact          0.832</code></pre>
+</div>
+</div>
+<div id="random-sampling-for-games" class="section level2" number="45.8">
+<h2>
+<span class="header-section-number">C.8</span> Random sampling for games<a class="anchor" aria-label="anchor" href="#random-sampling-for-games"><i class="fas fa-link"></i></a>
+</h2>
+<p>Several chapters use random sampling to simulate strategic interactions. The key functions are:</p>
+<div class="sourceCode" id="cb1412"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># sample(): draw from a discrete set</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span>, size <span class="op">=</span> <span class="fl">10</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.4</span>, <span class="fl">0.6</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;  [1] "Dove" "Hawk" "Dove" "Dove" "Hawk" "Hawk" "Dove" "Hawk" "Dove" "Hawk"</code></pre>
+<div class="sourceCode" id="cb1414"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># replicate(): repeat a simulation</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fl">2</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 4 6 5 6 7</code></pre>
+<div class="sourceCode" id="cb1416"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># set.seed(): ensure reproducibility</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.288 0.788 0.409</code></pre>
+<div class="sourceCode" id="cb1418"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span>  <span class="co"># identical output</span></span></code></pre></div>
+<pre><code>#&gt; [1] 0.288 0.788 0.409</code></pre>
+</div>
+<div id="summary-of-r-probability-functions" class="section level2" number="45.9">
+<h2>
+<span class="header-section-number">C.9</span> Summary of R probability functions<a class="anchor" aria-label="anchor" href="#summary-of-r-probability-functions"><i class="fas fa-link"></i></a>
+</h2>
+<div class="inline-table"><table id="tbl-prob-functions" class="table table-sm">
+<caption>R functions for common probability distributions</caption>
+<thead><tr class="header">
+<th align="left">Distribution</th>
+<th align="left">PMF/PDF</th>
+<th align="left">CDF</th>
+<th align="left">Quantile</th>
+<th align="left">Random</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Binomial</td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Binomial.html">dbinom()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Binomial.html">pbinom()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Binomial.html">qbinom()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Binomial.html">rbinom()</a></code></td>
+</tr>
+<tr class="even">
+<td align="left">Poisson</td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Poisson.html">dpois()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Poisson.html">ppois()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Poisson.html">qpois()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Poisson.html">rpois()</a></code></td>
+</tr>
+<tr class="odd">
+<td align="left">Uniform</td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Uniform.html">dunif()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Uniform.html">punif()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Uniform.html">qunif()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Uniform.html">runif()</a></code></td>
+</tr>
+<tr class="even">
+<td align="left">Normal</td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Normal.html">dnorm()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Normal.html">pnorm()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Normal.html">qnorm()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Normal.html">rnorm()</a></code></td>
+</tr>
+<tr class="odd">
+<td align="left">Exponential</td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Exponential.html">dexp()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Exponential.html">pexp()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Exponential.html">qexp()</a></code></td>
+<td align="left"><code><a href="https://rdrr.io/r/stats/Exponential.html">rexp()</a></code></td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></div>
+<div class="next"><a href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-probability"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="nav-link" href="#sample-spaces-and-events"><span class="header-section-number">C.1</span> Sample spaces and events</a></li>
+<li>
+<a class="nav-link" href="#discrete-distributions"><span class="header-section-number">C.2</span> Discrete distributions</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#common-discrete-distributions"><span class="header-section-number">C.2.1</span> Common discrete distributions</a></li>
+<li><a class="nav-link" href="#probability-mass-function-and-cdf"><span class="header-section-number">C.2.2</span> Probability mass function and CDF</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#continuous-distributions"><span class="header-section-number">C.3</span> Continuous distributions</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#common-continuous-distributions"><span class="header-section-number">C.3.1</span> Common continuous distributions</a></li>
+<li><a class="nav-link" href="#density-cdf-and-quantiles"><span class="header-section-number">C.3.2</span> Density, CDF, and quantiles</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#expected-value-and-variance"><span class="header-section-number">C.4</span> Expected value and variance</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#linearity-of-expectation"><span class="header-section-number">C.4.1</span> Linearity of expectation</a></li></ul>
+</li>
+<li><a class="nav-link" href="#conditional-probability"><span class="header-section-number">C.5</span> Conditional probability</a></li>
+<li>
+<a class="nav-link" href="#bayes-theorem"><span class="header-section-number">C.6</span> Bayes’ theorem</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#sequential-updating"><span class="header-section-number">C.6.1</span> Sequential updating</a></li></ul>
+</li>
+<li>
+<a class="nav-link" href="#law-of-large-numbers-and-monte-carlo"><span class="header-section-number">C.7</span> Law of large numbers and Monte Carlo</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#monte-carlo-estimation-1"><span class="header-section-number">C.7.1</span> Monte Carlo estimation</a></li></ul>
+</li>
+<li><a class="nav-link" href="#random-sampling-for-games"><span class="header-section-number">C.8</span> Random sampling for games</a></li>
+<li><a class="nav-link" href="#summary-of-r-probability-functions"><span class="header-section-number">C.9</span> Summary of R probability functions</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/C-probability.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/C-probability.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1308 @@
+# (PART) Part II — The R Toolkit {-}
+
+# The R Environment {#sec-r-environment}
+
+> A practical guide to setting up RStudio or Positron for game-theoretic computation in R, managing reproducibility with renv, organizing projects with a consistent directory layout, and configuring the shared R/_common.R pattern and knitr options used throughout this book.
+
+
+## Learning objectives {-}
+
+After completing this chapter you will be able to:
+
+- Configure RStudio or Positron for efficient game-theoretic computation, including essential settings and recommended pane layouts.
+- Use `renv` to create reproducible, self-contained R projects with locked dependency snapshots.
+- Organize a game theory project using a conventional directory layout with separate folders for code, data, images, and output.
+- Understand and extend the `R/_common.R` shared-setup pattern used throughout this book.
+- Set appropriate `knitr` chunk options for reproducible, publication-quality document rendering.
+
+## Motivation
+
+When you first encounter a game-theoretic model --- say the Prisoner's Dilemma introduced in \@ref(sec-what-is-a-game) --- it is tempting to open a fresh R script and start coding immediately. For a single exercise, that approach works. But real research and coursework involve dozens of interrelated scripts, multiple chapters or reports, shared utility functions, and results that must be reproducible months or years later. Without a disciplined project environment, you will eventually face the dreaded situation where code that ran perfectly last semester no longer works because a package was updated, a file path changed, or a helper function was silently overwritten.
+
+This chapter addresses the infrastructure layer beneath the game theory content. Just as @von-neumann1944 needed a formal language before proving theorems about games, we need a well-configured computational environment before implementing those theorems in R. The payoff is large: a properly structured project lets you focus on the economics and mathematics rather than on debugging file paths and package conflicts.
+
+The tools we cover --- RStudio/Positron as an IDE, `renv` for dependency management, the `here` package for portable paths, and a shared `_common.R` script for consistent defaults --- form the backbone of every chapter in this book. Understanding them once will save hours of frustration throughout the rest of your game theory work.
+
+## Theory
+
+### The reproducibility stack
+
+Reproducibility in computational research operates at several layers, each building on the one below:
+
+1. **Environment.** The IDE, R version, and operating system. RStudio (by Posit) is the most widely used R IDE; Positron is Posit's newer, open-source, multilingual IDE built on VS Code technology. Both provide integrated consoles, editors, and project management.
+
+2. **Dependencies.** The specific versions of R packages your code uses. The `renv` package creates a project-local library and a lockfile (`renv.lock`) that records the exact version of every package. Collaborators (or your future self) can call `renv::restore()` to recreate the identical package environment.
+
+3. **Project structure.** A conventional directory layout ensures that scripts, data, and output live in predictable locations. The `here` package provides a project-root-aware path constructor so that `here("R", "_common.R")` resolves correctly regardless of the working directory.
+
+4. **Rendering options.** Quarto and `knitr` chunk options control how code is executed, cached, and displayed. Consistent defaults --- set once in a shared file --- prevent output discrepancies across chapters.
+
+### Why IDE configuration matters for game theory
+
+Game-theoretic computation involves particular workflows that benefit from IDE tuning. Computing Nash equilibria (see \@ref(sec-nash-equilibrium)) often requires iterative debugging of matrix algebra. Simulating evolutionary dynamics requires monitoring long-running loops. Producing publication figures demands a graphics device with adequate resolution. A well-configured IDE makes each of these tasks smoother.
+
+Key settings include:
+
+- **Soft-wrap long lines.** Game-theoretic payoff definitions can produce wide lines; soft wrapping prevents horizontal scrolling.
+- **Increase console buffer.** Simulations with many iterations produce verbose output; a larger buffer preserves the full log.
+- **Default working directory.** Set the working directory to the project root at startup so that `here()` paths resolve immediately.
+- **Disable `.RData` saving.** Leftover workspace objects from a previous session can introduce silent errors. Starting each session with a clean workspace forces your scripts to be self-contained.
+
+### The shared setup pattern
+
+A recurring pattern in multi-chapter projects is to place all shared setup code in a single file that every chapter sources at the top. In this book, that file is `R/_common.R`. It loads packages, sets `knitr` options, seeds the random number generator, and sources helper files for the publication theme and figure-saving utility. This pattern has three benefits:
+
+- **Consistency.** Every chapter starts with the same packages, theme, and seed.
+- **Maintainability.** Changing a default (e.g., switching from 300 to 600 DPI) requires editing one file, not forty.
+- **Discoverability.** A reader who wants to understand the computational setup can read a single, short file.
+
+## Implementation in R
+
+### Project directory layout
+
+The directory structure used in this book is a good template for any game theory research project:
+
+
+``` r
+# Display the project layout as a tidy table
+layout <- tibble::tribble(
+  ~Folder,           ~Purpose,
+
+  "R/",              "Shared R scripts: _common.R, theme_publication.R, save_pub_fig.R, custom solvers",
+  "part-1-foundations/", "Quarto chapters for Part I (game theory foundations)",
+  "part-2-r-toolkit/",  "Quarto chapters for Part II (R packages and tools)",
+  "images/",         "Generated figures (PNG + PDF) from save_pub_fig()",
+  "data/",           "Raw and processed data files",
+  "appendices/",     "Supplementary material: refresher, solutions, glossary",
+  "_book/",          "Rendered output (HTML, PDF, EPUB) --- not committed to Git",
+  "renv/",           "Project-local package library managed by renv"
+)
+
+layout |>
+  gt() |>
+  tab_header(title = "Standard Project Directory Layout") |>
+  cols_label(Folder = "Directory", Purpose = "Contents and purpose") |>
+  cols_width(Folder ~ px(180))
+```
+
+```{=html}
+<div id="qeayjdrzqo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qeayjdrzqo table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#qeayjdrzqo thead, #qeayjdrzqo tbody, #qeayjdrzqo tfoot, #qeayjdrzqo tr, #qeayjdrzqo td, #qeayjdrzqo th {
+  border-style: none;
+}
+
+#qeayjdrzqo p {
+  margin: 0;
+  padding: 0;
+}
+
+#qeayjdrzqo .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#qeayjdrzqo .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qeayjdrzqo .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qeayjdrzqo .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qeayjdrzqo .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#qeayjdrzqo .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qeayjdrzqo .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qeayjdrzqo .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qeayjdrzqo .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#qeayjdrzqo .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qeayjdrzqo .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_left {
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_center {
+  text-align: center;
+}
+
+#qeayjdrzqo .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qeayjdrzqo .gt_font_normal {
+  font-weight: normal;
+}
+
+#qeayjdrzqo .gt_font_bold {
+  font-weight: bold;
+}
+
+#qeayjdrzqo .gt_font_italic {
+  font-style: italic;
+}
+
+#qeayjdrzqo .gt_super {
+  font-size: 65%;
+}
+
+#qeayjdrzqo .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#qeayjdrzqo .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#qeayjdrzqo .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#qeayjdrzqo .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#qeayjdrzqo .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#qeayjdrzqo .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#qeayjdrzqo .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#qeayjdrzqo .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#qeayjdrzqo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" style="table-layout:fixed;" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <colgroup>
+    <col style="width:180px;"/>
+    <col/>
+  </colgroup>
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Standard Project Directory Layout</td>
+    </tr>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Folder">Directory</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Purpose">Contents and purpose</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="Folder" class="gt_row gt_left">R/</td>
+<td headers="Purpose" class="gt_row gt_left">Shared R scripts: _common.R, theme_publication.R, save_pub_fig.R, custom solvers</td></tr>
+    <tr><td headers="Folder" class="gt_row gt_left">part-1-foundations/</td>
+<td headers="Purpose" class="gt_row gt_left">Quarto chapters for Part I (game theory foundations)</td></tr>
+    <tr><td headers="Folder" class="gt_row gt_left">part-2-r-toolkit/</td>
+<td headers="Purpose" class="gt_row gt_left">Quarto chapters for Part II (R packages and tools)</td></tr>
+    <tr><td headers="Folder" class="gt_row gt_left">images/</td>
+<td headers="Purpose" class="gt_row gt_left">Generated figures (PNG + PDF) from save_pub_fig()</td></tr>
+    <tr><td headers="Folder" class="gt_row gt_left">data/</td>
+<td headers="Purpose" class="gt_row gt_left">Raw and processed data files</td></tr>
+    <tr><td headers="Folder" class="gt_row gt_left">appendices/</td>
+<td headers="Purpose" class="gt_row gt_left">Supplementary material: refresher, solutions, glossary</td></tr>
+    <tr><td headers="Folder" class="gt_row gt_left">_book/</td>
+<td headers="Purpose" class="gt_row gt_left">Rendered output (HTML, PDF, EPUB) --- not committed to Git</td></tr>
+    <tr><td headers="Folder" class="gt_row gt_left">renv/</td>
+<td headers="Purpose" class="gt_row gt_left">Project-local package library managed by renv</td></tr>
+  </tbody>
+  
+</table>
+</div>
+```
+
+### Benchmarking vectorized vs. loop-based payoff computation
+
+A common performance concern in game-theoretic computation is whether to use loops or vectorized operations when building payoff matrices. We benchmark both approaches to illustrate why vectorized code matters --- and to demonstrate how to produce a publication-quality benchmark figure.
+
+
+``` r
+# Benchmark: computing a payoff matrix for an n-strategy symmetric game
+# Payoff function: u(i,j) = sin(i/n * pi) * cos(j/n * pi) (arbitrary smooth payoffs)
+
+benchmark_payoff <- function(n, method = c("loop", "vectorized")) {
+
+  method <- match.arg(method)
+
+  if (method == "loop") {
+    mat <- matrix(0, nrow = n, ncol = n)
+    for (i in 1:n) {
+      for (j in 1:n) {
+        mat[i, j] <- sin(i / n * pi) * cos(j / n * pi)
+      }
+    }
+  } else {
+    rows <- seq_len(n)
+    cols <- seq_len(n)
+    mat <- outer(sin(rows / n * pi), cos(cols / n * pi))
+  }
+  mat
+}
+
+# Run benchmarks for various matrix sizes
+sizes <- c(10, 50, 100, 200, 500, 1000)
+n_reps <- 5
+
+results <- map_dfr(sizes, function(n) {
+  loop_times <- replicate(n_reps, {
+    start <- proc.time()["elapsed"]
+    benchmark_payoff(n, "loop")
+    proc.time()["elapsed"] - start
+  })
+
+  vec_times <- replicate(n_reps, {
+    start <- proc.time()["elapsed"]
+    benchmark_payoff(n, "vectorized")
+    proc.time()["elapsed"] - start
+  })
+
+  tibble(
+    n = n,
+    method = rep(c("Loop", "Vectorized"), each = n_reps),
+    time_sec = c(loop_times, vec_times)
+  )
+})
+
+# Summarize
+bench_summary <- results |>
+  group_by(n, method) |>
+  summarise(
+    mean_time = mean(time_sec),
+    sd_time = sd(time_sec),
+    .groups = "drop"
+  )
+```
+
+
+``` r
+p_bench <- ggplot(bench_summary,
+                  aes(x = n, y = mean_time, colour = method, shape = method)) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = pmax(0, mean_time - sd_time),
+                    ymax = mean_time + sd_time),
+                width = 0.05, linewidth = 0.5) +
+  scale_colour_manual(values = okabe_ito[c(1, 3)],
+                      name = "Method") +
+  scale_shape_manual(values = c(16, 17), name = "Method") +
+  scale_x_log10(name = "Matrix dimension (n)",
+                breaks = sizes,
+                labels = scales::comma) +
+  scale_y_log10(name = "Time (seconds)",
+                labels = scales::label_number(accuracy = 0.0001)) +
+  labs(title = "Payoff Matrix Construction: Loop vs. Vectorized") +
+  theme_publication() +
+  theme(legend.position = "bottom")
+
+p_bench
+```
+
+<div class="figure" style="text-align: center">
+<img src="09-r-environment_files/figure-epub3/benchmark-vectorized-1.png" alt="Computation time for building an n-by-n payoff matrix using a nested loop versus vectorized outer product. Vectorized operations maintain near-constant time across matrix sizes, while loop-based computation scales quadratically. Error bars show plus or minus one standard deviation over five replications." width="80%" />
+<p class="caption">(\#fig:benchmark-vectorized)Computation time for building an n-by-n payoff matrix using a nested loop versus vectorized outer product. Vectorized operations maintain near-constant time across matrix sizes, while loop-based computation scales quadratically. Error bars show plus or minus one standard deviation over five replications.</p>
+</div>
+
+
+
+### The `_common.R` file explained
+
+The shared setup file used in this book contains four key sections. Let us walk through each:
+
+
+``` r
+# --- Section 1: Load packages silently ---
+suppressPackageStartupMessages({
+  library(tidyverse)   # data manipulation and plotting
+  library(here)        # project-root-relative paths
+  library(glue)        # string interpolation
+  library(gt)          # publication-quality tables
+  library(scales)      # axis formatting helpers
+})
+
+# --- Section 2: knitr defaults ---
+knitr::opts_chunk$set(
+  dev     = c("png", "pdf"),   # dual output for HTML and PDF
+
+  dpi     = 300,               # print-quality resolution
+  fig.align = "center",
+  fig.width  = 6,
+  fig.height = 4,
+  out.width  = "80%",
+  comment    = "#>"            # prefix for R output lines
+)
+
+# --- Section 3: Reproducibility ---
+set.seed(42)                    # global seed for all stochastic operations
+
+# --- Section 4: Custom helpers ---
+source(here::here("R", "theme_publication.R"))
+source(here::here("R", "save_pub_fig.R"))
+```
+
+Section 1 loads the tidyverse ecosystem, which provides `dplyr`, `ggplot2`, `purrr`, `tibble`, and `stringr` --- all essential for game-theoretic data wrangling and visualization. The `here` package ensures that file paths like `here("data", "tournament.csv")` work from any subdirectory. The `gt` package formats tables for publication, and `scales` provides axis label formatters.
+
+Section 2 configures knitr to produce both PNG (for HTML output) and PDF (for LaTeX output) figures at 300 DPI. The `comment` option prefixes all R output with `#>`, making it visually distinct from code.
+
+Section 3 sets a global random seed. This is critical for reproducibility in stochastic game-theoretic computations like Monte Carlo Shapley value estimation and evolutionary simulations.
+
+Section 4 sources two helper files: `theme_publication.R` defines a clean ggplot2 theme with the Okabe-Ito colour palette, and `save_pub_fig.R` provides `save_pub_fig()` for dual PDF/PNG export.
+
+### Initializing `renv`
+
+The `renv` workflow for a new project consists of three commands:
+
+
+``` r
+# 1. Initialize renv in a new project
+renv::init()
+
+# 2. After installing or updating packages, snapshot the current state
+renv::snapshot()
+
+# 3. On a new machine or after cloning, restore the exact package versions
+renv::restore()
+```
+
+The `renv::init()` call creates a project-local library in `renv/library/`, a lockfile `renv.lock` that records every package name, version, and source, and an `.Rprofile` that activates `renv` automatically when the project is opened. The lockfile is committed to version control; the library itself is not (it is listed in `.gitignore`).
+
+## Worked example
+
+We now walk through setting up a new game theory analysis project from scratch, as if starting a term paper on Nash equilibrium computations.
+
+**Step 1 --- Create the project.** In RStudio, select *File > New Project > New Directory > New Project*. Name it `nash-equilibrium-analysis` and check "Use renv with this project." In Positron, create a folder and run `renv::init()` from the R console.
+
+**Step 2 --- Establish the directory layout.**
+
+
+``` r
+# Create the standard directory structure
+dirs <- c("R", "data", "images", "output")
+for (d in dirs) dir.create(d, showWarnings = FALSE)
+```
+
+**Step 3 --- Write the shared setup file.** Create `R/_common.R` with package loads and knitr defaults, following the pattern shown above. This file will be sourced at the top of every `.qmd` chapter.
+
+**Step 4 --- Install and snapshot dependencies.**
+
+
+``` r
+# Install the packages needed for game theory work
+install.packages(c("tidyverse", "here", "glue", "gt", "scales"))
+
+# Lock the current state
+renv::snapshot()
+```
+
+After this step, `renv.lock` contains a complete record of every package and its version. Sharing this file (along with the code) allows anyone to recreate the exact environment.
+
+**Step 5 --- Create the first analysis file.** Create `01-pd-analysis.qmd` in the project root:
+
+``` r
+# At the top of 01-pd-analysis.qmd:
+source(here::here("R", "_common.R"))
+
+# Define the Prisoner's Dilemma payoff matrix
+pd_matrix <- matrix(c(3, 0, 5, 1), nrow = 2, byrow = TRUE,
+                    dimnames = list(c("Cooperate", "Defect"),
+                                   c("Cooperate", "Defect")))
+pd_matrix
+```
+
+**Step 6 --- Configure IDE settings.** In RStudio, go to *Tools > Global Options*:
+
+- Under *General*, uncheck "Restore .RData into workspace at startup" and set "Save workspace to .RData on exit" to "Never."
+- Under *Code > Display*, enable "Soft-wrap R source files."
+- Under *Appearance*, choose a font with clear distinction between `0` and `O`, such as Fira Code or JetBrains Mono.
+
+In Positron, equivalent settings live in the Settings editor (Ctrl+,). The key setting is `"r.restoreWorkspace": false`.
+
+**Step 7 --- Verify reproducibility.** Close and reopen the project. Run `renv::status()` to confirm all packages are synchronized. Then render the first analysis file. If it produces output without errors, the environment is correctly configured.
+
+
+``` r
+# Verify that our environment is properly configured
+env_info <- tibble::tribble(
+  ~Component,        ~Value,
+  "R version",       paste(R.version$major, R.version$minor, sep = "."),
+  "Platform",        R.version$platform,
+  "tidyverse",       as.character(packageVersion("tidyverse")),
+  "ggplot2",         as.character(packageVersion("ggplot2")),
+  "here",            as.character(packageVersion("here")),
+  "gt",              as.character(packageVersion("gt")),
+  "Project root",    here::here()
+)
+
+env_info |>
+  gt() |>
+  tab_header(title = "Current R Environment") |>
+  cols_label(Component = "Component", Value = "Detected value")
+```
+
+```{=html}
+<div id="xgdyentzro" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#xgdyentzro table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#xgdyentzro thead, #xgdyentzro tbody, #xgdyentzro tfoot, #xgdyentzro tr, #xgdyentzro td, #xgdyentzro th {
+  border-style: none;
+}
+
+#xgdyentzro p {
+  margin: 0;
+  padding: 0;
+}
+
+#xgdyentzro .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#xgdyentzro .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#xgdyentzro .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#xgdyentzro .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#xgdyentzro .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#xgdyentzro .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#xgdyentzro .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#xgdyentzro .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#xgdyentzro .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#xgdyentzro .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#xgdyentzro .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#xgdyentzro .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#xgdyentzro .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#xgdyentzro .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#xgdyentzro .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#xgdyentzro .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#xgdyentzro .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#xgdyentzro .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#xgdyentzro .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#xgdyentzro .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#xgdyentzro .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#xgdyentzro .gt_left {
+  text-align: left;
+}
+
+#xgdyentzro .gt_center {
+  text-align: center;
+}
+
+#xgdyentzro .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#xgdyentzro .gt_font_normal {
+  font-weight: normal;
+}
+
+#xgdyentzro .gt_font_bold {
+  font-weight: bold;
+}
+
+#xgdyentzro .gt_font_italic {
+  font-style: italic;
+}
+
+#xgdyentzro .gt_super {
+  font-size: 65%;
+}
+
+#xgdyentzro .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#xgdyentzro .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#xgdyentzro .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#xgdyentzro .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#xgdyentzro .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#xgdyentzro .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#xgdyentzro .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#xgdyentzro .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#xgdyentzro div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="2" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Current R Environment</td>
+    </tr>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Component">Component</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Value">Detected value</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="Component" class="gt_row gt_left">R version</td>
+<td headers="Value" class="gt_row gt_left">4.6.0</td></tr>
+    <tr><td headers="Component" class="gt_row gt_left">Platform</td>
+<td headers="Value" class="gt_row gt_left">x86_64-pc-linux-gnu</td></tr>
+    <tr><td headers="Component" class="gt_row gt_left">tidyverse</td>
+<td headers="Value" class="gt_row gt_left">2.0.0</td></tr>
+    <tr><td headers="Component" class="gt_row gt_left">ggplot2</td>
+<td headers="Value" class="gt_row gt_left">4.0.3</td></tr>
+    <tr><td headers="Component" class="gt_row gt_left">here</td>
+<td headers="Value" class="gt_row gt_left">1.0.2</td></tr>
+    <tr><td headers="Component" class="gt_row gt_left">gt</td>
+<td headers="Value" class="gt_row gt_left">1.3.0</td></tr>
+    <tr><td headers="Component" class="gt_row gt_left">Project root</td>
+<td headers="Value" class="gt_row gt_left">/home/runner/work/strategy-in-r/strategy-in-r</td></tr>
+  </tbody>
+  
+</table>
+</div>
+```
+
+## Extensions
+
+The project setup described here can be extended in several directions:
+
+- **Docker containers.** For maximum reproducibility, wrap the entire R environment in a Docker image. The `rocker` project provides pre-built images with R, RStudio Server, and the tidyverse. This guarantees identical results regardless of the host operating system.
+- **Continuous integration.** Services like GitHub Actions can render your Quarto book on every push, catching errors early. This book uses a GitHub Actions workflow that installs dependencies via `renv::restore()` and renders all chapters.
+- **Targets pipelines.** The `targets` package extends reproducibility from package management to workflow management, tracking which outputs are up-to-date and re-running only what has changed. This is particularly valuable for long-running game-theoretic simulations.
+- **Computational environments for teaching.** Posit Cloud (formerly RStudio Cloud) provides browser-based R environments with pre-configured packages, eliminating setup friction for students new to R. Each student gets an isolated workspace with the correct package versions.
+
+For further reading on reproducible workflows in R, see @osborne2004 for the mathematical context that motivates careful computation, and @shoham2009 for the algorithmic perspective on game-theoretic implementation.
+
+## Exercises {-}
+
+1. **Project initialization.** Create a new R project called `stag-hunt-analysis` with `renv` enabled. Install `tidyverse`, `here`, and `gt`. Write a `R/_common.R` file that loads these packages, sets a random seed, and configures knitr to produce PNG output at 300 DPI. Snapshot the environment with `renv::snapshot()` and verify that `renv.lock` contains all three packages.
+
+2. **Vectorization practice.** Extend the benchmark from this chapter to include a third method that uses `purrr::map2_dbl()` inside a `tidyr::crossing()` grid. Plot all three methods on the same benchmark figure. Where does `purrr` fall relative to the loop and `outer()` approaches?
+
+3. **Path portability.** A collaborator sends you a script that begins with `setwd("C:/Users/alice/games/")` and then reads a file with `read_csv("data/payoffs.csv")`. Explain why this will fail on your machine. Rewrite the first two lines using `here()` so that the script works for any collaborator who clones the repository.
+
+4. **Custom knitr options.** Modify the `_common.R` pattern to include a conditional: if the output format is HTML, set `fig.width = 8`; if PDF, set `fig.width = 6`. *(Hint: use `knitr::is_html_output()`.)* Explain why different widths might be appropriate for the two formats.
+
+5. **Dependency audit.** Run `renv::status()` on a project of your choice and interpret the output. Identify any packages that are installed but not recorded in the lockfile, and any that are recorded but not installed. Explain what `renv::snapshot()` and `renv::restore()` would each do in this situation.
+
+Solutions appear in \@ref(sec-solutions).

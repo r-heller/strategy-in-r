@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>A R Refresher | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="A concise refresher on R fundamentals for readers who need a quick review. This appendix provides a quick reference for the R features used most often in this book. It is not a substitute for a...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="A R Refresher | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-r-refresher.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="A concise refresher on R fundamentals for readers who need a quick review. This appendix provides a quick reference for the R features used most often in this book. It is not a substitute for a...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="A R Refresher | Strategy in R">
+<meta name="twitter:description" content="A concise refresher on R fundamentals for readers who need a quick review. This appendix provides a quick reference for the R features used most often in this book. It is not a substitute for a...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="A R Refresher | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="active" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-r-refresher" class="section level1" number="43">
+<h1>
+<span class="header-section-number">A</span> R Refresher<a class="anchor" aria-label="anchor" href="#sec-r-refresher"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>A concise refresher on R fundamentals for readers who need a quick review.</p>
+</blockquote>
+<p>This appendix provides a quick reference for the R features used most often in this book. It is not a substitute for a full R tutorial but should be enough to remind you of the essentials. For a deeper treatment, see <span class="citation">Wickham et al. (<a href="references.html#ref-wickham2023r">2023</a>)</span>.</p>
+<div id="data-structures" class="section level2" number="43.1">
+<h2>
+<span class="header-section-number">A.1</span> Data structures<a class="anchor" aria-label="anchor" href="#data-structures"><i class="fas fa-link"></i></a>
+</h2>
+<div id="vectors" class="section level3" number="43.1.1">
+<h3>
+<span class="header-section-number">A.1.1</span> Vectors<a class="anchor" aria-label="anchor" href="#vectors"><i class="fas fa-link"></i></a>
+</h3>
+<p>Vectors are the fundamental data type in R. Every element must share the same type (logical, integer, double, character).</p>
+<div class="sourceCode" id="cb1221"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Numeric vector</span></span>
+<span><span class="va">payoffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Character vector</span></span>
+<span><span class="va">strategies</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Logical vector</span></span>
+<span><span class="va">is_dominated</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Sequence shortcuts</span></span>
+<span><span class="va">indices</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span></span>
+<span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Vectorised arithmetic</span></span>
+<span><span class="va">payoffs</span> <span class="op">*</span> <span class="fl">2</span></span></code></pre></div>
+<pre><code>#&gt; [1]  6  0 10  2</code></pre>
+<div class="sourceCode" id="cb1223"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">payoffs</span> <span class="op">&gt;</span> <span class="fl">2</span></span></code></pre></div>
+<pre><code>#&gt; [1]  TRUE FALSE  TRUE FALSE</code></pre>
+</div>
+<div id="matrices" class="section level3" number="43.1.2">
+<h3>
+<span class="header-section-number">A.1.2</span> Matrices<a class="anchor" aria-label="anchor" href="#matrices"><i class="fas fa-link"></i></a>
+</h3>
+<p>Matrices are two-dimensional vectors. They are central to payoff representations throughout this book.</p>
+<div class="sourceCode" id="cb1225"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create a 2x2 payoff matrix (filled by column by default)</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span></span>
+<span><span class="va">A</span></span></code></pre></div>
+<pre><code>#&gt;           Cooperate Defect
+#&gt; Cooperate         3      5
+#&gt; Defect            0      1</code></pre>
+<div class="sourceCode" id="cb1227"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Matrix indexing</span></span>
+<span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span>       <span class="co"># row 1, column 2</span></span></code></pre></div>
+<pre><code>#&gt; [1] 5</code></pre>
+<div class="sourceCode" id="cb1229"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A</span><span class="op">[</span><span class="st">"Defect"</span>, <span class="op">]</span> <span class="co"># entire row by name</span></span></code></pre></div>
+<pre><code>#&gt; Cooperate    Defect 
+#&gt;         0         1</code></pre>
+<div class="sourceCode" id="cb1231"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Dimensions</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 2 2</code></pre>
+<div class="sourceCode" id="cb1233"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 2</code></pre>
+<div class="sourceCode" id="cb1235"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 2</code></pre>
+</div>
+<div id="lists" class="section level3" number="43.1.3">
+<h3>
+<span class="header-section-number">A.1.3</span> Lists<a class="anchor" aria-label="anchor" href="#lists"><i class="fas fa-link"></i></a>
+</h3>
+<p>Lists can hold elements of different types and different lengths. They are used throughout the book to bundle game components together.</p>
+<div class="sourceCode" id="cb1237"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">game</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  players  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Player 1"</span>, <span class="st">"Player 2"</span><span class="op">)</span>,</span>
+<span>  payoff_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  payoff_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Access by name</span></span>
+<span><span class="va">game</span><span class="op">$</span><span class="va">players</span></span></code></pre></div>
+<pre><code>#&gt; [1] "Player 1" "Player 2"</code></pre>
+<div class="sourceCode" id="cb1239"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">game</span><span class="op">[[</span><span class="st">"payoff_1"</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<pre><code>#&gt;      [,1] [,2]
+#&gt; [1,]    3    5
+#&gt; [2,]    0    1</code></pre>
+<div class="sourceCode" id="cb1241"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Access by position</span></span>
+<span><span class="va">game</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<pre><code>#&gt; [1] "Player 1" "Player 2"</code></pre>
+</div>
+<div id="data-frames-and-tibbles" class="section level3" number="43.1.4">
+<h3>
+<span class="header-section-number">A.1.4</span> Data frames and tibbles<a class="anchor" aria-label="anchor" href="#data-frames-and-tibbles"><i class="fas fa-link"></i></a>
+</h3>
+<p>Data frames (and their tidyverse counterpart, tibbles) are the primary structure for tabular data.</p>
+<div class="sourceCode" id="cb1243"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Base R data frame</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span></span>
+<span>  strategy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span>,</span>
+<span>  payoff   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Tidyverse tibble</span></span>
+<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  strategy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Cooperate"</span>, <span class="st">"Defect"</span><span class="op">)</span>,</span>
+<span>  payoff   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Tibbles print more informatively</span></span>
+<span><span class="va">tbl</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 2 × 2
+#&gt;   strategy  payoff
+#&gt;   &lt;chr&gt;      &lt;dbl&gt;
+#&gt; 1 Cooperate      3
+#&gt; 2 Defect         1</code></pre>
+</div>
+</div>
+<div id="control-flow" class="section level2" number="43.2">
+<h2>
+<span class="header-section-number">A.2</span> Control flow<a class="anchor" aria-label="anchor" href="#control-flow"><i class="fas fa-link"></i></a>
+</h2>
+<div id="conditionals" class="section level3" number="43.2.1">
+<h3>
+<span class="header-section-number">A.2.1</span> Conditionals<a class="anchor" aria-label="anchor" href="#conditionals"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1245"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
+<span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">3</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="st">"high"</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">x</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="st">"medium"</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="st">"low"</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">result</span></span></code></pre></div>
+<pre><code>#&gt; [1] "high"</code></pre>
+<div class="sourceCode" id="cb1247"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Vectorised conditional</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">2</span>, <span class="st">"above"</span>, <span class="st">"below"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] "above" "below" "above" "below"</code></pre>
+</div>
+<div id="loops" class="section level3" number="43.2.2">
+<h3>
+<span class="header-section-number">A.2.2</span> Loops<a class="anchor" aria-label="anchor" href="#loops"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1249"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># for loop</span></span>
+<span><span class="va">total</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">total</span> <span class="op">&lt;-</span> <span class="va">total</span> <span class="op">+</span> <span class="va">i</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">total</span></span></code></pre></div>
+<pre><code>#&gt; [1] 15</code></pre>
+<div class="sourceCode" id="cb1251"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># while loop</span></span>
+<span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="va">value</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span><span class="kw">while</span> <span class="op">(</span><span class="va">value</span> <span class="op">&lt;</span> <span class="fl">100</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">value</span> <span class="op">&lt;-</span> <span class="va">value</span> <span class="op">*</span> <span class="fl">2</span></span>
+<span>  <span class="va">count</span> <span class="op">&lt;-</span> <span class="va">count</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">count</span></span></code></pre></div>
+<pre><code>#&gt; [1] 7</code></pre>
+</div>
+<div id="the-apply-family" class="section level3" number="43.2.3">
+<h3>
+<span class="header-section-number">A.2.3</span> The apply family<a class="anchor" aria-label="anchor" href="#the-apply-family"><i class="fas fa-link"></i></a>
+</h3>
+<p>The <code>apply</code> functions replace explicit loops with concise functional calls.</p>
+<div class="sourceCode" id="cb1253"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">12</span>, nrow <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Apply across rows (margin = 1)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">A</span>, <span class="fl">1</span>, <span class="va">sum</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 22 26 30</code></pre>
+<div class="sourceCode" id="cb1255"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Apply across columns (margin = 2)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">A</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1]  2  5  8 11</code></pre>
+<div class="sourceCode" id="cb1257"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># sapply returns a vector; lapply returns a list</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1]  1  4  9 16 25</code></pre>
+<div class="sourceCode" id="cb1259"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">lapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">x</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [[1]]
+#&gt; [1] 1
+#&gt; 
+#&gt; [[2]]
+#&gt; [1] 2 2
+#&gt; 
+#&gt; [[3]]
+#&gt; [1] 3 3 3</code></pre>
+<div class="sourceCode" id="cb1261"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># vapply is like sapply but with a specified return type</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">vapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1]  1  4  9 16 25</code></pre>
+</div>
+</div>
+<div id="functions" class="section level2" number="43.3">
+<h2>
+<span class="header-section-number">A.3</span> Functions<a class="anchor" aria-label="anchor" href="#functions"><i class="fas fa-link"></i></a>
+</h2>
+<div id="defining-functions" class="section level3" number="43.3.1">
+<h3>
+<span class="header-section-number">A.3.1</span> Defining functions<a class="anchor" aria-label="anchor" href="#defining-functions"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb1263"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># A function that computes expected payoff</span></span>
+<span><span class="va">expected_payoff</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">payoff_vec</span>, <span class="va">prob_vec</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">payoff_vec</span> <span class="op">*</span> <span class="va">prob_vec</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">expected_payoff</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.6</span>, <span class="fl">0.4</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 1.8</code></pre>
+<div class="sourceCode" id="cb1265"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Default arguments</span></span>
+<span><span class="va">greet</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">name</span>, <span class="va">greeting</span> <span class="op">=</span> <span class="st">"Hello"</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">greeting</span>, <span class="va">name</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu">greet</span><span class="op">(</span><span class="st">"Alice"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] "Hello Alice"</code></pre>
+<div class="sourceCode" id="cb1267"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">greet</span><span class="op">(</span><span class="st">"Bob"</span>, greeting <span class="op">=</span> <span class="st">"Hi"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] "Hi Bob"</code></pre>
+</div>
+<div id="closures-and-environments" class="section level3" number="43.3.2">
+<h3>
+<span class="header-section-number">A.3.2</span> Closures and environments<a class="anchor" aria-label="anchor" href="#closures-and-environments"><i class="fas fa-link"></i></a>
+</h3>
+<p>A closure is a function that captures variables from its enclosing environment. This pattern is useful for creating parameterised game constructors.</p>
+<div class="sourceCode" id="cb1269"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">make_discounter</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">delta</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># delta is captured in the closure</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">payoffs</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">payoffs</span><span class="op">)</span></span>
+<span>    <span class="va">weights</span> <span class="op">&lt;-</span> <span class="va">delta</span><span class="op">^</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">payoffs</span> <span class="op">*</span> <span class="va">weights</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">discount_95</span> <span class="op">&lt;-</span> <span class="fu">make_discounter</span><span class="op">(</span><span class="fl">0.95</span><span class="op">)</span></span>
+<span><span class="fu">discount_95</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 13.6</code></pre>
+<div class="sourceCode" id="cb1271"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># The enclosed value of delta persists</span></span>
+<span><span class="va">discount_50</span> <span class="op">&lt;-</span> <span class="fu">make_discounter</span><span class="op">(</span><span class="fl">0.50</span><span class="op">)</span></span>
+<span><span class="fu">discount_50</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 5.81</code></pre>
+</div>
+<div id="anonymous-functions" class="section level3" number="43.3.3">
+<h3>
+<span class="header-section-number">A.3.3</span> Anonymous functions<a class="anchor" aria-label="anchor" href="#anonymous-functions"><i class="fas fa-link"></i></a>
+</h3>
+<p>R 4.1+ supports the shorthand <code>\(x)</code> syntax for anonymous (lambda) functions.</p>
+<div class="sourceCode" id="cb1273"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1]  1  4  9 16 25</code></pre>
+<div class="sourceCode" id="cb1275"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Equivalent to the older syntax:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html">sapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1]  1  4  9 16 25</code></pre>
+</div>
+</div>
+<div id="tidyverse-basics" class="section level2" number="43.4">
+<h2>
+<span class="header-section-number">A.4</span> Tidyverse basics<a class="anchor" aria-label="anchor" href="#tidyverse-basics"><i class="fas fa-link"></i></a>
+</h2>
+<p>The tidyverse is a collection of packages for data wrangling and visualisation. This book uses it extensively.</p>
+<div id="the-pipe-operator" class="section level3" number="43.4.1">
+<h3>
+<span class="header-section-number">A.4.1</span> The pipe operator<a class="anchor" aria-label="anchor" href="#the-pipe-operator"><i class="fas fa-link"></i></a>
+</h3>
+<p>The pipe <code>|&gt;</code> (base R 4.1+) or <code>%&gt;%</code> (magrittr) passes the left-hand side as the first argument to the right-hand side.</p>
+<div class="sourceCode" id="cb1277"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">7</span>, <span class="fl">2</span>, <span class="fl">9</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/rev.html">rev</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 9 7 4</code></pre>
+</div>
+<div id="dplyr-verbs" class="section level3" number="43.4.2">
+<h3>
+<span class="header-section-number">A.4.2</span> dplyr verbs<a class="anchor" aria-label="anchor" href="#dplyr-verbs"><i class="fas fa-link"></i></a>
+</h3>
+<p>The five core verbs handle the vast majority of data manipulation tasks.</p>
+<div class="sourceCode" id="cb1279"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">game_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  round    <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>,</span>
+<span>  player_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"D"</span><span class="op">)</span>,</span>
+<span>  player_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"C"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span>, <span class="st">"D"</span>, <span class="st">"C"</span><span class="op">)</span>,</span>
+<span>  payoff_1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">5</span>, <span class="fl">0</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>  payoff_2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># filter: keep rows matching a condition</span></span>
+<span><span class="va">game_results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span><span class="va">player_1</span> <span class="op">==</span> <span class="st">"C"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 3 × 5
+#&gt;   round player_1 player_2 payoff_1 payoff_2
+#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1     1 C        C               3        3
+#&gt; 2     3 C        D               0        5
+#&gt; 3     4 C        C               3        3</code></pre>
+<div class="sourceCode" id="cb1281"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># mutate: create or modify columns</span></span>
+<span><span class="va">game_results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>total <span class="op">=</span> <span class="va">payoff_1</span> <span class="op">+</span> <span class="va">payoff_2</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 6
+#&gt;   round player_1 player_2 payoff_1 payoff_2 total
+#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1     1 C        C               3        3     6
+#&gt; 2     2 D        C               5        0     5
+#&gt; 3     3 C        D               0        5     5
+#&gt; 4     4 C        C               3        3     6
+#&gt; 5     5 D        D               1        1     2
+#&gt; 6     6 D        C               5        0     5</code></pre>
+<div class="sourceCode" id="cb1283"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># select: choose columns</span></span>
+<span><span class="va">game_results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span><span class="op">(</span><span class="va">round</span>, <span class="va">payoff_1</span>, <span class="va">payoff_2</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 3
+#&gt;   round payoff_1 payoff_2
+#&gt;   &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1     1        3        3
+#&gt; 2     2        5        0
+#&gt; 3     3        0        5
+#&gt; 4     4        3        3
+#&gt; 5     5        1        1
+#&gt; 6     6        5        0</code></pre>
+<div class="sourceCode" id="cb1285"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># arrange: reorder rows</span></span>
+<span><span class="va">game_results</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/desc.html">desc</a></span><span class="op">(</span><span class="va">payoff_1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 5
+#&gt;   round player_1 player_2 payoff_1 payoff_2
+#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1     2 D        C               5        0
+#&gt; 2     6 D        C               5        0
+#&gt; 3     1 C        C               3        3
+#&gt; 4     4 C        C               3        3
+#&gt; 5     5 D        D               1        1
+#&gt; 6     3 C        D               0        5</code></pre>
+<div class="sourceCode" id="cb1287"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># summarise (often with group_by)</span></span>
+<span><span class="va">game_results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">player_1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span></span>
+<span>    mean_payoff <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">payoff_1</span><span class="op">)</span>,</span>
+<span>    n_rounds    <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html">n</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 2 × 3
+#&gt;   player_1 mean_payoff n_rounds
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;    &lt;int&gt;
+#&gt; 1 C               2           3
+#&gt; 2 D               3.67        3</code></pre>
+</div>
+<div id="pivoting" class="section level3" number="43.4.3">
+<h3>
+<span class="header-section-number">A.4.3</span> Pivoting<a class="anchor" aria-label="anchor" href="#pivoting"><i class="fas fa-link"></i></a>
+</h3>
+<p>Converting between wide and long formats is essential for plotting.</p>
+<div class="sourceCode" id="cb1289"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Wide to long</span></span>
+<span><span class="va">game_long</span> <span class="op">&lt;-</span> <span class="va">game_results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span></span>
+<span>    cols      <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"payoff"</span><span class="op">)</span>,</span>
+<span>    names_to  <span class="op">=</span> <span class="st">"player"</span>,</span>
+<span>    values_to <span class="op">=</span> <span class="st">"payoff"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">game_long</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 5
+#&gt;   round player_1 player_2 player   payoff
+#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;     &lt;dbl&gt;
+#&gt; 1     1 C        C        payoff_1      3
+#&gt; 2     1 C        C        payoff_2      3
+#&gt; 3     2 D        C        payoff_1      5
+#&gt; 4     2 D        C        payoff_2      0
+#&gt; 5     3 C        D        payoff_1      0
+#&gt; 6     3 C        D        payoff_2      5</code></pre>
+<div class="sourceCode" id="cb1291"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Long to wide</span></span>
+<span><span class="va">game_long</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html">pivot_wider</a></span><span class="op">(</span>names_from <span class="op">=</span> <span class="va">player</span>, values_from <span class="op">=</span> <span class="va">payoff</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; # A tibble: 6 × 5
+#&gt;   round player_1 player_2 payoff_1 payoff_2
+#&gt;   &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;       &lt;dbl&gt;    &lt;dbl&gt;
+#&gt; 1     1 C        C               3        3
+#&gt; 2     2 D        C               5        0
+#&gt; 3     3 C        D               0        5
+#&gt; 4     4 C        C               3        3
+#&gt; 5     5 D        D               1        1
+#&gt; 6     6 D        C               5        0</code></pre>
+</div>
+<div id="ggplot2-layers" class="section level3" number="43.4.4">
+<h3>
+<span class="header-section-number">A.4.4</span> ggplot2 layers<a class="anchor" aria-label="anchor" href="#ggplot2-layers"><i class="fas fa-link"></i></a>
+</h3>
+<p>The grammar of graphics builds plots layer by layer: data, aesthetics, geometries, and scales.</p>
+<div class="sourceCode" id="cb1293"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">game_results</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span></span>
+<span>    cols <span class="op">=</span> <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html">starts_with</a></span><span class="op">(</span><span class="st">"payoff"</span><span class="op">)</span>,</span>
+<span>    names_to <span class="op">=</span> <span class="st">"player"</span>,</span>
+<span>    values_to <span class="op">=</span> <span class="st">"payoff"</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">round</span>, y <span class="op">=</span> <span class="va">payoff</span>, colour <span class="op">=</span> <span class="va">player</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span></span>
+<span>    values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>payoff_1 <span class="op">=</span> <span class="st">"#1b9e77"</span>, payoff_2 <span class="op">=</span> <span class="st">"#d95f02"</span><span class="op">)</span>,</span>
+<span>    labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Player 1"</span>, <span class="st">"Player 2"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Round"</span>, y <span class="op">=</span> <span class="st">"Payoff"</span>, colour <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:ggplot2-example"></span>
+<img src="A-r-refresher_files/figure-html/ggplot2-example-1.png" alt="Payoffs across six rounds of a repeated game." width="80%"><p class="caption">
+Figure A.1: Payoffs across six rounds of a repeated game.
+</p>
+</div>
+</div>
+</div>
+<div id="useful-idioms-for-this-book" class="section level2" number="43.5">
+<h2>
+<span class="header-section-number">A.5</span> Useful idioms for this book<a class="anchor" aria-label="anchor" href="#useful-idioms-for-this-book"><i class="fas fa-link"></i></a>
+</h2>
+<p>A handful of patterns recur throughout the chapters.</p>
+<div class="sourceCode" id="cb1294"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Replicate a simulation many times</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Heads"</span>, <span class="st">"Tails"</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; results
+#&gt; Heads Tails 
+#&gt;   499   501</code></pre>
+<div class="sourceCode" id="cb1296"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Outer product for payoff grids</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
+<span><span class="va">q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span></span>
+<span><span class="va">payoff_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html">outer</a></span><span class="op">(</span><span class="va">p</span>, <span class="va">q</span>, <span class="kw">function</span><span class="op">(</span><span class="va">pi</span>, <span class="va">qi</span><span class="op">)</span> <span class="fl">3</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="va">qi</span> <span class="op">+</span> <span class="fl">1</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">pi</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">payoff_grid</span></span></code></pre></div>
+<pre><code>#&gt;      [,1]  [,2] [,3] [,4] [,5]
+#&gt; [1,] 1.00 1.000 1.00 1.00  1.0
+#&gt; [2,] 0.75 0.938 1.12 1.31  1.5
+#&gt; [3,] 0.50 0.875 1.25 1.62  2.0
+#&gt; [4,] 0.25 0.812 1.38 1.94  2.5
+#&gt; [5,] 0.00 0.750 1.50 2.25  3.0</code></pre>
+<div class="sourceCode" id="cb1298"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Named vectors for readable code</span></span>
+<span><span class="va">strategy_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>C <span class="op">=</span> <span class="st">"Cooperate"</span>, D <span class="op">=</span> <span class="st">"Defect"</span><span class="op">)</span></span>
+<span><span class="va">strategy_names</span><span class="op">[</span><span class="st">"C"</span><span class="op">]</span></span></code></pre></div>
+<pre><code>#&gt;           C 
+#&gt; "Cooperate"</code></pre>
+<div class="sourceCode" id="cb1300"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Setting seeds for reproducibility</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">100</span>, <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; [1] 49 65 25 74 18</code></pre>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></div>
+<div class="next"><a href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-r-refresher"><span class="header-section-number">A</span> R Refresher</a></li>
+<li>
+<a class="nav-link" href="#data-structures"><span class="header-section-number">A.1</span> Data structures</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#vectors"><span class="header-section-number">A.1.1</span> Vectors</a></li>
+<li><a class="nav-link" href="#matrices"><span class="header-section-number">A.1.2</span> Matrices</a></li>
+<li><a class="nav-link" href="#lists"><span class="header-section-number">A.1.3</span> Lists</a></li>
+<li><a class="nav-link" href="#data-frames-and-tibbles"><span class="header-section-number">A.1.4</span> Data frames and tibbles</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#control-flow"><span class="header-section-number">A.2</span> Control flow</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#conditionals"><span class="header-section-number">A.2.1</span> Conditionals</a></li>
+<li><a class="nav-link" href="#loops"><span class="header-section-number">A.2.2</span> Loops</a></li>
+<li><a class="nav-link" href="#the-apply-family"><span class="header-section-number">A.2.3</span> The apply family</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#functions"><span class="header-section-number">A.3</span> Functions</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#defining-functions"><span class="header-section-number">A.3.1</span> Defining functions</a></li>
+<li><a class="nav-link" href="#closures-and-environments"><span class="header-section-number">A.3.2</span> Closures and environments</a></li>
+<li><a class="nav-link" href="#anonymous-functions"><span class="header-section-number">A.3.3</span> Anonymous functions</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#tidyverse-basics"><span class="header-section-number">A.4</span> Tidyverse basics</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-pipe-operator"><span class="header-section-number">A.4.1</span> The pipe operator</a></li>
+<li><a class="nav-link" href="#dplyr-verbs"><span class="header-section-number">A.4.2</span> dplyr verbs</a></li>
+<li><a class="nav-link" href="#pivoting"><span class="header-section-number">A.4.3</span> Pivoting</a></li>
+<li><a class="nav-link" href="#ggplot2-layers"><span class="header-section-number">A.4.4</span> ggplot2 layers</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#useful-idioms-for-this-book"><span class="header-section-number">A.5</span> Useful idioms for this book</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/A-r-refresher.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/A-r-refresher.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

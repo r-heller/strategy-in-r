@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 11 The GameTheory Package | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="A conceptual survey of the GameTheory R package for cooperative game theory, followed by from-scratch implementations of the Shapley value, Banzhaf index, and related solution concepts using base...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 11 The GameTheory Package | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-gametheory-package.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="A conceptual survey of the GameTheory R package for cooperative game theory, followed by from-scratch implementations of the Shapley value, Banzhaf index, and related solution concepts using base...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 11 The GameTheory Package | Strategy in R">
+<meta name="twitter:description" content="A conceptual survey of the GameTheory R package for cooperative game theory, followed by from-scratch implementations of the Shapley value, Banzhaf index, and related solution concepts using base...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 11 The GameTheory Package | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="active" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-gametheory-package" class="section level1" number="11">
+<h1>
+<span class="header-section-number">11</span> The GameTheory Package<a class="anchor" aria-label="anchor" href="#sec-gametheory-package"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>A conceptual survey of the GameTheory R package for cooperative game theory, followed by from-scratch implementations of the Shapley value, Banzhaf index, and related solution concepts using base R and tidyverse.</p>
+</blockquote>
+<div id="learning-objectives-9" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-9"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>Understand the API and capabilities of the GameTheory R package for cooperative game theory.</li>
+<li>Implement the Shapley value from scratch by enumerating all player permutations.</li>
+<li>Compute the Banzhaf power index for weighted voting games using base R.</li>
+<li>Compare computational results with closed-form analytical formulas.</li>
+</ul>
+</div>
+<div id="motivation-9" class="section level2" number="11.1">
+<h2>
+<span class="header-section-number">11.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-9"><i class="fas fa-link"></i></a>
+</h2>
+<p>Consider the United Nations Security Council, where five permanent members hold veto power and ten non-permanent members do not. How much <em>real</em> power does each member wield? Raw vote counts are misleading — a permanent member’s veto makes it far more influential than a simple headcount suggests. The <strong>Shapley value</strong>, a cornerstone of cooperative game theory, provides a principled answer: it measures each player’s average marginal contribution across all possible orderings of coalition formation.</p>
+<p>The <code>GameTheory</code> package on CRAN provides efficient, well-tested implementations of these computations. However, since it is not available in our current environment, this chapter first surveys its API conceptually and then implements equivalent functionality from scratch. Building these algorithms by hand deepens understanding of the combinatorial machinery behind cooperative solution concepts.</p>
+</div>
+<div id="theory-9" class="section level2" number="11.2">
+<h2>
+<span class="header-section-number">11.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-9"><i class="fas fa-link"></i></a>
+</h2>
+<div id="cooperative-games-and-characteristic-functions" class="section level3" number="11.2.1">
+<h3>
+<span class="header-section-number">11.2.1</span> Cooperative games and characteristic functions<a class="anchor" aria-label="anchor" href="#cooperative-games-and-characteristic-functions"><i class="fas fa-link"></i></a>
+</h3>
+<p>A <strong>transferable utility (TU) cooperative game</strong> is a pair <span class="math inline">\((N, v)\)</span> where <span class="math inline">\(N = \{1, 2, \ldots, n\}\)</span> is the set of players and <span class="math inline">\(v : 2^N \to \mathbb{R}\)</span> is the <strong>characteristic function</strong> satisfying <span class="math inline">\(v(\emptyset) = 0\)</span>. The value <span class="math inline">\(v(S)\)</span> represents the total payoff that coalition <span class="math inline">\(S \subseteq N\)</span> can guarantee for itself.</p>
+<div class="rmdnote">
+<p><strong>Definition: Weighted Voting Game</strong></p>
+<p>A <strong>weighted voting game</strong> <span class="math inline">\([q; w_1, w_2, \ldots, w_n]\)</span> has quota <span class="math inline">\(q\)</span> and player weights <span class="math inline">\(w_i\)</span>. A coalition <span class="math inline">\(S\)</span> is <strong>winning</strong> if <span class="math inline">\(\sum_{i \in S} w_i \geq q\)</span>, giving <span class="math inline">\(v(S) = 1\)</span>; otherwise <span class="math inline">\(v(S) = 0\)</span>.</p>
+</div>
+</div>
+<div id="the-shapley-value-1" class="section level3" number="11.2.2">
+<h3>
+<span class="header-section-number">11.2.2</span> The Shapley value<a class="anchor" aria-label="anchor" href="#the-shapley-value-1"><i class="fas fa-link"></i></a>
+</h3>
+<p>The <strong>Shapley value</strong> <span class="citation">(<a href="references.html#ref-shapley1953">Shapley, 1953</a>)</span> assigns to each player <span class="math inline">\(i\)</span> a payoff <span class="math inline">\(\phi_i(v)\)</span> representing their expected marginal contribution:</p>
+<p><span class="math display" id="eq:shapley-value">\[\begin{equation}
+\phi_i(v) = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|!\,(n - |S| - 1)!}{n!} \left[ v(S \cup \{i\}) - v(S) \right]
+\tag{9.2}
+\end{equation}\]</span></p>
+<p>Equivalently, <span class="math inline">\(\phi_i(v)\)</span> is the average of player <span class="math inline">\(i\)</span>’s marginal contribution <span class="math inline">\(v(S \cup \{i\}) - v(S)\)</span> over all permutations of <span class="math inline">\(N\)</span>, where <span class="math inline">\(S\)</span> is the set of players who precede <span class="math inline">\(i\)</span> in the permutation.</p>
+<div class="rmdtip">
+<p><strong>Theorem: Shapley’s Characterization</strong></p>
+<p>The Shapley value is the unique allocation rule satisfying <strong>efficiency</strong> (<span class="math inline">\(\sum_i \phi_i = v(N)\)</span>), <strong>symmetry</strong>, <strong>additivity</strong>, and the <strong>null player</strong> property.</p>
+</div>
+</div>
+<div id="the-banzhaf-power-index" class="section level3" number="11.2.3">
+<h3>
+<span class="header-section-number">11.2.3</span> The Banzhaf power index<a class="anchor" aria-label="anchor" href="#the-banzhaf-power-index"><i class="fas fa-link"></i></a>
+</h3>
+<p>The <strong>Banzhaf power index</strong> measures power by counting the number of coalitions in which a player is <strong>pivotal</strong> (turning a losing coalition into a winning one), divided by the total number of coalitions each player could join:</p>
+<p><span class="math display" id="eq:banzhaf-index">\[\begin{equation}
+\beta_i = \frac{1}{2^{n-1}} \sum_{S \subseteq N \setminus \{i\}} \left[ v(S \cup \{i\}) - v(S) \right]
+\tag{11.1}
+\end{equation}\]</span></p>
+<p>Unlike the Shapley value, the raw Banzhaf indices do not necessarily sum to <span class="math inline">\(v(N)\)</span>. The <strong>normalized Banzhaf index</strong> divides each <span class="math inline">\(\beta_i\)</span> by <span class="math inline">\(\sum_j \beta_j\)</span>.</p>
+</div>
+<div id="the-gametheory-package-api" class="section level3" number="11.2.4">
+<h3>
+<span class="header-section-number">11.2.4</span> The GameTheory package API<a class="anchor" aria-label="anchor" href="#the-gametheory-package-api"><i class="fas fa-link"></i></a>
+</h3>
+<p>The <code>GameTheory</code> package provides functions including:</p>
+<ul>
+<li>
+<code>DefineGame()</code> — create a cooperative game from a characteristic function vector.</li>
+<li>
+<code>ShapleyValue()</code> — compute the Shapley value for any TU game.</li>
+<li>
+<code>Nucleolus()</code> — find the nucleolus (the allocation minimizing maximum dissatisfaction).</li>
+<li>
+<code>Core()</code> — compute and check non-emptiness of the core.</li>
+<li>
+<code>BanzhafValue()</code> — compute the Banzhaf power index.</li>
+</ul>
+<p>Since this package is not installed, we now implement these concepts from scratch.</p>
+</div>
+</div>
+<div id="sec-gametheory-impl" class="section level2" number="11.3">
+<h2>
+<span class="header-section-number">11.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-gametheory-impl"><i class="fas fa-link"></i></a>
+</h2>
+<div id="defining-a-characteristic-function" class="section level3" number="11.3.1">
+<h3>
+<span class="header-section-number">11.3.1</span> Defining a characteristic function<a class="anchor" aria-label="anchor" href="#defining-a-characteristic-function"><i class="fas fa-link"></i></a>
+</h3>
+<p>We represent the characteristic function as a named numeric vector indexed by coalition labels. For <span class="math inline">\(n\)</span> players, there are <span class="math inline">\(2^n - 1\)</span> non-empty coalitions.</p>
+<div class="sourceCode" id="cb245"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Build characteristic function for a weighted voting game</span></span>
+<span><span class="va">weighted_voting_game</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">quota</span>, <span class="va">weights</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">weights</span><span class="op">)</span></span>
+<span>  <span class="va">players</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="co"># Enumerate all 2^n subsets (including empty set)</span></span>
+<span>  <span class="va">v</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="fl">2</span><span class="op">^</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">coalition_labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html">character</a></span><span class="op">(</span><span class="fl">2</span><span class="op">^</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fl">2</span><span class="op">^</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">members</span> <span class="op">&lt;-</span> <span class="va">players</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html">intToBits</a></span><span class="op">(</span><span class="va">k</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="va">n</span><span class="op">]</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">coalition_labels</span><span class="op">[</span><span class="va">k</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">members</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">members</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">weights</span><span class="op">[</span><span class="va">members</span><span class="op">]</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="va">quota</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">v</span><span class="op">[</span><span class="va">k</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">v</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">coalition_labels</span></span>
+<span>  <span class="va">v</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Three-player weighted voting game: Player 1 has veto power</span></span>
+<span><span class="va">weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">quota</span> <span class="op">&lt;-</span> <span class="fl">4</span></span>
+<span><span class="va">v</span> <span class="op">&lt;-</span> <span class="fu">weighted_voting_game</span><span class="op">(</span><span class="va">quota</span>, <span class="va">weights</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Characteristic function [4; 3, 1, 1]:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Characteristic function [4; 3, 1, 1]:</code></pre>
+<div class="sourceCode" id="cb247"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">v</span><span class="op">[</span><span class="va">v</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">|</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">v</span><span class="op">)</span> <span class="op">==</span> <span class="st">""</span><span class="op">]</span></span></code></pre></div>
+<pre><code>#&gt;         1,2   1,3 1,2,3 
+#&gt;     0     1     1     1</code></pre>
+</div>
+<div id="computing-the-shapley-value-via-permutations" class="section level3" number="11.3.2">
+<h3>
+<span class="header-section-number">11.3.2</span> Computing the Shapley value via permutations<a class="anchor" aria-label="anchor" href="#computing-the-shapley-value-via-permutations"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb249"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Generate all permutations of n elements</span></span>
+<span><span class="va">all_permutations</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">n</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>, nrow <span class="op">=</span> <span class="fl">1</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">prev</span> <span class="op">&lt;-</span> <span class="fu">all_permutations</span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">0</span>, nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">idx</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">prev</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">pos</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">new_perm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/append.html">append</a></span><span class="op">(</span><span class="va">prev</span><span class="op">[</span><span class="va">i</span>, <span class="op">]</span>, <span class="va">n</span>, after <span class="op">=</span> <span class="va">pos</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>      <span class="va">result</span><span class="op">[</span><span class="va">idx</span>, <span class="op">]</span> <span class="op">&lt;-</span> <span class="va">new_perm</span></span>
+<span>      <span class="va">idx</span> <span class="op">&lt;-</span> <span class="va">idx</span> <span class="op">+</span> <span class="fl">1</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">result</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># Shapley value by averaging marginal contributions over all permutations</span></span>
+<span><span class="va">shapley_value</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">v</span>, <span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">perms</span> <span class="op">&lt;-</span> <span class="fu">all_permutations</span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">phi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">perms</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">perm</span> <span class="op">&lt;-</span> <span class="va">perms</span><span class="op">[</span><span class="va">r</span>, <span class="op">]</span></span>
+<span>    <span class="va">coalition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">pos</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">perm</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">player</span> <span class="op">&lt;-</span> <span class="va">perm</span><span class="op">[</span><span class="va">pos</span><span class="op">]</span></span>
+<span>      <span class="co"># Value of coalition before player joins</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">coalition</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">v_before</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span>      <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="va">key</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">coalition</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>        <span class="va">v_before</span> <span class="op">&lt;-</span> <span class="va">v</span><span class="op">[</span><span class="va">key</span><span class="op">]</span></span>
+<span>      <span class="op">}</span></span>
+<span>      <span class="co"># Value after player joins</span></span>
+<span>      <span class="va">coalition</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">coalition</span>, <span class="va">player</span><span class="op">)</span></span>
+<span>      <span class="va">key_after</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">coalition</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>      <span class="va">v_after</span> <span class="op">&lt;-</span> <span class="va">v</span><span class="op">[</span><span class="va">key_after</span><span class="op">]</span></span>
+<span>      <span class="co"># Marginal contribution</span></span>
+<span>      <span class="va">phi</span><span class="op">[</span><span class="va">player</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">phi</span><span class="op">[</span><span class="va">player</span><span class="op">]</span> <span class="op">+</span> <span class="op">(</span><span class="va">v_after</span> <span class="op">-</span> <span class="va">v_before</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">phi</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">perms</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">shapley</span> <span class="op">&lt;-</span> <span class="fu">shapley_value</span><span class="op">(</span><span class="va">v</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">shapley</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Player"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Shapley values for [4; 3, 1, 1]:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Shapley values for [4; 3, 1, 1]:</code></pre>
+<div class="sourceCode" id="cb251"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">shapley</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Player 1 Player 2 Player 3 
+#&gt;    0.667    0.167    0.167</code></pre>
+<div class="sourceCode" id="cb253"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nSum of Shapley values: %.4f (should equal v(N) = %d)\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">shapley</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Sum of Shapley values: 1.0000 (should equal v(N) = 1)</code></pre>
+</div>
+<div id="shapley-value-via-the-analytical-formula" class="section level3" number="11.3.3">
+<h3>
+<span class="header-section-number">11.3.3</span> Shapley value via the analytical formula<a class="anchor" aria-label="anchor" href="#shapley-value-via-the-analytical-formula"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb255"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Shapley value using the combinatorial formula from \@ref(eq:shapley-value)</span></span>
+<span><span class="va">shapley_value_formula</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">v</span>, <span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">players</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">phi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="va">players</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">others</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html">setdiff</a></span><span class="op">(</span><span class="va">players</span>, <span class="va">i</span><span class="op">)</span></span>
+<span>    <span class="co"># Enumerate all subsets of others</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fl">2</span><span class="op">^</span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">members</span> <span class="op">&lt;-</span> <span class="va">others</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html">intToBits</a></span><span class="op">(</span><span class="va">k</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">]</span></span>
+<span>      <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">members</span><span class="op">)</span></span>
+<span>      <span class="va">weight</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="va">s</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Special.html">factorial</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>      <span class="co"># v(S union {i}) - v(S)</span></span>
+<span>      <span class="va">key_with</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">members</span>, <span class="va">i</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>      <span class="va">key_without</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">members</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="st">""</span> <span class="kw">else</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">members</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>      <span class="va">marginal</span> <span class="op">&lt;-</span> <span class="va">v</span><span class="op">[</span><span class="va">key_with</span><span class="op">]</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">key_without</span> <span class="op">==</span> <span class="st">""</span>, <span class="fl">0</span>, <span class="va">v</span><span class="op">[</span><span class="va">key_without</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="va">phi</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">phi</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="va">weight</span> <span class="op">*</span> <span class="va">marginal</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">phi</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">shapley_formula</span> <span class="op">&lt;-</span> <span class="fu">shapley_value_formula</span><span class="op">(</span><span class="va">v</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">shapley_formula</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Player"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Shapley values (analytical formula):\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Shapley values (analytical formula):</code></pre>
+<div class="sourceCode" id="cb257"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">shapley_formula</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Player 1 Player 2 Player 3 
+#&gt;    0.667    0.167    0.167</code></pre>
+<div class="sourceCode" id="cb259"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nMaximum difference from permutation method:"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">abs</a></span><span class="op">(</span><span class="va">shapley</span> <span class="op">-</span> <span class="va">shapley_formula</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Maximum difference from permutation method: 0</code></pre>
+</div>
+<div id="computing-the-banzhaf-power-index" class="section level3" number="11.3.4">
+<h3>
+<span class="header-section-number">11.3.4</span> Computing the Banzhaf power index<a class="anchor" aria-label="anchor" href="#computing-the-banzhaf-power-index"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb261"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">banzhaf_index</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">v</span>, <span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">players</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>  <span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">numeric</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="va">players</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">others</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html">setdiff</a></span><span class="op">(</span><span class="va">players</span>, <span class="va">i</span><span class="op">)</span></span>
+<span>    <span class="va">swings</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">k</span> <span class="kw">in</span> <span class="fl">0</span><span class="op">:</span><span class="op">(</span><span class="fl">2</span><span class="op">^</span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">members</span> <span class="op">&lt;-</span> <span class="va">others</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/logical.html">as.logical</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html">intToBits</a></span><span class="op">(</span><span class="va">k</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">]</span></span>
+<span>      <span class="va">key_with</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">members</span>, <span class="va">i</span><span class="op">)</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>      <span class="va">key_without</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">members</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="st">""</span> <span class="kw">else</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="va">members</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span>
+<span>      <span class="va">marginal</span> <span class="op">&lt;-</span> <span class="va">v</span><span class="op">[</span><span class="va">key_with</span><span class="op">]</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">key_without</span> <span class="op">==</span> <span class="st">""</span>, <span class="fl">0</span>, <span class="va">v</span><span class="op">[</span><span class="va">key_without</span><span class="op">]</span><span class="op">)</span></span>
+<span>      <span class="va">swings</span> <span class="op">&lt;-</span> <span class="va">swings</span> <span class="op">+</span> <span class="va">marginal</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">beta</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">swings</span> <span class="op">/</span> <span class="fl">2</span><span class="op">^</span><span class="op">(</span><span class="va">n</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">beta</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">banzhaf</span> <span class="op">&lt;-</span> <span class="fu">banzhaf_index</span><span class="op">(</span><span class="va">v</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">banzhaf</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Player"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Raw Banzhaf indices for [4; 3, 1, 1]:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Raw Banzhaf indices for [4; 3, 1, 1]:</code></pre>
+<div class="sourceCode" id="cb263"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">banzhaf</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Player 1 Player 2 Player 3 
+#&gt;     0.75     0.25     0.25</code></pre>
+<div class="sourceCode" id="cb265"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"\nNormalized Banzhaf indices:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Normalized Banzhaf indices:</code></pre>
+<div class="sourceCode" id="cb267"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html">print</a></span><span class="op">(</span><span class="va">banzhaf</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">banzhaf</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Player 1 Player 2 Player 3 
+#&gt;      0.6      0.2      0.2</code></pre>
+</div>
+<div id="comparing-power-indices-across-coalition-structures" class="section level3" number="11.3.5">
+<h3>
+<span class="header-section-number">11.3.5</span> Comparing power indices across coalition structures<a class="anchor" aria-label="anchor" href="#comparing-power-indices-across-coalition-structures"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb269"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">games</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Symmetric\n[2; 1,1,1]"</span>  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>quota <span class="op">=</span> <span class="fl">2</span>, weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Moderate veto\n[3; 2,1,1]"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>quota <span class="op">=</span> <span class="fl">3</span>, weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="st">"Strong veto\n[4; 3,1,1]"</span>  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>quota <span class="op">=</span> <span class="fl">4</span>, weights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">games</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">game_name</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">g</span> <span class="op">&lt;-</span> <span class="va">games</span><span class="op">[[</span><span class="va">game_name</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">v_game</span> <span class="op">&lt;-</span> <span class="fu">weighted_voting_game</span><span class="op">(</span><span class="va">g</span><span class="op">$</span><span class="va">quota</span>, <span class="va">g</span><span class="op">$</span><span class="va">weights</span><span class="op">)</span></span>
+<span>  <span class="va">shap</span> <span class="op">&lt;-</span> <span class="fu">shapley_value_formula</span><span class="op">(</span><span class="va">v_game</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="va">banz</span> <span class="op">&lt;-</span> <span class="fu">banzhaf_index</span><span class="op">(</span><span class="va">v_game</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="va">banz_norm</span> <span class="op">&lt;-</span> <span class="va">banz</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">banz</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    game <span class="op">=</span> <span class="va">game_name</span>,</span>
+<span>    player <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Player"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    index <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Shapley value"</span>, <span class="st">"Banzhaf (normalized)"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>,</span>
+<span>    value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">shap</span>, <span class="va">banz_norm</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_comparison</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">results</span>,</span>
+<span>                       <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">player</span>, y <span class="op">=</span> <span class="va">value</span>, fill <span class="op">=</span> <span class="va">index</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a></span><span class="op">(</span>position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html">position_dodge</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">game</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html">label_percent</a></span><span class="op">(</span><span class="op">)</span>, limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Power Indices Across Weighted Voting Games"</span>,</span>
+<span>    x <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Share of total power"</span>,</span>
+<span>    fill <span class="op">=</span> <span class="st">"Index"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">p_comparison</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:shapley-comparison"></span>
+<img src="10-gametheory-package_files/figure-html/shapley-comparison-1.png" alt="Shapley values and normalized Banzhaf indices for three different weighted voting games with three players. The veto player (Player 1) commands disproportionate power relative to their weight share." width="80%"><p class="caption">
+Figure 11.1: Shapley values and normalized Banzhaf indices for three different weighted voting games with three players. The veto player (Player 1) commands disproportionate power relative to their weight share.
+</p>
+</div>
+<div class="sourceCode" id="cb270"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_comparison</span>, <span class="st">"shapley-comparison"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p>As <a href="sec-gametheory-package.html#fig:shapley-comparison">11.1</a> shows, when the game is symmetric all players have equal power. As Player 1’s weight advantage grows, both the Shapley value and the Banzhaf index assign them a disproportionately larger share of power — exceeding their raw weight share. In the strong veto game <span class="math inline">\([4; 3, 1, 1]\)</span>, Player 1 is essential for every winning coalition, which both indices capture clearly.</p>
+</div>
+</div>
+<div id="worked-example-9" class="section level2" number="11.4">
+<h2>
+<span class="header-section-number">11.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-9"><i class="fas fa-link"></i></a>
+</h2>
+<div id="a-simplified-eu-council-vote" class="section level3" number="11.4.1">
+<h3>
+<span class="header-section-number">11.4.1</span> A simplified EU Council vote<a class="anchor" aria-label="anchor" href="#a-simplified-eu-council-vote"><i class="fas fa-link"></i></a>
+</h3>
+<p>Consider a simplified three-country EU voting scenario: Germany (weight 4), France (weight 3), and Belgium (weight 1). A proposal passes with a quota of 5 votes.</p>
+<div class="sourceCode" id="cb271"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">eu_weights</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">eu_quota</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
+<span><span class="va">eu_v</span> <span class="op">&lt;-</span> <span class="fu">weighted_voting_game</span><span class="op">(</span><span class="va">eu_quota</span>, <span class="va">eu_weights</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Game: [5; 4, 3, 1]\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Game: [5; 4, 3, 1]</code></pre>
+<div class="sourceCode" id="cb273"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Winning coalitions:\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Winning coalitions:</code></pre>
+<div class="sourceCode" id="cb275"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">winning</span> <span class="op">&lt;-</span> <span class="va">eu_v</span><span class="op">[</span><span class="va">eu_v</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/nchar.html">nchar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">eu_v</span><span class="op">)</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">]</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">name</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">winning</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">members</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html">strsplit</a></span><span class="op">(</span><span class="va">name</span>, <span class="st">","</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">countries</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Germany"</span>, <span class="st">"France"</span>, <span class="st">"Belgium"</span><span class="op">)</span><span class="op">[</span><span class="va">members</span><span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  {%s}  (total weight = %d)\n"</span>,</span>
+<span>              <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">countries</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>,</span>
+<span>              <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eu_weights</span><span class="op">[</span><span class="va">members</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   {Germany, France}  (total weight = 7)
+#&gt;   {Germany, Belgium}  (total weight = 5)
+#&gt;   {Germany, France, Belgium}  (total weight = 8)</code></pre>
+<div class="sourceCode" id="cb277"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">eu_shapley</span> <span class="op">&lt;-</span> <span class="fu">shapley_value_formula</span><span class="op">(</span><span class="va">eu_v</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">eu_banzhaf</span> <span class="op">&lt;-</span> <span class="fu">banzhaf_index</span><span class="op">(</span><span class="va">eu_v</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">eu_banzhaf_norm</span> <span class="op">&lt;-</span> <span class="va">eu_banzhaf</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eu_banzhaf</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">results_eu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  Country <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Germany"</span>, <span class="st">"France"</span>, <span class="st">"Belgium"</span><span class="op">)</span>,</span>
+<span>  Weight <span class="op">=</span> <span class="va">eu_weights</span>,</span>
+<span>  `Weight share` <span class="op">=</span> <span class="va">eu_weights</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eu_weights</span><span class="op">)</span>,</span>
+<span>  `Shapley value` <span class="op">=</span> <span class="va">eu_shapley</span>,</span>
+<span>  `Banzhaf (norm.)` <span class="op">=</span> <span class="va">eu_banzhaf_norm</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">results_eu</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/gt.html">gt</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/fmt_percent.html">fmt_percent</a></span><span class="op">(</span>columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">`Weight share`</span>, <span class="va">`Shapley value`</span>, <span class="va">`Banzhaf (norm.)`</span><span class="op">)</span>,</span>
+<span>              decimals <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://gt.rstudio.com/reference/tab_header.html">tab_header</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Power analysis: [5; 4, 3, 1]"</span><span class="op">)</span></span></code></pre></div>
+<div id="qeayjdrzqo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qeayjdrzqo table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#qeayjdrzqo thead, #qeayjdrzqo tbody, #qeayjdrzqo tfoot, #qeayjdrzqo tr, #qeayjdrzqo td, #qeayjdrzqo th {
+  border-style: none;
+}
+
+#qeayjdrzqo p {
+  margin: 0;
+  padding: 0;
+}
+
+#qeayjdrzqo .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#qeayjdrzqo .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#qeayjdrzqo .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#qeayjdrzqo .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#qeayjdrzqo .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#qeayjdrzqo .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#qeayjdrzqo .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#qeayjdrzqo .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#qeayjdrzqo .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#qeayjdrzqo .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#qeayjdrzqo .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#qeayjdrzqo .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#qeayjdrzqo .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#qeayjdrzqo .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#qeayjdrzqo .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#qeayjdrzqo .gt_left {
+  text-align: left;
+}
+
+#qeayjdrzqo .gt_center {
+  text-align: center;
+}
+
+#qeayjdrzqo .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#qeayjdrzqo .gt_font_normal {
+  font-weight: normal;
+}
+
+#qeayjdrzqo .gt_font_bold {
+  font-weight: bold;
+}
+
+#qeayjdrzqo .gt_font_italic {
+  font-style: italic;
+}
+
+#qeayjdrzqo .gt_super {
+  font-size: 65%;
+}
+
+#qeayjdrzqo .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#qeayjdrzqo .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#qeayjdrzqo .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#qeayjdrzqo .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#qeayjdrzqo .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#qeayjdrzqo .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#qeayjdrzqo .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#qeayjdrzqo .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#qeayjdrzqo div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<div class="inline-table"><table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_heading">
+<td colspan="5" class="gt_heading gt_title gt_font_normal gt_bottom_border" style>Power analysis: [5; 4, 3, 1]</td>
+    </tr>
+<tr class="gt_col_headings">
+<th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Country">Country</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Weight">Weight</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Weight-share">Weight share</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Shapley-value">Shapley value</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="Banzhaf-(norm.)">Banzhaf (norm.)</th>
+    </tr>
+</thead>
+<tbody class="gt_table_body">
+<tr>
+<td headers="Country" class="gt_row gt_left">Germany</td>
+<td headers="Weight" class="gt_row gt_right">4</td>
+<td headers="Weight share" class="gt_row gt_right">50.0%</td>
+<td headers="Shapley value" class="gt_row gt_right">66.7%</td>
+<td headers="Banzhaf (norm.)" class="gt_row gt_right">60.0%</td>
+</tr>
+<tr>
+<td headers="Country" class="gt_row gt_left">France</td>
+<td headers="Weight" class="gt_row gt_right">3</td>
+<td headers="Weight share" class="gt_row gt_right">37.5%</td>
+<td headers="Shapley value" class="gt_row gt_right">16.7%</td>
+<td headers="Banzhaf (norm.)" class="gt_row gt_right">20.0%</td>
+</tr>
+<tr>
+<td headers="Country" class="gt_row gt_left">Belgium</td>
+<td headers="Weight" class="gt_row gt_right">1</td>
+<td headers="Weight share" class="gt_row gt_right">12.5%</td>
+<td headers="Shapley value" class="gt_row gt_right">16.7%</td>
+<td headers="Banzhaf (norm.)" class="gt_row gt_right">20.0%</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<p><strong>Step-by-step Shapley calculation for Belgium (Player 3):</strong></p>
+<p>There are <span class="math inline">\(3! = 6\)</span> permutations. Belgium is pivotal only when it joins a coalition whose weight is in the range <span class="math inline">\([4, 4]\)</span> — exactly enough that adding Belgium’s weight of 1 reaches the quota of 5. This occurs when Germany alone precedes Belgium.</p>
+<div class="sourceCode" id="cb278"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">perms</span> <span class="op">&lt;-</span> <span class="fu">all_permutations</span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"All permutations and Belgium's marginal contribution:\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; All permutations and Belgium's marginal contribution:</code></pre>
+<div class="sourceCode" id="cb280"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">perms</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">perm</span> <span class="op">&lt;-</span> <span class="va">perms</span><span class="op">[</span><span class="va">r</span>, <span class="op">]</span></span>
+<span>  <span class="va">countries</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"Germany"</span>, <span class="st">"France"</span>, <span class="st">"Belgium"</span><span class="op">)</span><span class="op">[</span><span class="va">perm</span><span class="op">]</span></span>
+<span>  <span class="va">pos_belgium</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html">which</a></span><span class="op">(</span><span class="va">perm</span> <span class="op">==</span> <span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="va">predecessors</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">pos_belgium</span> <span class="op">&gt;</span> <span class="fl">1</span><span class="op">)</span> <span class="va">perm</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="op">(</span><span class="va">pos_belgium</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span><span class="op">]</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">predecessors</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">w_before</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>    <span class="va">w_before</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">eu_weights</span><span class="op">[</span><span class="va">predecessors</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="va">w_after</span> <span class="op">&lt;-</span> <span class="va">w_before</span> <span class="op">+</span> <span class="va">eu_weights</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span></span>
+<span>  <span class="va">pivotal</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">w_before</span> <span class="op">&lt;</span> <span class="va">eu_quota</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="op">(</span><span class="va">w_after</span> <span class="op">&gt;=</span> <span class="va">eu_quota</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  %s -&gt; %s -&gt; %s | Before Belgium: weight=%d, After: %d | %s\n"</span>,</span>
+<span>              <span class="va">countries</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">countries</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">countries</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>,</span>
+<span>              <span class="va">w_before</span>, <span class="va">w_after</span>,</span>
+<span>              <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">pivotal</span>, <span class="st">"PIVOTAL"</span>, <span class="st">""</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   Belgium -&gt; France -&gt; Germany | Before Belgium: weight=0, After: 1 | 
+#&gt;   France -&gt; Belgium -&gt; Germany | Before Belgium: weight=3, After: 4 | 
+#&gt;   France -&gt; Germany -&gt; Belgium | Before Belgium: weight=7, After: 8 | 
+#&gt;   Belgium -&gt; Germany -&gt; France | Before Belgium: weight=0, After: 1 | 
+#&gt;   Germany -&gt; Belgium -&gt; France | Before Belgium: weight=4, After: 5 | PIVOTAL
+#&gt;   Germany -&gt; France -&gt; Belgium | Before Belgium: weight=7, After: 8 |</code></pre>
+<div class="sourceCode" id="cb282"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"\nShapley value for Belgium: %d/6 = %.4f\n"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">eu_shapley</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span> <span class="op">*</span> <span class="fl">6</span><span class="op">)</span>, <span class="va">eu_shapley</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; 
+#&gt; Shapley value for Belgium: 1/6 = 0.1667</code></pre>
+<p>This confirms that Belgium is pivotal in exactly one of the six orderings (where Germany precedes Belgium and France follows), giving <span class="math inline">\(\phi_3 = 1/6 \approx 16.7\%\)</span> — notably higher than its raw weight share of <span class="math inline">\(1/8 = 12.5\%\)</span>.</p>
+</div>
+</div>
+<div id="extensions-9" class="section level2" number="11.5">
+<h2>
+<span class="header-section-number">11.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-9"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Larger games.</strong> For <span class="math inline">\(n &gt; 10\)</span> players, permutation enumeration becomes infeasible (<span class="math inline">\(n!\)</span> grows super-exponentially). Sampling-based estimators randomly draw permutations and average marginal contributions, yielding Monte Carlo Shapley values with confidence intervals.</li>
+<li>
+<strong>The nucleolus</strong> provides a complementary solution concept that minimizes the maximum excess (dissatisfaction) of any coalition. We implement it in <a href="sec-coopgame-package.html#sec-coopgame-package">12</a> using linear programming techniques.</li>
+<li>
+<strong>Network games</strong> extend cooperative games by restricting which coalitions can form based on a communication graph.</li>
+<li>
+<strong>Non-transferable utility (NTU) games</strong> relax the assumption that utility can be freely transferred among coalition members, leading to concepts such as the NTU Shapley value.</li>
+</ul>
+</div>
+<div id="exercises-9" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-9"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li><p><strong>Unanimity games.</strong> The unanimity game <span class="math inline">\(u_T\)</span> for coalition <span class="math inline">\(T\)</span> assigns <span class="math inline">\(v(S) = 1\)</span> if <span class="math inline">\(T \subseteq S\)</span> and <span class="math inline">\(v(S) = 0\)</span> otherwise. Prove analytically that <span class="math inline">\(\phi_i(u_T) = 1/|T|\)</span> for <span class="math inline">\(i \in T\)</span> and <span class="math inline">\(\phi_i(u_T) = 0\)</span> otherwise. Then verify your proof computationally using the <code>shapley_value()</code> function for <span class="math inline">\(T = \{1, 2\}\)</span> with <span class="math inline">\(n = 3\)</span> players.</p></li>
+<li><p><strong>Four-player voting.</strong> Consider the weighted voting game <span class="math inline">\([6;\; 4, 3, 2, 1]\)</span>. Compute the Shapley value and normalized Banzhaf index for all four players using the functions from <a href="sec-gametheory-package.html#sec-gametheory-impl">11.3</a>. Which player has zero power according to both indices? Explain why intuitively.</p></li>
+<li><p><strong>Monte Carlo Shapley.</strong> For larger games, exact computation is infeasible. Write a function <code>shapley_monte_carlo(v, n, num_samples)</code> that estimates the Shapley value by randomly sampling <code>num_samples</code> permutations (using <code><a href="https://rdrr.io/r/base/sample.html">sample()</a></code>). Test it on the game <span class="math inline">\([4;\; 3, 1, 1]\)</span> and plot how the estimates converge to the exact values as <code>num_samples</code> increases from 100 to 10,000.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></div>
+<div class="next"><a href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-gametheory-package"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="nav-link" href="#learning-objectives-9">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-9"><span class="header-section-number">11.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-9"><span class="header-section-number">11.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#cooperative-games-and-characteristic-functions"><span class="header-section-number">11.2.1</span> Cooperative games and characteristic functions</a></li>
+<li><a class="nav-link" href="#the-shapley-value-1"><span class="header-section-number">11.2.2</span> The Shapley value</a></li>
+<li><a class="nav-link" href="#the-banzhaf-power-index"><span class="header-section-number">11.2.3</span> The Banzhaf power index</a></li>
+<li><a class="nav-link" href="#the-gametheory-package-api"><span class="header-section-number">11.2.4</span> The GameTheory package API</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-gametheory-impl"><span class="header-section-number">11.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#defining-a-characteristic-function"><span class="header-section-number">11.3.1</span> Defining a characteristic function</a></li>
+<li><a class="nav-link" href="#computing-the-shapley-value-via-permutations"><span class="header-section-number">11.3.2</span> Computing the Shapley value via permutations</a></li>
+<li><a class="nav-link" href="#shapley-value-via-the-analytical-formula"><span class="header-section-number">11.3.3</span> Shapley value via the analytical formula</a></li>
+<li><a class="nav-link" href="#computing-the-banzhaf-power-index"><span class="header-section-number">11.3.4</span> Computing the Banzhaf power index</a></li>
+<li><a class="nav-link" href="#comparing-power-indices-across-coalition-structures"><span class="header-section-number">11.3.5</span> Comparing power indices across coalition structures</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-9"><span class="header-section-number">11.4</span> Worked example</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#a-simplified-eu-council-vote"><span class="header-section-number">11.4.1</span> A simplified EU Council vote</a></li></ul>
+</li>
+<li><a class="nav-link" href="#extensions-9"><span class="header-section-number">11.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-9">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/10-gametheory-package.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/10-gametheory-package.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+---
+title: "Strategy in R"
+subtitle: "Game Theory, Simulation, and Machine Intelligence"
+author: "Raban Heller"
+date: "2026-05-11"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: book.bib
+biblio-style: apalike
+csl: apa.csl
+link-citations: yes
+github-repo: r-heller/strategy-in-r
+url: https://r-heller.github.io/strategy-in-r/
+description: "An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R."
+cover-image: "images/cover.png"
+---
+
+# Preface {-}
+
+<img src="images/cover.png" alt="Strategy in R book cover" width="60%" style="display: block; margin: auto;" />
+
+This book exists because two powerful ideas — game theory and computation — deserve to meet in one place, with working code you can run, modify, and extend.
+
+## Who this book is for {-}
+
+*Strategy in R* is written for graduate students, researchers, and practitioners who already have working fluency in R and want to apply it to strategic interaction. You should be comfortable with `tidyverse` idioms, writing functions, and reading mathematical notation. No prior game-theory background is assumed; Part I builds the foundations from scratch.
+
+If you are primarily a game theorist curious about computational methods, start with Part I and read linearly. If you are an R programmer looking for new domains, dip into Part III (simulation) or Part IV (AI/ML) and refer back to the theory chapters as needed.
+
+## What this book covers {-}
+
+The book is organised into six parts:
+
+- **Part I — Foundations of Game Theory.** Normal- and extensive-form games, Nash equilibrium, mixed strategies, Bayesian games, repeated games, cooperative game theory.
+- **Part II — The R Toolkit.** A practical tour of R packages for game-theoretic computation, including `GameTheory`, `CoopGame`, `gtree`, and Python interop via `reticulate`.
+- **Part III — Simulation.** Monte Carlo methods, agent-based models, Axelrod's tournament, spatial games, replicator dynamics, evolutionary stability, network games, performance.
+- **Part IV — AI and Machine Learning.** Reinforcement learning, multi-agent RL, self-play, counterfactual regret minimisation, GANs as minimax games, LLM agents.
+- **Part V — Applications.** Auctions, mechanism design, matching markets, bargaining, empirical case studies.
+- **Part VI — Ethics and the Future.** Ethical frameworks, fairness in ML, AI alignment, cooperative AI, open problems.
+
+## What this book does not cover {-}
+
+This is not a pure-mathematics textbook — we state theorems but emphasise computation and intuition over formal proofs. It is not a machine-learning textbook — we cover ML only where it intersects with strategic interaction. And it is not a software-engineering manual — we care about reproducible code but do not cover R package development or deployment.
+
+## How to run the code {-}
+
+All code in this book is designed to run reproducibly. The repository uses `renv` for R package management. To get started:
+
+```bash
+git clone https://github.com/r-heller/strategy-in-r.git
+cd strategy-in-r
+```
+
+Then in R:
+
+```r
+renv::restore()
+bookdown::render_book("index.Rmd", output_format = "all")
+```
+
+A handful of chapters use Python via `reticulate` (CFR, deep RL). These require a Python environment with packages listed in `python/requirements.txt`.
+
+## Conventions {-}
+
+- All R code uses tidyverse style and is designed to run end-to-end when the chapter is rendered.
+- Figures use a colour-blind-safe palette (Okabe–Ito) and are saved at 300 dpi.
+- Cross-references use bookdown's `\@ref()` syntax — `Figure \@ref(fig:foo)`, `Chapter \@ref(sec-bar)`.
+- Each chapter ends with exercises; solutions appear in the appendix.
+- Citations follow APA style. Every reference has a verified DOI, arXiv ID, or ISBN.
+
+## License {-}
+
+The content of this book is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Source code is released under the [MIT License](https://opensource.org/licenses/MIT). See `LICENSE` and `LICENSE-CONTENT` in the repository.

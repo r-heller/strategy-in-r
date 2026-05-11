@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Chapter 20 Replicator Dynamics | Strategy in R</title>
+<meta name="author" content="Raban Heller">
+<meta name="description" content="An introduction to the replicator equation — the central dynamical system of evolutionary game theory — with ODE solutions in R for Rock-Paper-Scissors and Hawk-Dove games, including simplex...">
+<meta name="generator" content="bookdown 0.46 with bs4_book()">
+<meta property="og:title" content="Chapter 20 Replicator Dynamics | Strategy in R">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/sec-replicator-dynamics.html">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta property="og:description" content="An introduction to the replicator equation — the central dynamical system of evolutionary game theory — with ODE solutions in R for Rock-Paper-Scissors and Hawk-Dove games, including simplex...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter 20 Replicator Dynamics | Strategy in R">
+<meta name="twitter:description" content="An introduction to the replicator equation — the central dynamical system of evolutionary game theory — with ODE solutions in R for Rock-Paper-Scissors and Hawk-Dove games, including simplex...">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Open Graph / Twitter Card --><meta property="og:title" content="Chapter 20 Replicator Dynamics | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
+<meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
+<meta property="og:type" content="book">
+<meta property="og:url" content="https://r-heller.github.io/strategy-in-r/">
+<meta property="og:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://r-heller.github.io/strategy-in-r/images/cover.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style/style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="Game Theory, Simulation, and Machine Intelligence">Strategy in R</a>:
+        <small class="text-muted">Game Theory, Simulation, and Machine Intelligence</small>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Preface</a></li>
+<li><a class="" href="impressum.html">Impressum</a></li>
+<li><a class="" href="how-to-use-this-book.html">How to use this book</a></li>
+<li><a class="" href="notation.html">Notation</a></li>
+<li><a class="" href="sec-introduction.html"><span class="header-section-number">1</span> Introduction</a></li>
+<li class="book-part">Part I — Foundations of Game Theory</li>
+<li><a class="" href="sec-what-is-a-game.html"><span class="header-section-number">2</span> What is a Game?</a></li>
+<li><a class="" href="sec-normal-form.html"><span class="header-section-number">3</span> Normal-Form Games</a></li>
+<li><a class="" href="sec-nash-equilibrium.html"><span class="header-section-number">4</span> Nash Equilibrium</a></li>
+<li><a class="" href="sec-mixed-strategies.html"><span class="header-section-number">5</span> Mixed Strategies and the Indifference Principle</a></li>
+<li><a class="" href="sec-extensive-form.html"><span class="header-section-number">6</span> Extensive-Form Games</a></li>
+<li><a class="" href="sec-bayesian-games.html"><span class="header-section-number">7</span> Bayesian Games</a></li>
+<li><a class="" href="sec-repeated-games.html"><span class="header-section-number">8</span> Repeated Games</a></li>
+<li><a class="" href="sec-cooperative-gt.html"><span class="header-section-number">9</span> Cooperative Game Theory</a></li>
+<li class="book-part">Part II — The R Toolkit</li>
+<li><a class="" href="sec-r-environment.html"><span class="header-section-number">10</span> The R Environment</a></li>
+<li><a class="" href="sec-gametheory-package.html"><span class="header-section-number">11</span> The GameTheory Package</a></li>
+<li><a class="" href="sec-coopgame-package.html"><span class="header-section-number">12</span> The CoopGame Package</a></li>
+<li><a class="" href="sec-gtree-package.html"><span class="header-section-number">13</span> The gtree Package</a></li>
+<li><a class="" href="sec-nashpy-reticulate.html"><span class="header-section-number">14</span> nashpy via reticulate</a></li>
+<li><a class="" href="sec-custom-solvers.html"><span class="header-section-number">15</span> Building Custom Solvers in R</a></li>
+<li class="book-part">Part III — Simulation</li>
+<li><a class="" href="sec-monte-carlo.html"><span class="header-section-number">16</span> Monte Carlo Methods for Games</a></li>
+<li><a class="" href="sec-agent-based-models.html"><span class="header-section-number">17</span> Agent-Based Models for Strategic Interaction</a></li>
+<li><a class="" href="sec-axelrod-tournament.html"><span class="header-section-number">18</span> Replicating Axelrod’s Tournament</a></li>
+<li><a class="" href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></li>
+<li><a class="active" href="sec-replicator-dynamics.html"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="" href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></li>
+<li><a class="" href="sec-network-games.html"><span class="header-section-number">22</span> Games on Networks</a></li>
+<li><a class="" href="sec-performance-rcpp.html"><span class="header-section-number">23</span> Performance Optimization</a></li>
+<li class="book-part">Part IV — AI and Machine Learning</li>
+<li><a class="" href="sec-ml-foundations.html"><span class="header-section-number">24</span> ML Foundations for Game Theory</a></li>
+<li><a class="" href="sec-reinforcement-learning.html"><span class="header-section-number">25</span> Reinforcement Learning Foundations</a></li>
+<li><a class="" href="sec-q-learning.html"><span class="header-section-number">26</span> Q-Learning in Games</a></li>
+<li><a class="" href="sec-multi-agent-rl.html"><span class="header-section-number">27</span> Multi-Agent RL</a></li>
+<li><a class="" href="sec-self-play.html"><span class="header-section-number">28</span> Self-Play and AlphaZero</a></li>
+<li><a class="" href="sec-cfr.html"><span class="header-section-number">29</span> CFR and Poker</a></li>
+<li><a class="" href="sec-gans.html"><span class="header-section-number">30</span> GANs as Minimax Games</a></li>
+<li><a class="" href="sec-llm-agents.html"><span class="header-section-number">31</span> LLM Agents and Strategy</a></li>
+<li class="book-part">Part V — Applications</li>
+<li><a class="" href="sec-auctions.html"><span class="header-section-number">32</span> Auction Theory</a></li>
+<li><a class="" href="sec-mechanism-design.html"><span class="header-section-number">33</span> Mechanism Design</a></li>
+<li><a class="" href="sec-matching-markets.html"><span class="header-section-number">34</span> Matching Markets</a></li>
+<li><a class="" href="sec-bargaining.html"><span class="header-section-number">35</span> Bargaining Theory</a></li>
+<li><a class="" href="sec-conflict-cooperation.html"><span class="header-section-number">36</span> Conflict and Cooperation Models</a></li>
+<li><a class="" href="sec-case-studies.html"><span class="header-section-number">37</span> Empirical Case Studies</a></li>
+<li class="book-part">Part VI — Ethics and the Future</li>
+<li><a class="" href="sec-ethics-frameworks.html"><span class="header-section-number">38</span> Ethical Frameworks for Strategic AI</a></li>
+<li><a class="" href="sec-fairness-ml.html"><span class="header-section-number">39</span> Fairness in Machine Learning</a></li>
+<li><a class="" href="sec-ai-alignment.html"><span class="header-section-number">40</span> AI Alignment as a Game</a></li>
+<li><a class="" href="sec-cooperative-ai.html"><span class="header-section-number">41</span> Cooperative AI</a></li>
+<li><a class="" href="sec-future.html"><span class="header-section-number">42</span> The Future of Strategy</a></li>
+<li class="book-part">Appendices</li>
+<li><a class="" href="sec-r-refresher.html"><span class="header-section-number">A</span> R Refresher</a></li>
+<li><a class="" href="sec-linear-algebra.html"><span class="header-section-number">B</span> Linear Algebra Essentials</a></li>
+<li><a class="" href="sec-probability.html"><span class="header-section-number">C</span> Probability Essentials</a></li>
+<li><a class="" href="sec-solutions.html"><span class="header-section-number">D</span> Exercise Solutions</a></li>
+<li><a class="" href="sec-glossary.html"><span class="header-section-number">E</span> Glossary</a></li>
+<li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
+<li><a class="" href="about-the-author.html">About the author</a></li>
+<li><a class="" href="colophon.html">Colophon</a></li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/r-heller/strategy-in-r">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="sec-replicator-dynamics" class="section level1" number="20">
+<h1>
+<span class="header-section-number">20</span> Replicator Dynamics<a class="anchor" aria-label="anchor" href="#sec-replicator-dynamics"><i class="fas fa-link"></i></a>
+</h1>
+<blockquote>
+<p>An introduction to the replicator equation — the central dynamical system of evolutionary game theory — with ODE solutions in R for Rock-Paper-Scissors and Hawk-Dove games, including simplex visualization.</p>
+</blockquote>
+<div id="learning-objectives-18" class="section level2 unnumbered">
+<h2>Learning objectives<a class="anchor" aria-label="anchor" href="#learning-objectives-18"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>State the replicator equation and explain the biological and game-theoretic intuition behind each term.</li>
+<li>Use <code>deSolve</code> to numerically integrate the replicator equation for arbitrary payoff matrices.</li>
+<li>Visualize replicator dynamics on the two-dimensional simplex for three-strategy games.</li>
+<li>Analyze convergence to equilibrium in Hawk-Dove and cycling behavior in Rock-Paper-Scissors.</li>
+</ul>
+</div>
+<div id="motivation-18" class="section level2" number="20.1">
+<h2>
+<span class="header-section-number">20.1</span> Motivation<a class="anchor" aria-label="anchor" href="#motivation-18"><i class="fas fa-link"></i></a>
+</h2>
+<p>In <a href="sec-axelrod-tournament.html#sec-axelrod-tournament">18</a> and <a href="sec-spatial-pd.html#sec-spatial-pd">19</a>, we studied discrete agents making discrete choices. But many evolutionary and economic processes are better described in continuous time: strategy frequencies shift gradually as more successful types reproduce faster. How do we model this?</p>
+<p>The <strong>replicator equation</strong>, introduced by Taylor and Jonker <span class="citation">(<a href="references.html#ref-taylor1978">1978</a>)</span> and named by Schuster and Sigmund <span class="citation">(<a href="references.html#ref-schuster1983">1983</a>)</span>, provides the answer. It is the fundamental dynamical system of evolutionary game theory, describing how the frequency of each strategy in a large population changes over time as a function of its fitness relative to the population average.</p>
+<p>The replicator equation connects game theory to biology (it arises from natural selection), economics (it describes learning dynamics in large populations), and dynamical systems (it produces fixed points, limit cycles, and chaos). In this chapter, we solve it numerically in R for two classic games and visualize the resulting dynamics.</p>
+</div>
+<div id="theory-18" class="section level2" number="20.2">
+<h2>
+<span class="header-section-number">20.2</span> Theory<a class="anchor" aria-label="anchor" href="#theory-18"><i class="fas fa-link"></i></a>
+</h2>
+<div id="the-replicator-equation" class="section level3" number="20.2.1">
+<h3>
+<span class="header-section-number">20.2.1</span> The replicator equation<a class="anchor" aria-label="anchor" href="#the-replicator-equation"><i class="fas fa-link"></i></a>
+</h3>
+<p>Consider a large population where individuals play one of <span class="math inline">\(n\)</span> strategies. Let <span class="math inline">\(x_i\)</span> be the fraction of the population playing strategy <span class="math inline">\(i\)</span>, so <span class="math inline">\(\mathbf{x} = (x_1, \ldots, x_n)\)</span> lies on the <strong>simplex</strong> <span class="math inline">\(\Delta^{n-1} = \{ \mathbf{x} \geq 0 : \sum_i x_i = 1 \}\)</span>.</p>
+<p>The <strong>fitness</strong> of strategy <span class="math inline">\(i\)</span> against the current population is:
+<span class="math display" id="eq:replicator">\[\begin{equation}
+f_i(\mathbf{x}) = \sum_j a_{ij} x_j = (A\mathbf{x})_i
+$$
+where $A = (a_{ij})$ is the payoff matrix. The **average fitness** is:
+$$
+\bar{f}(\mathbf{x}) = \sum_i x_i f_i(\mathbf{x}) = \mathbf{x}^\top A \mathbf{x}
+$$
+
+The **replicator equation** is:
+$$
+\dot{x}_i = x_i \bigl( f_i(\mathbf{x}) - \bar{f}(\mathbf{x}) \bigr), \quad i = 1, \ldots, n
+\tag{17.3}
+\end{equation}\]</span></p>
+<p>The interpretation is elegant: a strategy grows when its fitness exceeds the population average, and shrinks when it falls below. The rate of change is proportional to both the current frequency <span class="math inline">\(x_i\)</span> (rare strategies change slowly in absolute terms) and the fitness advantage <span class="math inline">\(f_i - \bar{f}\)</span>.</p>
+</div>
+<div id="key-properties" class="section level3" number="20.2.2">
+<h3>
+<span class="header-section-number">20.2.2</span> Key properties<a class="anchor" aria-label="anchor" href="#key-properties"><i class="fas fa-link"></i></a>
+</h3>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Simplex invariance</strong>: If <span class="math inline">\(\mathbf{x}(0) \in \Delta^{n-1}\)</span>, then <span class="math inline">\(\mathbf{x}(t) \in \Delta^{n-1}\)</span> for all <span class="math inline">\(t \geq 0\)</span>. Frequencies always sum to one.</li>
+<li>
+<strong>Rest points</strong>: Every vertex of the simplex (a pure-strategy population) is a rest point. Interior rest points correspond to mixed Nash equilibria of the underlying game.</li>
+<li>
+<strong>Folk theorem</strong>: In two-strategy games, every ESS is an asymptotically stable rest point of the replicator dynamics, and every stable rest point is a Nash equilibrium.</li>
+</ol>
+</div>
+<div id="two-example-games" class="section level3" number="20.2.3">
+<h3>
+<span class="header-section-number">20.2.3</span> Two example games<a class="anchor" aria-label="anchor" href="#two-example-games"><i class="fas fa-link"></i></a>
+</h3>
+<p><strong>Rock-Paper-Scissors (RPS).</strong> The payoff matrix is:</p>
+<p><span class="math display">\[
+A_{\text{RPS}} = \begin{pmatrix} 0 &amp; -1 &amp; 1 \\ 1 &amp; 0 &amp; -1 \\ -1 &amp; 1 &amp; 0 \end{pmatrix}
+\]</span></p>
+<p>The unique interior equilibrium <span class="math inline">\(\mathbf{x}^* = (1/3, 1/3, 1/3)\)</span> is a center: trajectories cycle around it forever without converging. This is the classic example of non-convergent replicator dynamics.</p>
+<p><strong>Hawk-Dove.</strong> With benefit <span class="math inline">\(V = 2\)</span> and cost <span class="math inline">\(C = 4\)</span>:</p>
+<p><span class="math display">\[
+A_{\text{HD}} = \begin{pmatrix} (V - C)/2 &amp; V \\ 0 &amp; V/2 \end{pmatrix} = \begin{pmatrix} -1 &amp; 2 \\ 0 &amp; 1 \end{pmatrix}
+\]</span></p>
+<p>The interior equilibrium is at <span class="math inline">\(x_H^* = V/C = 0.5\)</span>. This is an ESS and the replicator dynamics converge to it from any interior initial condition.</p>
+</div>
+</div>
+<div id="sec-replicator-implementation" class="section level2" number="20.3">
+<h2>
+<span class="header-section-number">20.3</span> Implementation in R<a class="anchor" aria-label="anchor" href="#sec-replicator-implementation"><i class="fas fa-link"></i></a>
+</h2>
+<div id="solving-with-run_replicator" class="section level3" number="20.3.1">
+<h3>
+<span class="header-section-number">20.3.1</span> Solving with <code>run_replicator()</code><a class="anchor" aria-label="anchor" href="#solving-with-run_replicator"><i class="fas fa-link"></i></a>
+</h3>
+<p>The helper function <code>run_replicator()</code> (defined in <code>R/replicator.R</code>) wraps <code><a href="https://rdrr.io/pkg/deSolve/man/ode.html">deSolve::ode()</a></code> to integrate the replicator equation. It takes a payoff matrix, initial frequencies, and a time grid, returning a data frame of strategy frequencies over time.</p>
+<div class="sourceCode" id="cb535"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">A_rps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span> <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span>,  <span class="fl">1</span>,</span>
+<span>                    <span class="fl">1</span>,  <span class="fl">0</span>, <span class="op">-</span><span class="fl">1</span>,</span>
+<span>                   <span class="op">-</span><span class="fl">1</span>,  <span class="fl">1</span>,  <span class="fl">0</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">3</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">A_hd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">2</span>,</span>
+<span>                   <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">2</span>, byrow <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="simplex-coordinate-transform" class="section level3" number="20.3.2">
+<h3>
+<span class="header-section-number">20.3.2</span> Simplex coordinate transform<a class="anchor" aria-label="anchor" href="#simplex-coordinate-transform"><i class="fas fa-link"></i></a>
+</h3>
+<p>To plot three-strategy dynamics on a two-dimensional ternary diagram, we project from the simplex to Cartesian coordinates using the standard transform:</p>
+<div class="sourceCode" id="cb536"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">simplex_to_cartesian</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x1</span>, <span class="va">x2</span>, <span class="va">x3</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>    sx <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">x2</span> <span class="op">+</span> <span class="va">x3</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span> <span class="op">+</span> <span class="va">x3</span><span class="op">)</span>,</span>
+<span>    sy <span class="op">=</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span><span class="op">)</span> <span class="op">*</span> <span class="va">x3</span> <span class="op">/</span> <span class="op">(</span><span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span> <span class="op">+</span> <span class="va">x3</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</div>
+<div id="running-rps-dynamics-from-multiple-initial-conditions" class="section level3" number="20.3.3">
+<h3>
+<span class="header-section-number">20.3.3</span> Running RPS dynamics from multiple initial conditions<a class="anchor" aria-label="anchor" href="#running-rps-dynamics-from-multiple-initial-conditions"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb537"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
+<span><span class="va">n_traj</span> <span class="op">&lt;-</span> <span class="fl">6</span></span>
+<span><span class="va">initial_conditions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html">map</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_len</a></span><span class="op">(</span><span class="va">n_traj</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html">runif</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<span>  <span class="va">raw</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">raw</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rps_trajectories</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq_along</a></span><span class="op">(</span><span class="va">initial_conditions</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">k</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">x0</span> <span class="op">&lt;-</span> <span class="va">initial_conditions</span><span class="op">[[</span><span class="va">k</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">run_replicator</span><span class="op">(</span><span class="va">A_rps</span>, <span class="va">x0</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">40</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu">simplex_to_cartesian</span><span class="op">(</span><span class="va">out</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>, <span class="va">out</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span>, <span class="va">out</span><span class="op">[</span>, <span class="fl">4</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="va">coords</span><span class="op">$</span><span class="va">trajectory</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">factor</a></span><span class="op">(</span><span class="va">k</span><span class="op">)</span></span>
+<span>  <span class="va">coords</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="va">out</span><span class="op">$</span><span class="va">time</span></span>
+<span>  <span class="va">coords</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="running-hawk-dove-dynamics" class="section level3" number="20.3.4">
+<h3>
+<span class="header-section-number">20.3.4</span> Running Hawk-Dove dynamics<a class="anchor" aria-label="anchor" href="#running-hawk-dove-dynamics"><i class="fas fa-link"></i></a>
+</h3>
+<div class="sourceCode" id="cb538"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hd_initials</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.7</span>, <span class="fl">0.9</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">hd_trajectories</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map_dfr.html">map_dfr</a></span><span class="op">(</span><span class="va">hd_initials</span>, <span class="kw">function</span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">x0</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">p</span>, <span class="fl">1</span> <span class="op">-</span> <span class="va">p</span><span class="op">)</span></span>
+<span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">run_replicator</span><span class="op">(</span><span class="va">A_hd</span>, <span class="va">x0</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span>, by <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html">as_tibble</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span></span>
+<span>  <span class="va">df</span><span class="op">$</span><span class="va">initial</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"x0 = "</span>, <span class="va">p</span><span class="op">)</span></span>
+<span>  <span class="va">df</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div id="worked-example-16" class="section level2" number="20.4">
+<h2>
+<span class="header-section-number">20.4</span> Worked example<a class="anchor" aria-label="anchor" href="#worked-example-16"><i class="fas fa-link"></i></a>
+</h2>
+<p>We trace the replicator dynamics for specific initial conditions in both games.</p>
+<div id="rock-paper-scissors" class="section level3" number="20.4.1">
+<h3>
+<span class="header-section-number">20.4.1</span> Rock-Paper-Scissors<a class="anchor" aria-label="anchor" href="#rock-paper-scissors"><i class="fas fa-link"></i></a>
+</h3>
+<p>Starting from <span class="math inline">\(\mathbf{x}_0 = (0.6, 0.3, 0.1)\)</span> — a population dominated by Rock:</p>
+<div class="sourceCode" id="cb539"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x0_rps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.6</span>, <span class="fl">0.3</span>, <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="va">out_rps</span> <span class="op">&lt;-</span> <span class="fu">run_replicator</span><span class="op">(</span><span class="va">A_rps</span>, <span class="va">x0_rps</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">40</span>, by <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">out_rps</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"Rock"</span>, <span class="st">"Paper"</span>, <span class="st">"Scissors"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"RPS dynamics from x0 = (0.6, 0.3, 0.1):\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; RPS dynamics from x0 = (0.6, 0.3, 0.1):</code></pre>
+<div class="sourceCode" id="cb541"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  t = %2.0f:  Rock = %.3f  Paper = %.3f  Scissors = %.3f\n"</span>,</span>
+<span>            <span class="fl">0</span>, <span class="va">x0_rps</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">x0_rps</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">x0_rps</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt;   t =  0:  Rock = 0.600  Paper = 0.300  Scissors = 0.100</code></pre>
+<div class="sourceCode" id="cb543"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">t_val</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">20</span>, <span class="fl">40</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">row</span> <span class="op">&lt;-</span> <span class="va">out_rps</span><span class="op">[</span><span class="va">out_rps</span><span class="op">$</span><span class="va">time</span> <span class="op">==</span> <span class="va">t_val</span>, <span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  t = %2.0f:  Rock = %.3f  Paper = %.3f  Scissors = %.3f\n"</span>,</span>
+<span>              <span class="va">t_val</span>, <span class="va">row</span><span class="op">$</span><span class="va">Rock</span>, <span class="va">row</span><span class="op">$</span><span class="va">Paper</span>, <span class="va">row</span><span class="op">$</span><span class="va">Scissors</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   t =  5:  Rock = 0.087  Paper = 0.488  Scissors = 0.426
+#&gt;   t = 10:  Rock = 0.551  Paper = 0.091  Scissors = 0.358
+#&gt;   t = 20:  Rock = 0.164  Paper = 0.163  Scissors = 0.673
+#&gt;   t = 40:  Rock = 0.298  Paper = 0.602  Scissors = 0.100</code></pre>
+<p>The frequencies cycle endlessly around the interior equilibrium <span class="math inline">\((1/3, 1/3, 1/3)\)</span>. Rock starts high, attracting Paper players who can exploit it; Paper then rises, attracting Scissors; Scissors rises, attracting Rock — and the cycle repeats. The orbit never converges because the interior equilibrium is a center (neutrally stable), not an attractor.</p>
+<div class="sourceCode" id="cb545"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">triangle</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span></span>
+<span>  sx <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0.5</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  sy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">center</span> <span class="op">&lt;-</span> <span class="fu">simplex_to_cartesian</span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">/</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">/</span><span class="fl">3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_rps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_path</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">triangle</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sx</span>, y <span class="op">=</span> <span class="va">sy</span><span class="op">)</span>,</span>
+<span>            colour <span class="op">=</span> <span class="st">"grey40"</span>, linewidth <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_path</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">rps_trajectories</span>,</span>
+<span>            <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sx</span>, y <span class="op">=</span> <span class="va">sy</span>, colour <span class="op">=</span> <span class="va">trajectory</span><span class="op">)</span>,</span>
+<span>            linewidth <span class="op">=</span> <span class="fl">0.5</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">center</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">sx</span>, y <span class="op">=</span> <span class="va">sy</span><span class="op">)</span>,</span>
+<span>             shape <span class="op">=</span> <span class="fl">3</span>, size <span class="op">=</span> <span class="fl">3</span>, stroke <span class="op">=</span> <span class="fl">1.2</span>, colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="op">-</span><span class="fl">0.05</span>, y <span class="op">=</span> <span class="op">-</span><span class="fl">0.04</span>, label <span class="op">=</span> <span class="st">"Rock"</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">3.5</span>, fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">1.05</span>, y <span class="op">=</span> <span class="op">-</span><span class="fl">0.04</span>, label <span class="op">=</span> <span class="st">"Paper"</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">3.5</span>, fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">0.5</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">/</span><span class="fl">2</span> <span class="op">+</span> <span class="fl">0.04</span>, label <span class="op">=</span> <span class="st">"Scissors"</span>,</span>
+<span>           size <span class="op">=</span> <span class="fl">3.5</span>, fontface <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_fixed.html">coord_equal</a></span><span class="op">(</span>xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.1</span>, <span class="fl">1.1</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.1</span>, <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        panel.grid.major <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"RPS Replicator Dynamics on the Simplex"</span>,</span>
+<span>       x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_rps</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:rps-simplex"></span>
+<img src="19-replicator-dynamics_files/figure-html/rps-simplex-1.png" alt="Replicator dynamics for Rock-Paper-Scissors on the two-dimensional simplex. Six trajectories from random initial conditions cycle around the interior equilibrium at (1/3, 1/3, 1/3). The orbits are closed curves — the system never converges, reflecting the non-transitive dominance structure of the game." width="80%"><p class="caption">
+Figure 20.1: Replicator dynamics for Rock-Paper-Scissors on the two-dimensional simplex. Six trajectories from random initial conditions cycle around the interior equilibrium at (1/3, 1/3, 1/3). The orbits are closed curves — the system never converges, reflecting the non-transitive dominance structure of the game.
+</p>
+</div>
+<div class="sourceCode" id="cb546"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_rps</span>, <span class="st">"replicator-rps-simplex"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div id="hawk-dove" class="section level3" number="20.4.2">
+<h3>
+<span class="header-section-number">20.4.2</span> Hawk-Dove<a class="anchor" aria-label="anchor" href="#hawk-dove"><i class="fas fa-link"></i></a>
+</h3>
+<p>Starting from <span class="math inline">\(x_H = 0.1\)</span> (a population with few Hawks):</p>
+<div class="sourceCode" id="cb547"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x0_hd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.9</span><span class="op">)</span></span>
+<span><span class="va">out_hd</span> <span class="op">&lt;-</span> <span class="fu">run_replicator</span><span class="op">(</span><span class="va">A_hd</span>, <span class="va">x0_hd</span>, times <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span>, by <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">out_hd</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"Hawk"</span>, <span class="st">"Dove"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="st">"Hawk-Dove dynamics from x0 = (0.1, 0.9):\n\n"</span><span class="op">)</span></span></code></pre></div>
+<pre><code>#&gt; Hawk-Dove dynamics from x0 = (0.1, 0.9):</code></pre>
+<div class="sourceCode" id="cb549"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">t_val</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">row</span> <span class="op">&lt;-</span> <span class="va">out_hd</span><span class="op">[</span><span class="va">out_hd</span><span class="op">$</span><span class="va">time</span> <span class="op">==</span> <span class="va">t_val</span>, <span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html">sprintf</a></span><span class="op">(</span><span class="st">"  t = %2.0f:  Hawk = %.3f  Dove = %.3f\n"</span>,</span>
+<span>              <span class="va">t_val</span>, <span class="va">row</span><span class="op">$</span><span class="va">Hawk</span>, <span class="va">row</span><span class="op">$</span><span class="va">Dove</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<pre><code>#&gt;   t =  0:  Hawk = 0.100  Dove = 0.900
+#&gt;   t =  2:  Hawk = 0.280  Dove = 0.720
+#&gt;   t =  5:  Hawk = 0.446  Dove = 0.554
+#&gt;   t = 10:  Hawk = 0.496  Dove = 0.504
+#&gt;   t = 20:  Hawk = 0.500  Dove = 0.500</code></pre>
+<p>Hawks are rare but earn a high payoff by exploiting the predominantly Dove population. The Hawk frequency rises rapidly at first, then decelerates as more Hawk-Hawk encounters occur (which are costly). The system converges smoothly to the ESS at <span class="math inline">\(x_H^* = V/C = 0.5\)</span>.</p>
+<div class="sourceCode" id="cb551"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p_hd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">hd_trajectories</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">Hawk</span>, colour <span class="op">=</span> <span class="va">initial</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html">geom_line</a></span><span class="op">(</span>linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0.5</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="fl">18</span>, y <span class="op">=</span> <span class="fl">0.53</span>, label <span class="op">=</span> <span class="st">"ESS: x[H] == 0.5"</span>,</span>
+<span>           parse <span class="op">=</span> <span class="cn">TRUE</span>, size <span class="op">=</span> <span class="fl">3.5</span>, colour <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">8</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">okabe_ito</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, name <span class="op">=</span> <span class="st">"Initial Hawk freq."</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_y_continuous</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_percent.html">label_percent</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">theme_publication</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Hawk-Dove Replicator Dynamics"</span>,</span>
+<span>       x <span class="op">=</span> <span class="st">"Time"</span>, y <span class="op">=</span> <span class="st">"Hawk frequency"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">p_hd</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<span style="display:block;" id="fig:hd-dynamics"></span>
+<img src="19-replicator-dynamics_files/figure-html/hd-dynamics-1.png" alt="Hawk frequency over time for five different initial conditions. All trajectories converge to the ESS at x_H = 0.5 (dashed line), regardless of starting point. Initial conditions below the ESS see Hawk increase; those above see it decrease." width="80%"><p class="caption">
+Figure 20.2: Hawk frequency over time for five different initial conditions. All trajectories converge to the ESS at x_H = 0.5 (dashed line), regardless of starting point. Initial conditions below the ESS see Hawk increase; those above see it decrease.
+</p>
+</div>
+<div class="sourceCode" id="cb552"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">save_pub_fig</span><span class="op">(</span><span class="va">p_hd</span>, <span class="st">"replicator-hd-dynamics"</span>, width <span class="op">=</span> <span class="fl">7</span>, height <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p>The Hawk-Dove dynamics illustrate a core result in evolutionary game theory: <strong>the ESS is a global attractor of the replicator dynamics</strong>. No matter how the population starts (as long as both strategies are present), it converges to the mixed equilibrium where Hawks and Doves coexist. This is in stark contrast to RPS, where the dynamics cycle forever.</p>
+</div>
+<div id="comparing-the-two-games" class="section level3" number="20.4.3">
+<h3>
+<span class="header-section-number">20.4.3</span> Comparing the two games<a class="anchor" aria-label="anchor" href="#comparing-the-two-games"><i class="fas fa-link"></i></a>
+</h3>
+<p>The difference between the two games reflects a deep structural distinction:</p>
+<ul>
+<li>
+<strong>Hawk-Dove</strong> has a symmetric <span class="math inline">\(2 \times 2\)</span> payoff matrix with an interior ESS. The replicator dynamics have a Lyapunov function (a quantity that strictly decreases along trajectories), guaranteeing convergence.</li>
+<li>
+<strong>Rock-Paper-Scissors</strong> has a skew-symmetric payoff matrix. The quantity <span class="math inline">\(H(\mathbf{x}) = x_1 x_2 x_3\)</span> is conserved along trajectories (it is a constant of motion), producing closed orbits rather than convergence.</li>
+</ul>
+<p>This shows that the replicator equation’s behavior depends qualitatively on the game’s payoff structure — a theme we will revisit when studying evolutionarily stable strategies in <a href="sec-ess.html#sec-ess">21</a>.</p>
+</div>
+</div>
+<div id="extensions-18" class="section level2" number="20.5">
+<h2>
+<span class="header-section-number">20.5</span> Extensions<a class="anchor" aria-label="anchor" href="#extensions-18"><i class="fas fa-link"></i></a>
+</h2>
+<ul>
+<li>
+<strong>Asymmetric replicator dynamics</strong>: When players occupy different roles (e.g., owner vs. intruder), the dynamics involve two coupled replicator equations, one for each population. This leads to higher-dimensional phase spaces.</li>
+<li>
+<strong>Mutation and selection</strong>: Adding a small mutation rate <span class="math inline">\(\mu\)</span> transforms the replicator equation into the <strong>replicator-mutator equation</strong>: <span class="math inline">\(\dot{x}_i = \sum_j x_j f_j Q_{ji} - x_i \bar{f}\)</span>, where <span class="math inline">\(Q\)</span> is a mutation matrix. This can turn centers into spirals.</li>
+<li>
+<strong>Discrete-time replicator</strong>: The discrete-time version <span class="math inline">\(x_i' = x_i f_i / \bar{f}\)</span> has different stability properties and can exhibit chaos even in low dimensions.</li>
+<li>
+<strong>Connection to spatial models</strong>: The well-mixed replicator dynamics serve as a baseline for the spatial models of <a href="sec-spatial-pd.html#sec-spatial-pd">19</a>. When spatial structure matters, local frequency-dependent selection can sustain strategies that the replicator equation predicts will go extinct.</li>
+<li>For a comprehensive treatment, see <span class="citation">Hofbauer &amp; Sigmund (<a href="references.html#ref-hofbauer1998">1998</a>)</span>. For the connection between replicator dynamics and learning, see <span class="citation">Fudenberg &amp; Levine (<a href="references.html#ref-fudenberg1998">1998</a>)</span>.</li>
+</ul>
+</div>
+<div id="exercises-18" class="section level2 unnumbered">
+<h2>Exercises<a class="anchor" aria-label="anchor" href="#exercises-18"><i class="fas fa-link"></i></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li>
+<p><strong>Three-strategy Hawk-Dove-Retaliator.</strong> Define a <span class="math inline">\(3 \times 3\)</span> payoff matrix for a game with Hawks, Doves, and Retaliators (Retaliators play Dove against Doves and Hawk against Hawks). With <span class="math inline">\(V = 2\)</span> and <span class="math inline">\(C = 4\)</span>, the matrix is:</p>
+<p><span class="math display">\[A = \begin{pmatrix} -1 &amp; 2 &amp; -1 \\ 0 &amp; 1 &amp; 1 \\ -1 &amp; 1 &amp; 0.5 \end{pmatrix}\]</span></p>
+<p>Use <code>run_replicator()</code> to solve the dynamics from three different initial conditions. Plot the trajectories on the simplex. Does the system converge? If so, to what equilibrium?</p>
+</li>
+<li><p><strong>Sensitivity to initial conditions in RPS.</strong> Run the RPS dynamics from <span class="math inline">\(\mathbf{x}_0 = (0.5, 0.3, 0.2)\)</span> and from <span class="math inline">\(\mathbf{x}_0 = (0.501, 0.3, 0.199)\)</span>. Plot both trajectories on the simplex. How different are the orbits? Relate your finding to the conservation of <span class="math inline">\(H(\mathbf{x}) = x_1 x_2 x_3\)</span>.</p></li>
+<li><p><strong>Payoff perturbation.</strong> Modify the RPS payoff matrix to be slightly asymmetric: change the (1,2) entry from <span class="math inline">\(-1\)</span> to <span class="math inline">\(-1.1\)</span>. Run the dynamics and plot the trajectory. Does the system still cycle, or does it now converge to a vertex? Explain why breaking the skew-symmetry changes the qualitative dynamics.</p></li>
+</ol>
+<p>Solutions appear in <a href="sec-solutions.html#sec-solutions">D</a>.</p>
+
+</div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    if (!path || path === ".pdf") return;
+    const header = document.querySelector("main h1");
+    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
+      const btn = document.createElement("a");
+      btn.href = "pdf-chapters/" + path;
+      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
+      btn.style = "float:right;margin-top:0.5em;";
+      btn.textContent = "⬇ Download this chapter (PDF)";
+      header.appendChild(btn);
+    }
+  });
+</script><div class="chapter-nav">
+<div class="prev"><a href="sec-spatial-pd.html"><span class="header-section-number">19</span> Spatial Prisoner’s Dilemma</a></div>
+<div class="next"><a href="sec-ess.html"><span class="header-section-number">21</span> Evolutionarily Stable Strategies</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#sec-replicator-dynamics"><span class="header-section-number">20</span> Replicator Dynamics</a></li>
+<li><a class="nav-link" href="#learning-objectives-18">Learning objectives</a></li>
+<li><a class="nav-link" href="#motivation-18"><span class="header-section-number">20.1</span> Motivation</a></li>
+<li>
+<a class="nav-link" href="#theory-18"><span class="header-section-number">20.2</span> Theory</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#the-replicator-equation"><span class="header-section-number">20.2.1</span> The replicator equation</a></li>
+<li><a class="nav-link" href="#key-properties"><span class="header-section-number">20.2.2</span> Key properties</a></li>
+<li><a class="nav-link" href="#two-example-games"><span class="header-section-number">20.2.3</span> Two example games</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#sec-replicator-implementation"><span class="header-section-number">20.3</span> Implementation in R</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#solving-with-run_replicator"><span class="header-section-number">20.3.1</span> Solving with run_replicator()</a></li>
+<li><a class="nav-link" href="#simplex-coordinate-transform"><span class="header-section-number">20.3.2</span> Simplex coordinate transform</a></li>
+<li><a class="nav-link" href="#running-rps-dynamics-from-multiple-initial-conditions"><span class="header-section-number">20.3.3</span> Running RPS dynamics from multiple initial conditions</a></li>
+<li><a class="nav-link" href="#running-hawk-dove-dynamics"><span class="header-section-number">20.3.4</span> Running Hawk-Dove dynamics</a></li>
+</ul>
+</li>
+<li>
+<a class="nav-link" href="#worked-example-16"><span class="header-section-number">20.4</span> Worked example</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#rock-paper-scissors"><span class="header-section-number">20.4.1</span> Rock-Paper-Scissors</a></li>
+<li><a class="nav-link" href="#hawk-dove"><span class="header-section-number">20.4.2</span> Hawk-Dove</a></li>
+<li><a class="nav-link" href="#comparing-the-two-games"><span class="header-section-number">20.4.3</span> Comparing the two games</a></li>
+</ul>
+</li>
+<li><a class="nav-link" href="#extensions-18"><span class="header-section-number">20.5</span> Extensions</a></li>
+<li><a class="nav-link" href="#exercises-18">Exercises</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/r-heller/strategy-in-r/blob/main/19-replicator-dynamics.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/r-heller/strategy-in-r/edit/main/19-replicator-dynamics.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+
+</div>
+</div> <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Strategy in R</strong>: Game Theory, Simulation, and Machine Intelligence" was written by Raban Heller. It was last built on 2026-05-11.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer><!-- dynamically load mathjax for compatibility with self-contained --><script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script><script type="text/x-mathjax-config">const popovers = document.querySelectorAll('a.footnote-ref[data-toggle="popover"]');
+for (let popover of popovers) {
+  const div = document.createElement('div');
+  div.setAttribute('style', 'position: absolute; top: 0, left:0; width:0, height:0, overflow: hidden; visibility: hidden;');
+  div.innerHTML = popover.getAttribute('data-content');
+
+  var has_math = div.querySelector("span.math");
+  if (has_math) {
+    document.body.appendChild(div);
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, div]);
+    MathJax.Hub.Queue(function() {
+      popover.setAttribute('data-content', div.innerHTML);
+      document.body.removeChild(div);
+    })
+  }
+}
+</script>
+</body>
+</html>
