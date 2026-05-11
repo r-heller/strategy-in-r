@@ -971,19 +971,53 @@ Figure 7.1: Expected payoffs for each worker type under separating and pooling e
       });
     });
   })();
-</script><!-- Per-chapter PDF download button --><script>
+</script><!-- Download links injected into the right sidebar above View source / Edit this page --><script>
   document.addEventListener("DOMContentLoaded", function () {
-    var path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
-    if (!path || path === ".pdf") return;
-    var header = document.querySelector("main h1, .page-inner h1");
-    if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      var btn = document.createElement("a");
-      btn.href = "pdf-chapters/" + path;
-      btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
-      btn.style = "float:right;margin-top:0.5em;";
-      btn.textContent = "⬇ Download this chapter (PDF)";
-      header.appendChild(btn);
+    if (document.querySelector(".sidebar-downloads")) return;
+
+    var pageFile  = window.location.pathname.split("/").pop();
+    var chapterId = pageFile && pageFile !== "" && pageFile !== "index.html"
+      ? pageFile.replace(".html", ".pdf")
+      : null;
+
+    // Find the "View source / Edit this page" block. bs4_book wraps these in
+    // a section with the heading "On this page" + a list, followed by these
+    // links inside an <h2> sibling or a separate <ul>. We look for the
+    // canonical link text and walk up to its container, then insert before it.
+    var anchor = null;
+    var candidates = document.querySelectorAll(".sidebar-chapter a, aside a, nav a");
+    for (var i = 0; i < candidates.length; i++) {
+      var t = (candidates[i].textContent || "").trim().toLowerCase();
+      if (t === "view source" || t === "edit this page") {
+        anchor = candidates[i].closest("h2, .page-links, div, ul");
+        if (anchor) break;
+      }
     }
+    if (!anchor) return;  // theme variant we don't recognise — skip silently
+
+    var heading = document.createElement("h2");
+    heading.className = "sidebar-downloads-heading";
+    heading.textContent = "Download";
+
+    var list = document.createElement("ul");
+    list.className = "sidebar-downloads";
+
+    function addItem(href, label) {
+      var li = document.createElement("li");
+      var a  = document.createElement("a");
+      a.href = href;
+      a.textContent = label;
+      li.appendChild(a);
+      list.appendChild(li);
+    }
+
+    addItem("strategy-in-r.pdf", "Entire book (PDF)");
+    if (chapterId) {
+      addItem("pdf-chapters/" + chapterId, "This chapter (PDF)");
+    }
+
+    anchor.parentNode.insertBefore(heading, anchor);
+    anchor.parentNode.insertBefore(list,    anchor);
   });
 </script><!-- Footer attribution --><div class="bookdown-attribution">
   This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.

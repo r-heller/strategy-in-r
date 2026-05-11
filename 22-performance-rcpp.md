@@ -184,7 +184,7 @@ cat(sprintf("  Loop-based:  %.3f s (sd: %.3f)\n", time_loop$mean, time_loop$sd))
 ```
 
 ```
-#>   Loop-based:  0.247 s (sd: 0.021)
+#>   Loop-based:  0.255 s (sd: 0.024)
 ```
 
 ``` r
@@ -192,7 +192,7 @@ cat(sprintf("  Vectorized:  %.3f s (sd: %.3f)\n", time_vec$mean, time_vec$sd))
 ```
 
 ```
-#>   Vectorized:  0.015 s (sd: 0.011)
+#>   Vectorized:  0.016 s (sd: 0.011)
 ```
 
 ``` r
@@ -350,7 +350,7 @@ cat(sprintf("  Total elapsed time: %.3f s\n", t_full["elapsed"]))
 ```
 
 ```
-#>   Total elapsed time: 0.167 s
+#>   Total elapsed time: 0.171 s
 ```
 
 ``` r
@@ -397,7 +397,7 @@ cat(sprintf("  Loop-based time:  %.3f s\n", t_full["elapsed"]))
 ```
 
 ```
-#>   Loop-based time:  0.167 s
+#>   Loop-based time:  0.171 s
 ```
 
 ``` r
@@ -405,7 +405,7 @@ cat(sprintf("  Speedup:          %.1fx\n", t_full["elapsed"] / t_vec["elapsed"])
 ```
 
 ```
-#>   Speedup:          27.8x
+#>   Speedup:          28.5x
 ```
 
 ### Step 3: Memory pre-allocation matters
@@ -468,10 +468,10 @@ for (i in seq_len(nrow(prealloc_df))) {
 ```
 
 ```
-#>   1,000     0.0040    0.0020      2x
-#>   5,000     0.0180    0.0000      Infx
-#>   10,000    0.0670    0.0010      67x
-#>   20,000    0.2650    0.0010      265x
+#>   1,000     0.0040    0.0030      1x
+#>   5,000     0.0200    0.0000      Infx
+#>   10,000    0.0740    0.0010      74x
+#>   20,000    0.2870    0.0010      287x
 ```
 
 The growing vector copies the entire vector on each append, producing $O(n^2)$ total work. Pre-allocation is $O(n)$.
