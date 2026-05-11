@@ -22,9 +22,10 @@
 <script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
 <link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
-<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (vendored, no CDN) --><link rel="stylesheet" href="style/font-awesome.min.css">
 <!-- Open Graph / Twitter Card --><meta property="og:title" content="Acknowledgments | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
 <meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
 <meta property="og:type" content="book">
@@ -60,6 +61,7 @@
     }
   </style>
 <link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
 </head>
 <body data-spy="scroll" data-target="#toc">
 
@@ -143,7 +145,7 @@
 <li><a class="active" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
-<li><a class="" href="citing-this-guide.html">Citing this Guide</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -159,6 +161,11 @@
 <p>I am grateful to the bookdown community for tooling that made this book possible, and to the broader R community for sustained generosity with code, documentation, and ideas.</p>
 <p>Drafting and editorial assistance was provided by Claude (Anthropic). All technical content has been reviewed, verified, and curated by the author. Errors remain my own.</p>
 <!-- TODO: thank specific reviewers once they have read the manuscript. -->
+<div id="inspiration" class="section level2 unnumbered">
+<h2>Inspiration<a class="anchor" aria-label="anchor" href="#inspiration"><i class="fas fa-link"></i></a>
+</h2>
+<p>The structural and pedagogical model for this book draws heavily on Mathias Harrer, Pim Cuijpers, Toshi A. Furukawa, and David D. Ebert’s <a href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/"><em>Doing Meta-Analysis with R: A Hands-On Guide</em></a> — both the book and its open-source repository at <a href="https://github.com/MathiasHarrer/Doing-Meta-Analysis-in-R" class="uri">https://github.com/MathiasHarrer/Doing-Meta-Analysis-in-R</a>. Their thorough, transparent, and beautifully laid-out bookdown setup — sidebar grouping, semantic callout boxes, the citation block, the dark/light toggle, MathJax-rendered formulas, downloadable BibTeX/RIS citations — set a clear standard for what a reproducible R-based research book can look like. Where the present book mirrors their conventions, it does so deliberately and gratefully. Where it diverges (colors, typography, individual icons), the divergence is cosmetic; the underlying craft is theirs to credit.</p>
+</div>
 <div id="use-of-llm-tools" class="section level2 unnumbered">
 <h2>Use of LLM tools<a class="anchor" aria-label="anchor" href="#use-of-llm-tools"><i class="fas fa-link"></i></a>
 </h2>
@@ -167,13 +174,38 @@
 
 </div>
 </div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
 <script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
   document.addEventListener("DOMContentLoaded", function () {
-    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    var path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
     if (!path || path === ".pdf") return;
-    const header = document.querySelector("main h1");
+    var header = document.querySelector("main h1, .page-inner h1");
     if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      const btn = document.createElement("a");
+      var btn = document.createElement("a");
       btn.href = "pdf-chapters/" + path;
       btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
       btn.style = "float:right;margin-top:0.5em;";
@@ -181,7 +213,7 @@
       header.appendChild(btn);
     }
   });
-</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+</script><!-- Footer attribution --><div class="bookdown-attribution">
   This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
 </div>
   <div class="chapter-nav">
@@ -191,6 +223,7 @@
     <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
       <ul class="nav navbar-nav">
 <li><a class="nav-link" href="#acknowledgments">Acknowledgments</a></li>
+<li><a class="nav-link" href="#inspiration">Inspiration</a></li>
 <li><a class="nav-link" href="#use-of-llm-tools">Use of LLM tools</a></li>
 </ul>
 

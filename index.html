@@ -22,9 +22,10 @@
 <script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><link href="libs/Inter-0.4.10/font.css" rel="stylesheet">
 <link href="libs/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <script src="libs/bs3compat-0.10.0/transition.js"></script><script src="libs/bs3compat-0.10.0/tabs.js"></script><script src="libs/bs3compat-0.10.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
-<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><!-- Fonts (Hugo Coder set) --><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Local Font Awesome 6 (vendored, no CDN) --><link rel="stylesheet" href="style/font-awesome.min.css">
 <!-- Open Graph / Twitter Card --><meta property="og:title" content="Welcome! | Strategy in R: Game Theory, Simulation, and Machine Intelligence">
 <meta property="og:description" content="An open-source book on game theory, simulation, and machine intelligence — implemented end-to-end in R.">
 <meta property="og:type" content="book">
@@ -60,6 +61,7 @@
     }
   </style>
 <link rel="stylesheet" href="style/style.css">
+<link rel="stylesheet" href="style/font-awesome.min.css">
 </head>
 <body data-spy="scroll" data-target="#toc">
 
@@ -143,7 +145,7 @@
 <li><a class="" href="acknowledgments.html">Acknowledgments</a></li>
 <li><a class="" href="about-the-author.html">About the author</a></li>
 <li><a class="" href="colophon.html">Colophon</a></li>
-<li><a class="" href="citing-this-guide.html">Citing this Guide</a></li>
+<li><a class="" href="citing-this-guide-1.html">Citing this Guide</a></li>
 <li><a class="" href="references.html">References</a></li>
 </ul>
 
@@ -186,20 +188,53 @@
 </h2>
 <p>The content of this book is released under the <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a> (see <a href="https://github.com/r-heller/strategy-in-r/blob/main/LICENSE-CONTENT"><code>LICENSE-CONTENT</code></a>). Source code is released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>.</p>
 </div>
-<div id="citation" class="section level2 unnumbered">
-<h2>Citation<a class="anchor" aria-label="anchor" href="#citation"><i class="fas fa-link"></i></a>
+<div id="citing-this-guide" class="section level2 unnumbered">
+<h2>Citing this Guide<a class="anchor" aria-label="anchor" href="#citing-this-guide"><i class="fas fa-link"></i></a>
 </h2>
-<p>See the <a href="98-citing-this-guide.html"><em>Citing this Guide</em></a> page in the back of the book for the suggested citation and downloadable BibTeX / RIS references.</p>
+<p>The suggested citation is:</p>
+<div class="boxempty">
+<p>
+<strong>Heller, R.</strong> (2026). <em>Strategy in R: Game Theory,
+Simulation, and Machine Intelligence</em> (Version v0.1.0).
+Self-published via GitHub Pages. <a href="https://r-heller.github.io/strategy-in-r/" class="uri">https://r-heller.github.io/strategy-in-r/</a>.
+</p>
+</div>
+<p>Download the reference as <a href="citation-files/citation.bib">BibTeX</a> or <a href="citation-files/citation.ris">RIS</a>.</p>
 
 </div>
 </div>
+<!-- Dark/light mode toggle -->
+<div class="sticky-item">
+  <button type="button" id="mode-switch" class="btn-circle-mode" aria-label="Toggle dark mode">
+    <i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i>
+  </button>
+</div>
+
 <script>
+  (function () {
+    var stored = localStorage.getItem('themeMode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var initial = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', initial);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('mode-switch');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('themeMode', next);
+      });
+    });
+  })();
+</script><!-- Per-chapter PDF download button --><script>
   document.addEventListener("DOMContentLoaded", function () {
-    const path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
+    var path = window.location.pathname.split("/").pop().replace(".html", ".pdf");
     if (!path || path === ".pdf") return;
-    const header = document.querySelector("main h1");
+    var header = document.querySelector("main h1, .page-inner h1");
     if (header && !document.querySelector(".per-chapter-pdf-btn")) {
-      const btn = document.createElement("a");
+      var btn = document.createElement("a");
       btn.href = "pdf-chapters/" + path;
       btn.className = "btn btn-sm btn-outline-secondary per-chapter-pdf-btn";
       btn.style = "float:right;margin-top:0.5em;";
@@ -207,7 +242,7 @@
       header.appendChild(btn);
     }
   });
-</script><div class="bookdown-attribution" style="text-align:center; padding:1.5rem 0; font-size:0.9em; opacity:0.8;">
+</script><!-- Footer attribution --><div class="bookdown-attribution">
   This book was built by the <a href="https://bookdown.org/"><strong>bookdown</strong></a> R package.
 </div>
   <div class="chapter-nav">
@@ -220,7 +255,7 @@
 <li><a class="nav-link" href="#about-this-book">About this book</a></li>
 <li><a class="nav-link" href="#how-to-use-this-book">How to use this book</a></li>
 <li><a class="nav-link" href="#license">License</a></li>
-<li><a class="nav-link" href="#citation">Citation</a></li>
+<li><a class="nav-link" href="#citing-this-guide">Citing this Guide</a></li>
 </ul>
 
       <div class="book-extra">

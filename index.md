@@ -43,6 +43,16 @@ The book is for graduate students, researchers, and practitioners with working R
 
 The content of this book is released under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/) (see [`LICENSE-CONTENT`](https://github.com/r-heller/strategy-in-r/blob/main/LICENSE-CONTENT)). Source code is released under the [MIT License](https://opensource.org/licenses/MIT).
 
-## Citation {-}
+## Citing this Guide {-}
 
-See the [*Citing this Guide*](98-citing-this-guide.html) page in the back of the book for the suggested citation and downloadable BibTeX / RIS references.
+The suggested citation is:
+
+<div class="boxempty">
+<p><strong>Heller, R.</strong> (2026). <em>Strategy in R: Game Theory,
+Simulation, and Machine Intelligence</em> (Version v0.1.0).
+Self-published via GitHub Pages. <a
+href="https://r-heller.github.io/strategy-in-r/"
+class="uri">https://r-heller.github.io/strategy-in-r/</a>.</p>
+</div>
+
+Download the reference as [BibTeX](citation-files/citation.bib) or [RIS](citation-files/citation.ris).
