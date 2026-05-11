@@ -33,6 +33,15 @@ set.seed(42)
 source(here::here("R", "theme_publication.R"))
 source(here::here("R", "save_pub_fig.R"))
 
+# Copy citation files alongside the rendered book.
+if (file.exists("citation.bib")) {
+  dir.create("docs/citation-files", recursive = TRUE, showWarnings = FALSE)
+  file.copy("citation.bib", "docs/citation-files/citation.bib", overwrite = TRUE)
+  if (file.exists("citation.ris")) {
+    file.copy("citation.ris", "docs/citation-files/citation.ris", overwrite = TRUE)
+  }
+}
+
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   ggplot2::theme_set(
     ggplot2::theme_minimal(base_family = "Inter", base_size = 12) +
