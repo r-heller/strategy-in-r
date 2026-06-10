@@ -14,14 +14,14 @@
 ```
 
 ```
-#>   Build date: 2026-05-12
+#>   Build date: 2026-06-10
 ```
 
 ```
-#>   Commit:   72ba35f
+#>   Commit:   4398f00
 ```
 
-LLM assistance (self-hosted Mistral Le Chat via Ollama/`ollamar`, plus GitHub Copilot in RStudio) was used for copyediting, formatting, and scaffolding tasks only — see Acknowledgments.
+LLM assistance (Chat AI from KISSKI/GWDG, plus a self-hosted Mistral Small via Ollama/`ollamar`) was used for copyediting, formatting, and scaffolding tasks only — see Acknowledgments.
 
 ## Session info {-}
 
@@ -59,10 +59,11 @@ LLM assistance (self-hosted Mistral Le Chat via Ollama/`ollamar`, plus GitHub Co
 #>  [9] generics_0.1.4     knitr_1.51         bookdown_0.46      rprojroot_2.1.1   
 #> [13] pillar_1.11.1      RColorBrewer_1.1-3 tzdb_0.5.0         rlang_1.2.0       
 #> [17] stringi_1.8.7      xfun_0.57          fs_2.1.0           S7_0.2.2          
-#> [21] timechange_0.4.0   cli_3.6.6          withr_3.0.2        magrittr_2.0.5    
-#> [25] digest_0.6.39      grid_4.6.0         hms_1.1.4          lifecycle_1.0.5   
-#> [29] vctrs_0.7.3        evaluate_1.0.5     farver_2.1.2       codetools_0.2-20  
-#> [33] rmarkdown_2.31     htmltools_0.5.9    tools_4.6.0        pkgconfig_2.0.3
+#> [21] otel_0.2.0         timechange_0.4.0   cli_3.6.6          withr_3.0.2       
+#> [25] magrittr_2.0.5     digest_0.6.39      grid_4.6.0         hms_1.1.4         
+#> [29] lifecycle_1.0.5    vctrs_0.7.3        evaluate_1.0.5     farver_2.1.2      
+#> [33] codetools_0.2-20   rmarkdown_2.31     htmltools_0.5.9    tools_4.6.0       
+#> [37] pkgconfig_2.0.3
 ```
 
 

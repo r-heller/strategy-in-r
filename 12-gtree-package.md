@@ -961,15 +961,15 @@ configs |>
     <tr><td headers="depth" class="gt_row gt_right">6</td>
 <td headers="branching" class="gt_row gt_center">3</td>
 <td headers="n_terminals" class="gt_row gt_right">729</td>
-<td headers="time_ms" class="gt_row gt_right">8.00</td></tr>
+<td headers="time_ms" class="gt_row gt_right">7.00</td></tr>
     <tr><td headers="depth" class="gt_row gt_right">7</td>
 <td headers="branching" class="gt_row gt_center">3</td>
 <td headers="n_terminals" class="gt_row gt_right">2,187</td>
-<td headers="time_ms" class="gt_row gt_right">22.00</td></tr>
+<td headers="time_ms" class="gt_row gt_right">21.00</td></tr>
     <tr><td headers="depth" class="gt_row gt_right">8</td>
 <td headers="branching" class="gt_row gt_center">3</td>
 <td headers="n_terminals" class="gt_row gt_right">6,561</td>
-<td headers="time_ms" class="gt_row gt_right">69.00</td></tr>
+<td headers="time_ms" class="gt_row gt_right">65.00</td></tr>
   </tbody>
   
 </table>
