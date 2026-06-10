@@ -16,4 +16,4 @@ Thank you for your interest in contributing.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under MIT (code) and CC-BY-SA 4.0 (content).
+By contributing, you agree that your contributions will be licensed under MIT (code) and CC-BY 4.0 (content).
