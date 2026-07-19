@@ -1263,7 +1263,7 @@ env_info |>
   </thead>
   <tbody class="gt_table_body">
     <tr><td headers="Component" class="gt_row gt_left">R version</td>
-<td headers="Value" class="gt_row gt_left">4.6.0</td></tr>
+<td headers="Value" class="gt_row gt_left">4.6.1</td></tr>
     <tr><td headers="Component" class="gt_row gt_left">Platform</td>
 <td headers="Value" class="gt_row gt_left">x86_64-pc-linux-gnu</td></tr>
     <tr><td headers="Component" class="gt_row gt_left">tidyverse</td>
