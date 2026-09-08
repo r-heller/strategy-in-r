@@ -12,6 +12,8 @@ skip <- c(
 
 chapters <- dir_ls(".", glob = "*.Rmd")
 chapters <- chapters[!path_file(chapters) %in% skip]
+# Skip the (PART) and (APPENDIX) marker files; they contain no content.
+chapters <- chapters[!grepl("^part-.*\.Rmd$", path_file(chapters))]
 
 out_dir <- "docs/pdf-chapters"
 dir_create(out_dir)
