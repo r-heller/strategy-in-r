@@ -62,7 +62,7 @@ A handful of chapters use Python via `reticulate`; see `python/requirements.txt`
 
 ## License
 
-Content: [CC BY 4.0](LICENSE-CONTENT) · Source code: [MIT](LICENSE).
+The prose of this book is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); all code (scripts, chunks, examples) is licensed under the [MIT License](LICENSE-CODE.md).
 
 ## Contributing
 
