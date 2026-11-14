@@ -106,3 +106,7 @@ missing or unreadable whole-book PDF/EPUB files, and LaTeX sources left in `docs
 (delete `docs/*.tex` first; the LaTeX file is a build intermediate). CI then builds
 and checks the chapter PDF and EPUB downloads in `docs/downloads/chapters/` with
 `scripts/build-downloads-ci.sh`.
+
+## Pull-request validation
+
+The read-only `Source checks` workflow runs on pull requests and main updates. The checks execute the teaching MCTS implementation and fresh-process setup contract, and validate source references, navigation and download fixtures. Full book rendering and publication remain separate workflow gates.
