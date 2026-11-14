@@ -20,11 +20,11 @@
 ```
 
 ```
-#>   Build date: 2026-11-10
+#>   Build date: 2026-11-14
 ```
 
 ```
-#>   Commit:   4ee6938
+#>   Commit:   498ede7
 ```
 
 LLM assistance (Chat AI from KISSKI/GWDG, plus a self-hosted Mistral Small via Ollama/`ollamar`) was used for copyediting, formatting, and scaffolding tasks only — see Acknowledgments.
@@ -43,7 +43,7 @@ LLM assistance (Chat AI from KISSKI/GWDG, plus a self-hosted Mistral Small via O
 #>  collate  C.UTF-8
 #>  ctype    C.UTF-8
 #>  tz       UTC
-#>  date     2026-11-10
+#>  date     2026-11-14
 #>  pandoc   3.8.3 @ /opt/hostedtoolcache/pandoc/3.8.3/x64/ (via rmarkdown)
 #>  quarto   NA
 #> 
